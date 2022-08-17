@@ -1,25 +1,7 @@
-#if os(Windows)
-
 import Foundation
 import z80
 
-@main
 struct Sdk85 {
-    static func main() {
-        var ram = Array<Byte>(repeating: 0, count: 0x10000)
-        let rom = NSData(contentsOfFile: "Resources/sdk85-0000.bin")
-        ram.replaceSubrange(0..<rom!.count, with: rom!)
-
-        let ports = IOPorts()
-        let mports = MIOPorts(0x1800...0x19FF)
-        let mem = Memory(ram, 0x2000, [mports])
-        var z80 = Z80(mem, ports)
-
-        while (!z80.Halt)
-        {
-            z80.parse()
-        }
-    }
 }
 
 final class IOPorts: IPorts
@@ -40,13 +22,10 @@ final class IOPorts: IPorts
     var data: Byte { 0x00 }
 }
 
-final class MIOPorts: MPorts
+final class MMPorts: MPorts
 {
-    private var block: Array<Byte>
-
     init(_ mmap: ClosedRange<UShort>) {
         self.mmap = mmap
-        block = Array<Byte>(repeating: 0, count: Int(mmap.upperBound - mmap.lowerBound + 1))
     }
 
     func rdPort(_ port: UShort) -> Byte
@@ -61,6 +40,27 @@ final class MIOPorts: MPorts
     }
 
     var mmap: ClosedRange<UShort>
+}
+
+#if os(Windows)
+
+@main
+extension Sdk85 {
+    static func main() {
+        var ram = Array<Byte>(repeating: 0, count: 0x10000)
+        let rom = NSData(contentsOfFile: "Resources/sdk85-0000.bin")
+        ram.replaceSubrange(0..<rom!.count, with: rom!)
+
+        let ioports = IOPorts()
+        let mmports = MMPorts(0x1800...0x19FF)
+        let mem = Memory(ram, 0x1000, [mmports])
+        var z80 = Z80(mem, ioports)
+
+        while (!z80.Halt)
+        {
+            z80.parse()
+        }
+    }
 }
 
 #endif
