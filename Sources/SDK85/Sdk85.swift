@@ -56,10 +56,67 @@ extension Sdk85 {
         let mem = Memory(ram, 0x1000, [mmports])
         var z80 = Z80(mem, ioports)
 
+        _ = Task { Stdwin.shared.record() }
+        defer {
+            try? FileManager.default.removeItem(atPath: Stdwin.bufferFilePath)
+        }
+
         while (!z80.Halt)
         {
             z80.parse()
+            if let ch = Stdwin.shared.getch() {
+                if ch == 0x04 {
+                 return
+                }
+            }
         }
+    }
+}
+
+struct Stdwin {
+    static var shared: Stdwin = {
+        let this = Stdwin()
+        FileManager.default.createFile(atPath: bufferFilePath, contents: nil)
+        return this
+    }()
+    private init() {}
+
+    private(set) static var bufferFilePath = ".stdwin"
+
+    private var bufferFileOffset: UInt64 = 0
+
+    func record() {
+        while true {
+            guard
+                let line = readLine()
+            else {
+                return
+            }
+            if let fh = FileHandle(forWritingAtPath: Stdwin.bufferFilePath) {
+                fh.seekToEndOfFile()
+                fh.write(line.data(using: .utf8)!)
+                try? fh.close()
+            }
+        }
+    }
+
+    mutating func getch() -> UInt8? {
+        guard
+            let fh = FileHandle(forReadingAtPath: Stdwin.bufferFilePath),
+            let fa = try? FileManager.default.attributesOfItem(atPath: Stdwin.bufferFilePath)
+        else {
+            return nil
+        }
+        let bufferFileSize = fa[.size] as! UInt64
+        if bufferFileSize>bufferFileOffset {
+            try? fh.seek(toOffset: bufferFileOffset)
+            let ch = try? fh.read(upToCount: 1)
+            try? fh.close()
+
+            bufferFileOffset += 1
+            return ch![0]
+        }
+        return nil
     }
 }
 
