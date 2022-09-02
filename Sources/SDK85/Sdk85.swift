@@ -56,43 +56,47 @@ extension Sdk85 {
         let mem = Memory(ram, 0x1000, [mmports])
         var z80 = Z80(mem, ioports)
 
-        _ = Task { Stdwin.shared.record() }
+        _ = Task { Stdwin.shared.recordUntilEof() }
         defer {
-            try? FileManager.default.removeItem(atPath: Stdwin.bufferFilePath)
+            try? FileManager.default.removeItem(atPath: Stdwin.recordFilePath)
         }
 
         while (!z80.Halt)
         {
             z80.parse()
-            if let ch = Stdwin.shared.getch() {
-                if ch == 0x04 {
-                 return
+            if let char = Stdwin.shared.getCharacter() {
+                if char == 0x04 {
+                    return
                 }
             }
         }
     }
 }
 
+// band-aid single-char input on stdin for Winos
 struct Stdwin {
     static var shared: Stdwin = {
         let this = Stdwin()
-        FileManager.default.createFile(atPath: bufferFilePath, contents: nil)
+        FileManager.default.createFile(atPath: recordFilePath, contents: nil)
         return this
     }()
-    private init() {}
 
-    private(set) static var bufferFilePath = ".stdwin"
+    private init(forRecordingAtPath recordFilePath: String = ".stdwin") {
+        Stdwin.recordFilePath = recordFilePath
+    }
 
-    private var bufferFileOffset: UInt64 = 0
+    private(set) static var recordFilePath = ".stdwin"
 
-    func record() {
+    private var recordFileOffset: UInt64 = 0
+
+    func recordUntilEof() {
         while true {
             guard
                 let line = readLine()
             else {
                 return
             }
-            if let fh = FileHandle(forWritingAtPath: Stdwin.bufferFilePath) {
+            if let fh = FileHandle(forWritingAtPath: Stdwin.recordFilePath) {
                 fh.seekToEndOfFile()
                 fh.write(line.data(using: .utf8)!)
                 try? fh.close()
@@ -100,23 +104,34 @@ struct Stdwin {
         }
     }
 
-    mutating func getch() -> UInt8? {
+    mutating func getCharacter() -> UInt8? {
+        var character: UInt8? = nil
         guard
-            let fh = FileHandle(forReadingAtPath: Stdwin.bufferFilePath),
-            let fa = try? FileManager.default.attributesOfItem(atPath: Stdwin.bufferFilePath)
+            let fh = FileHandle(forReadingAtPath: Stdwin.recordFilePath)
         else {
             return nil
         }
-        let bufferFileSize = fa[.size] as! UInt64
-        if bufferFileSize>bufferFileOffset {
-            try? fh.seek(toOffset: bufferFileOffset)
-            let ch = try? fh.read(upToCount: 1)
+        if hasMoreCharacters() {
+            try? fh.seek(toOffset: recordFileOffset)
+            let data = try? fh.read(upToCount: 1)
             try? fh.close()
 
-            bufferFileOffset += 1
-            return ch![0]
+            recordFileOffset += 1
+            character = data![0]
         }
-        return nil
+
+        return character
+    }
+
+    func hasMoreCharacters() -> Bool {
+        guard
+            let fa = try? FileManager.default.attributesOfItem(atPath: Stdwin.recordFilePath)
+        else {
+            return false
+        }
+        let bufferFileSize = fa[.size] as! UInt64
+
+        return bufferFileSize>recordFileOffset
     }
 }
 
