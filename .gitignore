@@ -12,3 +12,4 @@ DerivedData/
 /*.hex
 /*.lst
 Package.resolved
+.stdwin

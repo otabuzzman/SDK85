@@ -350,7 +350,7 @@ LOC OBJ SEQ SOURCE STATEMENT
                      329 EXM10:
 00B8    FE10         330         CPI     PERIO    ; WAS LAST CHARACTER A PERIOD ?
 00BA    CAE901       331         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
-00BD    FE11         332         CPI     COMMA    ; WAS LAST CHARACTER ?
+00BD    FE11         332         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
 00BF    C21502       333         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
 00C2    CDA802       334         CALL    NXTRG    ; YES - ADVANCE REGISTER POINTER TO
                      335                          ; /NEXT REGISTER
@@ -405,7 +405,7 @@ LOC OBJ SEQ SOURCE STATEMENT
 0100    CDE702       384         CALL    RDKBD    ; READ FROM KEYBOARD
 0103    FE10         385         CPI     PERIO    ; WAS CHARACTER A PERIOD ?
 0105    CAE901       386         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
-0108    FE11         387         CPI     COMMA    ; WAS LAST CHARACTER ?
+0108    FE11         387         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
 010A    CA2601       388         JZ      STP20    ; YES - GO SET TIMER
                      389                          ; NO - CHARACTER FROM KEYBOARD WAS NEITHER PERIOD NOR COMMA
 010D    32FE20       390         STA     IBUFF    ; REPLACE THE CHARACTER IN THE INPUT BUFFER
@@ -500,7 +500,7 @@ LOC OBJ SEQ SOURCE STATEMENT
 0198    EB           474         XCHG             ; ASSIGN HEX VALUE RETURNED BY GTHEX TO
 0199    22F620       475         SHLD    CURAD    ; /CURRENT ADDRESS
                      476 SUB05:
-019C    FE11         477         CPI     COMMA    ; WAS - THE LAST CHARACTER FROM KEYBOARD?
+019C    FE11         477         CPI     COMMA    ; WAS ',' THE LAST CHARACTER FROM KEYBOARD?
 019E    C2CF01       478         JNZ     SUB15    ; NO - GO TERMINATE THE COMMAND
 01A1    0600         479         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
 01A3    CD5F03       480         CALL    UPDAD    ; UPDATE ADDRESS FIELD OF DISPLAY
@@ -533,7 +533,7 @@ LOC OBJ SEQ SOURCE STATEMENT
 01CB    F1           502         POP     PSW      ; RETRIEVE LAST CHARACTER
 01CC    C39C01       503         JMP     SUB05    ;
                      504 SUB15:
-01CF    FE10         505         CPI     PERIO    ; WAS LAST CHARACTER ?
+01CF    FE10         505         CPI     PERIO    ; WAS LAST CHARACTER '.' ?
 01D1    C21502       506         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
 01D4    C3E901       507         JMP     CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
                      508 ;
@@ -713,9 +713,9 @@ LOC OBJ SEQ SOURCE STATEMENT
                      677 GTH20:                   ; LAST CHARACTER WAS NOT A HEX DIGIT
 0255    D1           678         POP     D        ; RETRIEVE HEX VALUE
 0256    C1           679         POP     B        ; RETRIEVE HEX DIGIT FLAG IN C
-0257    FE11         680         CPI     COMMA    ; WAS LAST CHARACTER ?
+0257    FE11         680         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
 0259    CA6702       681         JZ      GTH25    ; YES - READY TO RETURN
-025C    FE10         682         CPI     PERIO    ; NO - WAS LAST CHARACTER ?
+025C    FE10         682         CPI     PERIO    ; NO - WAS LAST CHARACTER '.' ?
 025E    CA6702       683         JZ      GTH25    ; YES - READY TO RETURN
                      684                          ; NO - INVALID TERMINATOR - IGNORE ANY HEX DIGITS READ
 0261    110000       685         LXI     D,0      ; SET HEX VALUE TO ZERO
@@ -922,11 +922,11 @@ LOC OBJ SEQ SOURCE STATEMENT
                      876 ;              INTERRUPTS AND LOOPS UNTIL THE INPUT INTERRUPT
                      877 ;              ROUTINE STORES A CHARACTER IN THE BUFFER. WHEN
                      878 ;              THE BUFFER CONTAINS A CHARACTER, THE FUNCTION FLAGS
-                     879 ;              THE BUPFER AS EMPTY AND RETURNS THE CHARACTER
+                     879 ;              THE BUFFER AS EMPTY AND RETURNS THE CHARACTER
                      880 ;              AS OUTPUT.
                      881 ;
                      882 RDKBD:
-02E7    21FE20       883         LXI     H,IBUFF  ; GET INPUT BUPFER ADDRESS
+02E7    21FE20       883         LXI     H,IBUFF  ; GET INPUT BUFFER ADDRESS
 02EA    7E           884         MOV     A,M      ; GET BUFFER CONTENTS
                      885                          ; HIGH ORDER BIT = 1 MEANS BUFFER IS EMPTY
 02EB    B7           886         ORA     A        ; IS A CHARACTER AVAILABLE ?
@@ -934,7 +934,7 @@ LOC OBJ SEQ SOURCE STATEMENT
 02EF    FB           888         EI               ; NO - READY FOR CHARACTER FROM KEYBOARD
 02F0    C3E702       889         JMP     RDKBD
                      890 RDK10:
-02F3    3680         891         MVI     M,EMPTY  ; SET BUPFER EMPTY FLAG
+02F3    3680         891         MVI     M,EMPTY  ; SET BUFFER EMPTY FLAG
 02F5    F3           892         DI               ; RETURN WITH INTERRUPTS DISABLED
 02F6    C9           893         RET
 
