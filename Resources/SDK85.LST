@@ -130,7 +130,7 @@ LOC OBJ SEQ SOURCE STATEMENT
 0080                 119 EMPTY   EQU      80H     ; HIGH ORDER 1 INDICATES EMPTY INPUT BUFFER
 00CC                 120 KBNIT   EQU      0CCH    ; CONTROL CHARACTER TO SET DISPLAY OUTPUT TO
                      121                          ; /ALL ONES DURING BLANKING PERIOD
-0000                 122 KMODE   EQU      0       ; CONTROL CHAR. TO SET KEYBOARD/OISPLAY MODE
+0000                 122 KMODE   EQU      0       ; CONTROL CHAR. TO SET KEYBOARD/DISPLAY MODE
                      123                          ; (2 KEY ROLLOVER, 8 CHARACTER LEFT ENTRY)
 20E9                 124 MNSTK   EQU      RAMST + 256 - RMUSE ; START OF MONITOR STACK
 0000                 125 NODOT   EQU      0       ; INDICATOR FOR NO DOT IN DISPLAY
@@ -324,7 +324,7 @@ LOC OBJ SEQ SOURCE STATEMENT
                      303 ; INPUTS: NONE
                      304 ; OUTPUTS: NONE
                      305 ; CALLS: CLEAR,SETRG,ERR,RGNAM,RGLOC,UPDDT,GTHEX,NXTRG
-                     306 ; DESTROYS: A,B.C.D,E,H,L,F/F'S
+                     306 ; DESTROYS: A,B,C,D,E,H,L,F/F'S
                      307 ;
                      308 EXAM:
 0092    0601         309         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD OF DISPLAY
@@ -665,7 +665,7 @@ LOC OBJ SEQ SOURCE STATEMENT
                      629 ; DESTROYS:
                      630 ; DESCRIPTION: GTHEX ACCEPTS A STRING OF HEX DIGITS FROM THE KEYBOARD,
                      631 ;              DISPLAYS THEM AS THEY ARE RECEIVED, AND RETURNS THEIR
-                     632 ;              VALUE AS A 16 BI'C INTEGER. IF MORE THAN 4 HEX DIGITS
+                     632 ;              VALUE AS A 16 BIT INTEGER. IF MORE THAN 4 HEX DIGITS
                      633 ;              ARE RECEIVED, ONLY THE LAST 4 ARE USED. IF THE DISPLAY
                      634 ;              FLAG IS SET, THE LAST 2 HEX DIGITS ARE DISPLAYED IN THE
                      635 ;              DATA FIELD OF THE DISPLAY. OTHERWISE, THE LAST 4 HEX
@@ -1790,7 +1790,7 @@ LOC OBJ SEQ SOURCE STATEMENT
                     1650 ; INPUTS: NONE
                     1651 ; OUTPUTS: NONE
                     1652 ; CALLS: GETCH,ECHO,REGDS,GETCM,ERROR,RGADR,NMOUT,CROUT,GETHX
-                    1653 ; DESTROYS: A,B,C,D,E,H,L.F/F'S
+                    1653 ; DESTROYS: A,B,C,D,E,H,L,F/F'S
                     1654 ; DESCRIPTION: XCMD IMPLEMENTS THE REGISTER EXAMINE AND CHANGE (X)
                     1655 ;              COMMAND.
                     1656 ;
@@ -2489,7 +2489,7 @@ LOC OBJ SEQ SOURCE STATEMENT
                     2320 ;
                     2321 ; FUNCTION: STHLF
                     2322 ; INPUTS: C - 4 BIT VALUE TO BE STORED IN HALF BYTE
-                    2323 ;         DE - 16 BI' ADDRESS OF BYTE TO BE STORED INTO
+                    2323 ;         DE - 16 BIT ADDRESS OF BYTE TO BE STORED INTO
                     2324 ; OUTPUTS: NONE
                     2325 ; CALLS: NOTHING
                     2326 ; DESTROYS: A,B,C,H,L,F/F'S
