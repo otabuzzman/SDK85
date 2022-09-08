@@ -97,23 +97,23 @@ final class MMPorts: MPorts
 
     func wrPort(_ port: UShort, _ data: Byte)
     {
-        var char = ""
+        var glyph = ""
         switch port {
             case 0x1800:
-                char = " : \""+cmap[~data, default: "\\0"]+"\""
+                glyph = " : \""+gmap[~data, default: "\\0"]+"\""
             case 0x1900:
                 break
             default:
                 break
         }
 
-        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X%@", port, data, char))
+        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X (%@)%@", port, data, data.bits, glyph))
     }
 
     var mmap: ClosedRange<UShort>
 }
 
-let cmap: Dictionary<Byte, String> = [
+let gmap: Dictionary<Byte, String> = [
     0xF3: "0",
     0x60: "1", // and I
     0xB5: "2",
@@ -138,6 +138,14 @@ let cmap: Dictionary<Byte, String> = [
     0x04: "-",
     0x08: ".",
 ]
+
+extension Byte {
+    var bits: String {
+        let b = String(self, radix: 2)
+        let a = Array<Character>(repeating: "0", count: 8 - b.count)
+        return String(a + b)
+    }
+}
 
 #if os(Windows)
 
