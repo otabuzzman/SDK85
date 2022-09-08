@@ -30,13 +30,13 @@ final class IOPorts: IPorts
 
     func rdPort(_ port: UShort) -> Byte
     {
-        print(String(format: "  \(#function) : IN 0x%04X", port))
+        print(String(format: "  \(self) : IN 0x%04X", port))
         return 0
     }
 
     func wrPort(_ port: UShort, _ data: Byte)
     {
-        print(String(format: "  \(#function) : OUT 0x%04X : 0x%02X", port, data))
+        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X", port, data))
     }
 
     var NMI: Bool {
@@ -91,17 +91,53 @@ final class MMPorts: MPorts
                 break
         }
 
-        print(String(format: "  \(#function) : IN 0x%04X (memory mapped) : 0x%02X", port, data))
+        print(String(format: "  \(self) : IN 0x%04X : 0x%02X", port, data))
         return data
     }
 
     func wrPort(_ port: UShort, _ data: Byte)
     {
-        print(String(format: "  \(#function) : OUT 0x%04X (memory mapped) : 0x%02X", port, data))
+        var char = ""
+        switch port {
+            case 0x1800:
+                char = " : \""+cmap[~data, default: "\\0"]+"\""
+            case 0x1900:
+                break
+            default:
+                break
+        }
+
+        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X%@", port, data, char))
     }
 
     var mmap: ClosedRange<UShort>
 }
+
+let cmap: Dictionary<Byte, String> = [
+    0xF3: "0",
+    0x60: "1", // and I
+    0xB5: "2",
+    0xF4: "3",
+    0x66: "4",
+    0xD6: "5",
+    0xD7: "6",
+    0x70: "7",
+    0xF7: "8",
+    0x76: "8",
+    0x77: "A",
+    0xC7: "b",
+    0x93: "C",
+    0xE5: "d",
+    0x97: "E",
+    0x17: "F",
+    0x67: "H",
+    0x83: "L",
+    0x37: "P",
+    0x05: "r",
+    0x00: " ",
+    0x04: "-",
+    0x08: ".",
+]
 
 #if os(Windows)
 
@@ -115,7 +151,7 @@ let kmap: Dictionary<Byte, Byte> = [
     0x36: 0x06, // 6
     0x37: 0x07, // 7
     0x38: 0x08, // 8
-    0x39: 0x08, // 9
+    0x39: 0x09, // 9
     0x61: 0x0A, // a
     0x62: 0x0B, // b
     0x63: 0x0C, // c
