@@ -1,27 +1,6 @@
 import Foundation
 import z80
 
-struct Sdk85 {
-}
-
-class I8155 {
-}
-
-class I8279 {
-    private var _RL07: Byte?
-
-    var RL07: Byte? {
-        get {
-            let ret = _RL07
-            _RL07 = nil
-            return ret
-        }
-        set(newRL07) {
-            _RL07 = newRL07
-        }
-    }
-}
-
 final class IOPorts: IPorts
 {
     private var _NMI = false
@@ -71,9 +50,8 @@ final class IOPorts: IPorts
         }
 }
 
-final class MMPorts: MPorts
-{
-    var i8279 = I8279()
+final class I8279: MPorts {
+    var FIFO: Byte? = nil
 
     init(_ mmap: ClosedRange<UShort>) {
         self.mmap = mmap
@@ -84,7 +62,7 @@ final class MMPorts: MPorts
         var data: Byte = 0
         switch port {
             case 0x1800:
-                data = i8279.RL07 ?? 0
+                data = FIFO ?? 0
             case 0x1900:
                 break
             default:
@@ -167,8 +145,6 @@ extension Byte {
     }
 }
 
-#if os(Windows)
-
 let kmap: Dictionary<Byte, Byte> = [
     0x30: 0x00, // 0
     0x31: 0x01, // 1
@@ -196,15 +172,15 @@ let kmap: Dictionary<Byte, Byte> = [
 ]
 
 @main
-extension Sdk85 {
+struct Sdk85 {
     static func main() {
         var ram = Array<Byte>(repeating: 0, count: 0x10000)
         let rom = NSData(contentsOfFile: "Resources/sdk85-0000.bin")
         ram.replaceSubrange(0..<rom!.count, with: rom!)
 
         let ioports = IOPorts()
-        let mmports = MMPorts(0x1800...0x19FF)
-        let mem = Memory(ram, 0x1000, [mmports])
+        let i8279 = I8279(0x1800...0x19FF)
+        let mem = Memory(ram, 0x1000, [i8279])
         var z80 = Z80(mem, ioports)
 
         _ = Task { Stdwin.shared.recordUntilEof() }
@@ -217,15 +193,13 @@ extension Sdk85 {
             z80.parse()
             if let key = Stdwin.shared.getKeyPressed() {
                 switch key {
-                    case 0x04: // ^D
-                        return
                     case 0x72: // r (RESET)
                         z80.reset()
                     case 0x76: // v (VECT INTR)
                         ioports.INT = true
                         ioports.data = 0xFF // RST 7
                     default:
-                        mmports.i8279.RL07 = kmap[key]
+                        i8279.FIFO = kmap[key]
                         ioports.INT = true
                         ioports.data = 0xEF // RST 5
                 }
@@ -295,5 +269,3 @@ struct Stdwin {
         return recordFileSize>recordFileOffset
     }
 }
-
-#endif
