@@ -72,4 +72,4 @@ Copyright (c) 1978 Intel Corporation
 [Photo](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) by [Hans Otten](http://retro.hansotten.nl/contact/) licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)
 
 #### Z80 emulator package (referenced)
-[License information](https://github.com/otabuzzman/z80) in emulator’s repository.
+[License information](https://github.com/otabuzzman/z80#license) in emulator’s repository.
