@@ -6,8 +6,8 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 **Working**
 - GO command (run a program)
-- Subst Mem command (enter a program)
-- Exam Reg command (examine/ set registers)
+- SUBST MEM command (enter a program)
+- EXAM REG command (examine/ set registers)
 
 **Wanted**
 - Single step command (debug a program)
