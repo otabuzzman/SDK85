@@ -6,7 +6,7 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Image("sdk-85-pcb")
+            Image("sdk85-pcb")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(
