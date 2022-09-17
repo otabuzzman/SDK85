@@ -11,9 +11,9 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 **Wanted**
 - Single step command (debug a program)
-- TTY support
 - Improved 8279 (keyboard/ display interface)
 - 8155 support (RAM, I/O ports and timer)
+- TTY monitor
 
 ### Tools
 Apps used on iPad
