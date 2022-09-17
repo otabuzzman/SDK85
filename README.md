@@ -24,15 +24,15 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 ### Build ROM image
 - Compile 8085 assembler (asm85)
-- Append PATH variable to contain asm85
+- Append PATH variable with asm85
 - Run `make` in top-level directory
 
 ### Which file for what
 |File|Comment|
 |:---|:------|
 |`Resources/SDK85.pdf`|Pages with monitor listing taken from SDK-85 User's Manual|
-|`Resources/SDK85.LST`|Monitor listing transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
+|`Resources/SDK85.LST`|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
 |`Resources/sdk85-0000.bin`|Monitor ROM image made with 8085 assembler (asm85).|
-|`Sources/SDK85/Sdk85.swift`|Main program.|
-|SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from listing (.LST).|
-|sdk85.asm|Monitor assembler source (asm85) hand-crafted from .SRC.|
+|`Sources/SDK85/Sdk85.swift`|The main  program.|
+|SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
+|sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
