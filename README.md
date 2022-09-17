@@ -10,7 +10,7 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 - EXAM REG command (examine/ set registers)
 
 **Wanted**
-- Single step command (debug a program)
+- SINGLE STEP command (debug a program)
 - Improved 8279 (keyboard/ display interface)
 - 8155 support (RAM, I/O ports and timer)
 - TTY monitor
