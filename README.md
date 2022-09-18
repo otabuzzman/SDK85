@@ -4,6 +4,8 @@ A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_Syst
 
 The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.hansotten.nl/uploads/sdk85/9800451B.pdf)). A transcript of the relevant pages (67 - 93) had been done with [AWS Textract](https://aws.amazon.com/textract/), followed by numerous AWK scripts, and eventually manually edited. Though the assembler is happy, overseen errors might still hide in the code.
 
+
+
 **Working**
 - GO command (run a program)
 - SUBST MEM command (enter a program)
@@ -14,6 +16,16 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 - Improved 8279 (keyboard/ display interface)
 - 8155 support (RAM, I/O ports and timer)
 - TTY monitor
+
+**Example (video)**
+1. Set stack pointer (EXAM REG) to address 0x20C2
+2. Enter program (SUBST MEM) at address 0x2000
+   3E 42 ; load register A with 0x42
+   CF    ; jump to warm start routine
+3. Run programm (GO) at address 0x2000
+4. Check value in register A (EXAM REG)
+
+https://user-images.githubusercontent.com/16709212/190922544-906b3d4d-db0b-4cc1-800c-d31653b1436e.mp4
 
 ### Tools
 Apps used on iPad
