@@ -19,9 +19,12 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 **Example (video)**
 1. Set stack pointer (EXAM REG) to address 0x20C2
-2. Enter program (SUBST MEM) at address 0x2000
-   3E 42 ; load register A with 0x42
-   CF    ; jump to warm start routine
+2. Enter program (SUBST MEM) at address 0x2000:
+
+   |No|Opcode(s)|Mnemonic|Description|
+   |:---|:---|:---|:---|
+   |1|3E 42|MVI A,42H|Load register A with 0x42.|
+   |2|CF|RST 1|Jump to warm start routine.|
 3. Run programm (GO) at address 0x2000
 4. Check value in register A (EXAM REG)
 
