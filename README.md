@@ -56,9 +56,13 @@ Apps used on Winos or Linos
 ### Which file for what
 |File|Comment|
 |:---|:------|
-|Resources/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
-|Resources/SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
+|Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
+|Intel/SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
+|Intel/SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
 |Resources/sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
+|Resources/sdk85-pcb.jpg|Photo of SDK-85 printed circuit board.|
+|sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
+|Sources/SDK85|Swift sources folder.|
 |Sdk85.swift|The main program.|
 |I8279.swift|8279 keyboard/ display interface abstraction.|
 |IPorts.swift|I/O ports and interrupts abstraction for Z80 emulator.|
@@ -68,8 +72,6 @@ Apps used on Winos or Linos
 |Display.swift|SDK-85 display view.|
 |SevenSegmentDisplay.swift|A single seven segment digit.|
 |Queue.swift|A Queue (FIFO) implementation.|
-|SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
-|sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
 
 ### License
 Copyright (c) 2022 Jürgen Schuck

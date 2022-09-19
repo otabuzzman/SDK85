@@ -4,7 +4,7 @@ Resources/sdk85-0000.bin: sdk85.asm
 	$(A85) -b0000:07FF $^
 	install -m 0664 $$(basename $@) Resources
 
-SDK85.SRC: Resources/SDK85.LST
+Intel/SDK85.SRC: Intel/SDK85.LST
 	gawk < $^ > $@ '             \
 		$$0~/^ASM8/ { next }      \
 		$$0~/^ISIS/ { next }      \
