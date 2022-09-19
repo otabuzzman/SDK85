@@ -33,7 +33,7 @@ https://user-images.githubusercontent.com/16709212/190922544-906b3d4d-db0b-4cc1-
 ### Tools
 Apps used on iPad
 - [Swift Playgrounds 4](https://apps.apple.com/de/app/swift-playgrounds/id908519492) (SP4)
-- [Working Copy](https://workingcopyapp.com/)
+- [Working Copy](https://workingcopyapp.com/) (WC)
 - [Textastic](https://www.textasticapp.com/) (can handle files in *Swift Playgrounds* and *Working Copy* folders)
 - [GitHub](https://apps.apple.com/us/app/github/id1477376905)
  
@@ -44,13 +44,13 @@ Apps used on Winos or Linos
 ### Build
 - Create and open a new app in SP4
 - Delete predefined `*.swift` files
-- Copy Swift files from repository:
+- Copy Swift files (except Package.swift) from repository:
 
   - Get repository on iPad (Working Copy)
-  - Copy files from WC to SP4 folder (Textastic)
+  - Copy Sources folder from WC to SP4 (Textastic)
 
-- Add ROM image
-- Add background photo
+- Add ROM image (pick from WC Recources folder)
+- Add background photo (pick from WC Resources folder)
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 
 ### Which file for what
