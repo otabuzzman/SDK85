@@ -1,8 +1,7 @@
 import Foundation
 import z80
 
-final class IOPorts: IPorts
-{
+final class IOPorts: IPorts {
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
@@ -51,7 +50,54 @@ final class IOPorts: IPorts
 }
 
 final class I8279: MPorts {
-    var FIFO: Byte? = nil
+    var FIFO: Byte?
+
+    // map glyph codes of SDK-85 to ASCII
+    private static let glyphMap: Dictionary<Byte, String> = [
+        0xF3: "0",
+        0xFB: "0.",
+        0x60: "1", // and "I"
+        0x68: "1.",
+        0xB5: "2",
+        0xBD: "2.",
+        0xF4: "3",
+        0xFC: "3.",
+        0x66: "4",
+        0x6E: "4.",
+        0xD6: "5",
+        0xDE: "5.",
+        0xD7: "6",
+        0xDF: "6.",
+        0x70: "7",
+        0x78: "7.",
+        0xF7: "8",
+        0xFF: "8.",
+        0x76: "9",
+        0x7E: "9.",
+        0x77: "A",
+        0x7F: "A.",
+        0xC7: "b",
+        0xCF: "b.",
+        0x93: "C",
+        0x9B: "C.",
+        0xE5: "d",
+        0xED: "d.",
+        0x97: "E",
+        0x9F: "E.",
+        0x17: "F",
+        0x1F: "F.",
+        0x67: "H",
+        0x6F: "H.",
+        0x83: "L",
+        0x8B: "L.",
+        0x37: "P",
+        0x3F: "P.",
+        0x05: "r",
+        0x0D: "r.",
+        0x00: " ",
+        0x04: "-",
+        0x08: ".",
+    ]
 
     init(_ mmap: ClosedRange<UShort>) {
         self.mmap = mmap
@@ -78,7 +124,7 @@ final class I8279: MPorts {
         var glyph = ""
         switch port {
             case 0x1800:
-                glyph = " : \""+gmap[~data, default: "\\0"]+"\""
+                glyph = " : \""+I8279.glyphMap[~data, default: "\\0"]+"\""
             case 0x1900:
                 break
             default:
@@ -91,89 +137,40 @@ final class I8279: MPorts {
     var mmap: ClosedRange<UShort>
 }
 
-let gmap: Dictionary<Byte, String> = [
-    0xF3: "0",
-    0x60: "1", // and I
-    0xB5: "2",
-    0xF4: "3",
-    0x66: "4",
-    0xD6: "5",
-    0xD7: "6",
-    0x70: "7",
-    0xF7: "8",
-    0x76: "9",
-    0x77: "A",
-    0xC7: "b",
-    0x93: "C",
-    0xE5: "d",
-    0x97: "E",
-    0x17: "F",
-    0x67: "H",
-    0x83: "L",
-    0x37: "P",
-    0x05: "r",
-    0xFB: "0.",
-    0x68: "1.", // and I.
-    0xBD: "2.",
-    0xFC: "3.",
-    0x6E: "4.",
-    0xDE: "5.",
-    0xDF: "6.",
-    0x78: "7.",
-    0xFF: "8.",
-    0x7E: "9.",
-    0x7F: "A.",
-    0xCF: "b.",
-    0x9B: "C.",
-    0xED: "d.",
-    0x9F: "E.",
-    0x1F: "F.",
-    0x6F: "H.",
-    0x8B: "L.",
-    0x3F: "P.",
-    0x0D: "r.",
-    0x00: " ",
-    0x04: "-",
-    0x08: ".",
-]
-
-extension Byte {
-    var bits: String {
-        let b = String(self, radix: 2)
-        let a = Array<Character>(repeating: "0", count: 8 - b.count)
-        return String(a + b)
-    }
+// https://developer.apple.com/forums/thread/715288
+struct Sdk85 {
 }
 
-let kmap: Dictionary<Byte, Byte> = [
-    0x30: 0x00, // 0
-    0x31: 0x01, // 1
-    0x32: 0x02, // 2
-    0x33: 0x03, // 3
-    0x34: 0x04, // 4
-    0x35: 0x05, // 5
-    0x36: 0x06, // 6
-    0x37: 0x07, // 7
-    0x38: 0x08, // 8
-    0x39: 0x09, // 9
-    0x61: 0x0A, // a
-    0x62: 0x0B, // b
-    0x63: 0x0C, // c
-    0x64: 0x0D, // d
-    0x65: 0x0E, // e
-    0x66: 0x0F, // f
-
-    0x73: 0x15, // s (SINGLE STEP)
-    0x67: 0x12, // g (GO)
-    0x6D: 0x13, // m (SUBST MEM)
-    0x78: 0x14, // x (EXAM REG)
-    0x2C: 0x11, // , (NEXT)
-    0x2E: 0x10, // . (EXEC)
-]
-
 @main
-struct Sdk85 {
+extension Sdk85 {
     static func main() {
+        // map PC keyboard codes to those of SDK-85
+        let keyboardMap: Dictionary<Byte, Byte> = [
+            0x30: 0x00, // 0
+            0x31: 0x01, // 1
+            0x32: 0x02, // 2
+            0x33: 0x03, // 3
+            0x34: 0x04, // 4
+            0x35: 0x05, // 5
+            0x36: 0x06, // 6
+            0x37: 0x07, // 7
+            0x38: 0x08, // 8
+            0x39: 0x09, // 9
+            0x61: 0x0A, // a
+            0x62: 0x0B, // b
+            0x63: 0x0C, // c
+            0x64: 0x0D, // d
+            0x65: 0x0E, // e
+            0x66: 0x0F, // f
+
+            0x73: 0x15, // s (SINGLE STEP)
+            0x67: 0x12, // g (GO)
+            0x6D: 0x13, // m (SUBST MEM)
+            0x78: 0x14, // x (EXAM REG)
+            0x2C: 0x11, // , (NEXT)
+            0x2E: 0x10, // . (EXEC)
+        ]
+
         var ram = Array<Byte>(repeating: 0, count: 0x10000)
         let rom = NSData(contentsOfFile: "Resources/sdk85-0000.bin")
         ram.replaceSubrange(0..<rom!.count, with: rom!)
@@ -183,7 +180,7 @@ struct Sdk85 {
         let mem = Memory(ram, 0x1000, [i8279])
         var z80 = Z80(mem, ioports)
 
-        _ = Task { Stdwin.shared.recordUntilEof() }
+        _ = Task { print("XXXXXXXXXXX") ; Stdwin.shared.recordUntilEof() }
         defer {
             try? FileManager.default.removeItem(atPath: Stdwin.recordFilePath)
         }
@@ -199,7 +196,7 @@ struct Sdk85 {
                         ioports.INT = true
                         ioports.data = 0xFF // RST 7
                     default:
-                        i8279.FIFO = kmap[key]
+                        i8279.FIFO = keyboardMap[key]
                         ioports.INT = true
                         ioports.data = 0xEF // RST 5
                 }
@@ -211,17 +208,11 @@ struct Sdk85 {
 // band-aid single char stdin input on Winos
 struct Stdwin {
     static var shared: Stdwin = {
-        let this = Stdwin()
         FileManager.default.createFile(atPath: recordFilePath, contents: nil)
-        return this
+        return Stdwin()
     }()
 
-    private init(forRecordingAtPath recordFilePath: String = ".stdwin") {
-        Stdwin.recordFilePath = recordFilePath
-    }
-
     private(set) static var recordFilePath = ".stdwin"
-
     private var recordFileOffset: UInt64 = 0
 
     func recordUntilEof() {
@@ -267,5 +258,14 @@ struct Stdwin {
         let recordFileSize = fa[.size] as! UInt64
 
         return recordFileSize>recordFileOffset
+    }
+}
+
+extension Byte {
+    // return byte as 8-bit string
+    var bits: String {
+        let b = String(self, radix: 2)
+        let a = Array<Character>(repeating: "0", count: 8 - b.count)
+        return String(a + b)
     }
 }
