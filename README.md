@@ -28,7 +28,7 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 3. Run programm (GO) at address 0x2000
 4. Check value in register A (EXAM REG)
 
-https://user-images.githubusercontent.com/16709212/190922544-906b3d4d-db0b-4cc1-800c-d31653b1436e.mp4
+https://user-images.githubusercontent.com/16709212/191330797-6c84e86a-3d4a-4d4d-8560-75289ef487b6.mp4
 
 ### Tools
 Apps used on iPad
