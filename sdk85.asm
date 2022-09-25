@@ -78,7 +78,7 @@
 ;
 ;
 ; WAITS   SET      0       ; 0=NO WAIT STATES
-                         ; l=A WAIT STATE IS GENERATED FOR EVERY M CYCLE
+                         ; 1=A WAIT STATE IS GENERATED FOR EVERY M CYCLE
                          ; THE APPROPRIATE DELAY TIME MUST BE USED FOR
                                      ; TTY DELAY OR SET UP SINGLE
                                      ; STEP TIMER FOR EACH CASE
