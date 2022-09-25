@@ -84,7 +84,7 @@ LOC OBJ SEQ SOURCE STATEMENT
                       78 ;
                       79 ;
 0000                  80 WAITS   SET      0       ; 0=NO WAIT STATES
-                      81                          ; l=A WAIT STATE IS GENERATED FOR EVERY M CYCLE
+                      81                          ; 1=A WAIT STATE IS GENERATED FOR EVERY M CYCLE
                       82                          ; THE APPROPRIATE DELAY TIME MUST BE USED FOR
                       83                                      ; TTY DELAY OR SET UP SINGLE
                       84                                      ; STEP TIMER FOR EACH CASE
