@@ -33,7 +33,11 @@ struct ContentView: View {
                 var z80 = Z80(mem, ioPorts)
                 
                 while (!z80.Halt) {
-                    z80.parse()
+                    let tStates = z80.parse()
+                    if ioPorts.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
+                        print(z80.dumpStateCompact())
+                        ioPorts.NMI = true
+                    }
                     if let key = await i8279.FIFO.dequeue() {
                         switch key {
                         case 0xFF:
