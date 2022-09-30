@@ -2,9 +2,12 @@ import Foundation
 import z80
 
 enum TimerState {
-	case idle
-	case running
-	case elapsed
+    case reset
+    case started
+    case elapsed // transient
+    case stopped
+    case pending
+    case abort
 }
 
 final class IOPorts: IPorts {
@@ -12,20 +15,30 @@ final class IOPorts: IPorts {
     private var _INT = false
     private var _data: Byte = 0x00
 
-	private var timerState = TimerState.idle
-	private var timerCount: UShort = 0
-	private var TIMER: UShort = 0
+    private var timerState = TimerState.reset
+    private var timerCount: UShort = 0
+    private var timerValue: UShort = 0
 
-	func timer(progress: UShort) -> TimerState {
-		if timerState == .running {
-			timerCount += progress
-			if timerCount > TIMER {
-				timerState = .idle
-				return .elapsed
-			}
-		}
-		return timerState
-	}
+    func TIMER_IN(pulses: UShort) -> TimerState {
+        var returnState = timerState
+        if timerState == .started || timerState == .pending {
+            for _ in 1...pulses {
+                timerCount -= 1
+                if timerCount == 0 {
+                    switch timerState {
+                        case .started:
+                            timerCount = timerValue
+                        case .pending:
+                            timerState = .stopped
+                        default:
+                            break
+                    }
+                    returnState = .elapsed
+                }
+            }
+        }
+        return returnState
+    }
 
     func rdPort(_ port: UShort) -> Byte
     {
@@ -37,14 +50,24 @@ final class IOPorts: IPorts {
     {
         switch port & 0xFF {
             case 0x20:
-                if data == 0xC0 {
-					timerCount = 0
-					timerState = .running
-				}
+                // timer command
+                switch data & 0xC0 {
+                    case 0x00:
+                        break
+                    case 0x40:
+                        timerState = .abort
+                    case 0x80:
+                        timerState = .pending
+                    case 0xC0:
+                        timerCount = timerValue
+                        timerState = .started
+                    default:
+                        break
+                }
             case 0x24:
-                TIMER = (TIMER & 0xFF00) + (data)
+                timerValue = (timerValue & 0xFF00) + (data)
             case 0x25:
-                TIMER = (TIMER & 0x00FF) + (UShort(data & 0x3F) << 8)
+                timerValue = (timerValue & 0x00FF) + (UShort(data & 0x3F) << 8)
             default:
                 break
         }
@@ -213,8 +236,8 @@ extension Sdk85 {
         let ioports = IOPorts()
         let i8279 = I8279(0x1800...0x19FF)
         let mem = Memory(ram, 0x1000, [i8279])
-        var z80 = Z80(mem, ioports)
-        { interrupt, addr, instruction in
+        var z80 = Z80(mem, ioports,
+        traceNmiInt: { interrupt, addr, instruction in
             switch interrupt {
                 case .Nmi:
                     print(String(format: "NMI PC: 0x%04X", addr))
@@ -225,7 +248,7 @@ extension Sdk85 {
                 case .Int2:
                     print(String(format: "IM2 PC: 0x%04X", addr))
             }
-        }
+        })
 
         _ = Task { Stdwin.shared.recordUntilEof() }
         defer {
@@ -234,15 +257,11 @@ extension Sdk85 {
 
         while (!z80.Halt)
         {
-			let tStates = z80.parse()
-			let timerState = ioports.timer(progress: UShort(tStates))
-            if timerState == .running {
-				print(String(format: "trun %02d|%@", tStates, z80.dumpStateCompact()))
-			}
-            if timerState == .elapsed {
-				print(String(format: "telp %02d|%@", tStates, z80.dumpStateCompact()))
-				ioports.NMI = true
-			}
+            let tStates = z80.parse()
+            if ioports.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
+                print(z80.dumpStateCompact())
+                ioports.NMI = true
+            }
             if let key = Stdwin.shared.getKeyPressed() {
                 switch key {
                     case 0x72: // r (RESET)

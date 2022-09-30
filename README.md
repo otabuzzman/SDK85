@@ -1,6 +1,6 @@
 # SDK85
 
-A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses a Z80 emulator instead of 8085, so the original ROM required changes: RIM and SIM opcodes were replaced by no-ops and 8085’s interrupts 4.5, 5.5, and 6.5 were mapped to Z80’s IM 0.
+A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses a Z80 emulator instead of 8085, so the original ROM required changes: `RIM` and `SIM` were replaced by `XRA A` and `NOP` instructions and 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 were mapped to Z80’s NMI and INT (IM 0), the latter executing the commands `RST 28h` and `RST 38h`. RST 6.5 is ignored.
 
 The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.hansotten.nl/uploads/sdk85/9800451B.pdf)). A transcript of the relevant pages (67 - 93) had been done with [AWS Textract](https://aws.amazon.com/textract/), followed by numerous AWK scripts, and eventually manually edited. Though the assembler is happy, overseen errors might still hide in the code.
 
