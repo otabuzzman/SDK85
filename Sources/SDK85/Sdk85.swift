@@ -1,21 +1,31 @@
 import Foundation
 import z80
 
+enum TimerState {
+	case idle
+	case running
+	case elapsed
+}
+
 final class IOPorts: IPorts {
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
 
-    private var counter: Counter<Int>
-    private var CLK: UInt
+	private var timerState = TimerState.idle
+	private var timerCount: UShort = 0
+	private var TIMER: UShort = 0
 
-    private var TIMHI: Byte = 0
-    private var TIMLO: Byte = 0
-
-    init(_ counter: Counter<Int>, _ CLK: UInt = 4_000_000) {
-        self.counter = counter
-        self.CLK = CLK
-    }
+	func timer(progress: UShort) -> TimerState {
+		if timerState == .running {
+			timerCount += progress
+			if timerCount > TIMER {
+				timerState = .idle
+				return .elapsed
+			}
+		}
+		return timerState
+	}
 
     func rdPort(_ port: UShort) -> Byte
     {
@@ -28,20 +38,13 @@ final class IOPorts: IPorts {
         switch port & 0xFF {
             case 0x20:
                 if data == 0xC0 {
-                    counter.set(0)
-                    Task {
-                        let timer = (Int(TIMHI) << 8) + Int(TIMLO)
-                        while timer >= counter.inc(0) {
-                            try? await Task.sleep(nanoseconds: UInt64(1_000_000_000 * 4.0 / Double(CLK)))
-                        }
-                        self.INT = true
-                        self.data = 0x24
-                    }
-                }
+					timerCount = 0
+					timerState = .running
+				}
             case 0x24:
-                TIMLO = data
+                TIMER = (TIMER & 0xFF00) + (data)
             case 0x25:
-                TIMHI = data & 0x3F
+                TIMER = (TIMER & 0x00FF) + (UShort(data & 0x3F) << 8)
             default:
                 break
         }
@@ -207,11 +210,22 @@ extension Sdk85 {
         let rom = NSData(contentsOfFile: "Resources/sdk85-0000.bin")
         ram.replaceSubrange(0..<rom!.count, with: rom!)
 
-        let counter = Counter<Int>(0)
-        let ioports = IOPorts(counter)
+        let ioports = IOPorts()
         let i8279 = I8279(0x1800...0x19FF)
         let mem = Memory(ram, 0x1000, [i8279])
         var z80 = Z80(mem, ioports)
+        { interrupt, addr, instruction in
+            switch interrupt {
+                case .Nmi:
+                    print(String(format: "NMI PC: 0x%04X", addr))
+                case .Int0:
+                    print(String(format: "IM0 instruction: 0x%02X", instruction))
+                case .Int1:
+                    print(String(format: "IM1 PC: 0x%04X", addr))
+                case .Int2:
+                    print(String(format: "IM2 PC: 0x%04X", addr))
+            }
+        }
 
         _ = Task { Stdwin.shared.recordUntilEof() }
         defer {
@@ -220,10 +234,15 @@ extension Sdk85 {
 
         while (!z80.Halt)
         {
-            counter.inc(z80.parse())
-            if ioports.INT {
-                print(z80.dumpStateCompact())
-            }
+			let tStates = z80.parse()
+			let timerState = ioports.timer(progress: UShort(tStates))
+            if timerState == .running {
+				print(String(format: "trun %02d|%@", tStates, z80.dumpStateCompact()))
+			}
+            if timerState == .elapsed {
+				print(String(format: "telp %02d|%@", tStates, z80.dumpStateCompact()))
+				ioports.NMI = true
+			}
             if let key = Stdwin.shared.getKeyPressed() {
                 switch key {
                     case 0x72: // r (RESET)
@@ -303,31 +322,5 @@ extension Byte {
         let b = String(self, radix: 2)
         let a = Array<Character>(repeating: "0", count: 8 - b.count)
         return String(a + b)
-    }
-}
-
-class Counter<T> {
-    private var value: T
-
-    private let this = NSLock()
-
-    init(_ value: T) {
-        self.value = value
-    }
-
-    func set(_ value: T) {
-        this.lock()
-        defer { this.unlock() }
-        self.value = value
-    }
-}
-
-extension Counter where T: AdditiveArithmetic {
-    @discardableResult
-    func inc(_ value: T) -> T {
-        this.lock()
-        defer { this.unlock() }
-        self.value = self.value + value
-        return self.value
     }
 }
