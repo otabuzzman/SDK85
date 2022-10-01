@@ -27,12 +27,12 @@ final class IOPorts: IPorts
                 timerCount -= 1
                 if timerCount == 0 {
                     switch timerState {
-                        case .started:
-                            timerCount = timerValue
-                        case .pending:
-                            timerState = .stopped
-                        default:
-                            break
+                    case .started:
+                        timerCount = timerValue
+                    case .pending:
+                        timerState = .stopped
+                    default:
+                        break
                     }
                     returnState = .elapsed
                 }
@@ -43,37 +43,37 @@ final class IOPorts: IPorts
     
     func rdPort(_ port: UShort) -> Byte
     {
-        print(String(format: "  \(self) : IN 0x%04X", port))
+        // print(String(format: "  \(self) : IN 0x%04X", port))
         return 0
     }
     
     func wrPort(_ port: UShort, _ data: Byte)
     {
         switch port & 0xFF {
-            case 0x20:
-                // timer command
-                switch data & 0xC0 {
-                    case 0x00:
-                        break
-                    case 0x40:
-                        timerState = .abort
-                    case 0x80:
-                        timerState = .pending
-                    case 0xC0:
-                        timerCount = timerValue
-                        timerState = .started
-                    default:
-                        break
-                }
-            case 0x24:
-                timerValue = (timerValue & 0xFF00) + (data)
-            case 0x25:
-                timerValue = (timerValue & 0x00FF) + (UShort(data & 0x3F) << 8)
+        case 0x20:
+            // timer command
+            switch data & 0xC0 {
+            case 0x00:
+                break
+            case 0x40:
+                timerState = .abort
+            case 0x80:
+                timerState = .pending
+            case 0xC0:
+                timerCount = timerValue
+                timerState = .started
             default:
                 break
+            }
+        case 0x24:
+            timerValue = (timerValue & 0xFF00) + (data)
+        case 0x25:
+            timerValue = (timerValue & 0x00FF) + (UShort(data & 0x3F) << 8)
+        default:
+            break
         }
         
-        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X", port, data))
+        // print(String(format: "  \(self) : OUT 0x%04X : 0x%02X", port, data))
     }
     
     var NMI: Bool {

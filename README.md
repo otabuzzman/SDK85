@@ -51,6 +51,7 @@ Apps used on Winos or Linos
 
 - Add ROM image (pick from WC Recources folder)
 - Add background photo (pick from WC Resources folder)
+- Add key press/ release sound file
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 
 ### Which file for what
@@ -71,6 +72,7 @@ Apps used on Winos or Linos
 |TriangledRectangle.swift|A double-crossed rectangle.|
 |Display.swift|SDK-85 display view.|
 |SevenSegmentDisplay.swift|A single seven segment digit.|
+|Sound.swift|A simple sound file player.|
 |Queue.swift|A Queue (FIFO) implementation.|
 
 ### License

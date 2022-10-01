@@ -32,7 +32,7 @@ final class I8279: ObservableObject, MPorts {
             break
         }
         
-        print(String(format: "  \(self) : IN 0x%04X : 0x%02X", port, data))
+        // print(String(format: "  \(self) : IN 0x%04X : 0x%02X", port, data))
         return data
     }
     
@@ -72,7 +72,7 @@ final class I8279: ObservableObject, MPorts {
             break
         }
         
-        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X (%@)", port, data, data.bits))
+        // print(String(format: "  \(self) : OUT 0x%04X : 0x%02X (%@)", port, data, data.bits))
     }
     
     var mmap: ClosedRange<UShort>

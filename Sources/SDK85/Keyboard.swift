@@ -24,6 +24,7 @@ struct Keyboard: View {
                         
                         Button(keyConfig.title) {
                             i8279.FIFO.enqueue(keyConfig.code)
+                            Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }
                         .buttonStyle(Key(
                             subtitle1st: keyConfig.subtitle1st,
