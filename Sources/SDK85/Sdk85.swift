@@ -10,6 +10,8 @@ enum TimerState {
     case abort
 }
 
+typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
+
 final class IOPorts: IPorts {
     private var _NMI = false
     private var _INT = false
@@ -18,6 +20,12 @@ final class IOPorts: IPorts {
     private var timerState = TimerState.reset
     private var timerCount: UShort = 0
     private var timerValue: UShort = 0
+
+    private var traceIO: TraceIO?
+
+    init(traceIO: TraceIO? = nil) {
+        self.traceIO = traceIO
+    }
 
     func TIMER_IN(pulses: UShort) -> TimerState {
         var returnState = timerState
@@ -42,7 +50,7 @@ final class IOPorts: IPorts {
 
     func rdPort(_ port: UShort) -> Byte
     {
-        print(String(format: "  \(self) : IN 0x%04X", port))
+        traceIO?(true, port, 0)
         return 0
     }
 
@@ -72,7 +80,7 @@ final class IOPorts: IPorts {
                 break
         }
 
-        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X", port, data))
+        traceIO?(false, port, data)
     }
 
     var NMI: Bool {
@@ -111,7 +119,7 @@ final class I8279: MPorts {
     var FIFO: Byte?
 
     // map glyph codes of SDK-85 to ASCII
-    private static let glyphMap: Dictionary<Byte, String> = [
+    static let glyphMap: Dictionary<Byte, String> = [
         0xF3: "0",
         0xFB: "0.",
         0x60: "1", // and "I"
@@ -157,8 +165,11 @@ final class I8279: MPorts {
         0x08: ".",
     ]
 
-    init(_ mmap: ClosedRange<UShort>) {
+    private var traceIO: TraceIO?
+
+    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = nil) {
         self.mmap = mmap
+        self.traceIO = traceIO
     }
 
     func rdPort(_ port: UShort) -> Byte
@@ -173,23 +184,22 @@ final class I8279: MPorts {
                 break
         }
 
-        print(String(format: "  \(self) : IN 0x%04X : 0x%02X", port, data))
+        traceIO?(true, port, data)
         return data
     }
 
     func wrPort(_ port: UShort, _ data: Byte)
     {
-        var glyph = ""
         switch port {
             case 0x1800:
-                glyph = " : \""+I8279.glyphMap[~data, default: "\\0"]+"\""
+                break
             case 0x1900:
                 break
             default:
                 break
         }
 
-        print(String(format: "  \(self) : OUT 0x%04X : 0x%02X (%@)%@", port, data, data.bits, glyph))
+        traceIO?(false, port, data)
     }
 
     var mmap: ClosedRange<UShort>
@@ -233,8 +243,17 @@ extension Sdk85 {
         let rom = NSData(contentsOfFile: "Resources/sdk85-0000.bin")
         ram.replaceSubrange(0..<rom!.count, with: rom!)
 
-        let ioports = IOPorts()
-        let i8279 = I8279(0x1800...0x19FF)
+        let ioports = IOPorts() { rdPort, port, data in
+            print(String(format: "  IOPorts : %@ 0x%04X : 0x%02X", rdPort ? "IN" : "OUT", port, data))
+        }
+        let i8279 = I8279(0x1800...0x19FF) { rdPort, port, data in
+            if rdPort {
+                print(String(format: "  I8279 : IN 0x%04X : 0x%02X", port, data))
+            } else {
+                let glyph = port == 0x1800 ? I8279.glyphMap[~data, default: "\\0"] : " "
+                print(String(format: "  I8279 : OUT 0x%04X : 0x%02X (%@) \"%@\"", port, data, data.bits, glyph))
+            }
+        }
         let mem = Memory(ram, 0x1000, [i8279])
         var z80 = Z80(mem, ioports,
         traceNmiInt: { interrupt, addr, instruction in
