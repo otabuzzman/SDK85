@@ -49,10 +49,11 @@ Apps used on Winos or Linos
   - Get repository on iPad (Working Copy)
   - Copy Sources folder from WC to SP4 (Textastic)
 
-- Add ROM image (pick from WC Recources folder)
 - Add background photo (pick from WC Resources folder)
 - Add key press/ release sound file
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
+
+- Add ROM image of SDK-85 monitor program
 
 ### Which file for what
 |File|Comment|
@@ -62,7 +63,7 @@ Apps used on Winos or Linos
 |Intel/SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
 |Resources/sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
 |Resources/sdk85-pcb.jpg|Photo of SDK-85 printed circuit board.|
-|sdk85-keyprease.mp3|Original SDK-85 key press/ release sound.|
+|sdk85-keyprease.mp3|Original SDK-85 key press/ release sounds.|
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|
 |sdk85-keyrelease.mp3|Original SDK-85 key release sound.|
 |sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
@@ -87,8 +88,17 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED „AS IS“, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#### SDK-85 User’s Manual and Monitor
+#### SDK-85 System Design Kit User’s Manual
 Copyright (c) 1978 Intel Corporation
+
+Intel Corporation makes no warranty of any kind with regard to this material, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose. Intel Corporation assumes no responsibility for any errors that may appear in this document. Intel Corporation makes no commitment to update nor to keep current the information contained in this document.
+
+Intel Corporation assumes no responsibility for the use of any circuitry other than circuitry embodied in
+an Intel product. No other circuit patent licenses are implied.
+
+Intel software products are copyrighted by and shall remain the property of Intel Corporation. Use, duplication or disclosure is subject to restrictions stated in Intel’s software license, or as defined in ASPR 7-104.9(a)(9).
+
+No part of this document may be copied or reproduced in any form or by any means without the prior written consent of Intel Corporation.
 
 #### Photo of SDK-85 printed circuit board
 [Photo](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) by [Hans Otten](http://retro.hansotten.nl/contact/) licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
