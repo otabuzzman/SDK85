@@ -190,14 +190,14 @@ CLDBK:                   ; THEN JUMP BACK HERE
         JMP     RES10    ; LEAVE ROOM FOR VECTORED INTERRUPTS
 ;
 ; TIMER INTERRUPT (TRAP) ENTRY POINT (RST 4.5)
+;
         ORG     24H
         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
 ;
 ; RST 5 ENTRY POINT
 ;
         ORG     28H
-;        JMP     RSET5    ; BRANCH TO RST 5 LOCATION IN RAM
-        JMP     ININT    ; BRANCH TO INPUT INTERRUPT ROUTINE
+        JMP     ININT    ; RST 5.5 SUBSTITUTE. WAS JMP RSET5
 ;
 ; INPUT INTERRUPT ENTRY POINT (RST 5.5)
 ;
@@ -217,10 +217,10 @@ CLDBK:                   ; THEN JUMP BACK HERE
 ; RST 7 ENTRY POINT
 ;
         ORG     38H
-;        JMP     RSET7    ; BRANCH TO RST 7 LOCATION IN RAM
-        JMP     USINT    ; BRANCH TO USER INTERRUPT LOCATION IN RAM
+        JMP     USINT    ; RST 7.5 SUBSTITUTE. WAS JMP RSET7.
 ;
 ; "VECTORED INTERRUPT" KEY ENTRY POINT (RST 7.5)
+;
         ORG     3CH
         JMP     USINT    ; BRANCH TO USER INTERRUPT LOCATION IN RAM
 ;
@@ -230,14 +230,14 @@ CLDBK:                   ; THEN JUMP BACK HERE
         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
 ;
 RES10:                   ; CONTINUE SAVING USER STATUS
-        XRA A            ; GET USER INTERRUPT STATUS AND INTERRUPT MASK
+        XRA A            ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
         ANI     0FH      ; KEEP STATUS & MASK BITS
         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-        NOP
+        NOP              ; WAS SIM
         DI               ; INTERRUPTS DISABLED WHILE MONITOR IS RUNNING
                          ; (EXCEPT WHEN WAITING FOR INPUT)
-        XRA A            ; TTY OR KEYBOARD MONITOR ?
+        XRA A            ; TTY OR KEYBOARD MONITOR ? (WAS RIM)
         RLC              ; IS TTY CONNECTED ?
         JC      GO       ; YES - BRANCH TO TTY MONITOR
                          ; NO - ENTER KEYBOARD MONITOR
@@ -452,13 +452,13 @@ STP25:                   ; BRANCH HERE WHEN TIMER INTERRUPTS AFTER
         SPHL             ; /SAVING REMAINING USER REGISTERS
         PUSH    B        ; SAVE B & C
         PUSH    D        ; SAVE D & E
-        XRA A            ; GET USER INTERRUPT MASK
+        XRA A            ; GET USER INTERRUPT MASK (WAS RIM)
         ANI     07H      ; KEEP MASK BITS
         LXI     H,TEMP   ; GET USER INTERRUPT STATUS
         ORA     M        ; OR IT INTO MASK
         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-        NOP
+        NOP              ; WAS SIM
         JMP     SSTEP    ; GO GET READY FOR ANOTHER INSTRUCTION
 ;
 ;
@@ -997,7 +997,7 @@ RSTOR:
         LDA     ISAV     ; GET USER INTERRUPT MASK
         ORI     18H      ; ENABLE SETTING OF INTERRUPT MASK AND
                          ; /RESET RST7.5 FLIP FLOP
-        NOP              ; RESTORE USER INTERRUPT MASK
+        NOP              ; RESTORE USER INTERRUPT MASK (WAS SIM)
                          ; RESTORE USER INTERRUPT STATUS
         LDA     ISAV     ; GET USER INTERRUPT MASK
         ANI     08H      ; SHOULD USER INTERRUPTS BE ENABLED ?

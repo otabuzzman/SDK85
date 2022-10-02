@@ -22,7 +22,7 @@ struct Keyboard: View {
                     ForEach(0..<6, id: \.self) { col in
                         let keyConfig = keyboardLayout[row*6+col]
                         
-                        Button(keyConfig.title) {
+                        Button(keyConfig.title) { // closure on button release
                             i8279.FIFO.enqueue(keyConfig.code)
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }
@@ -31,6 +31,15 @@ struct Keyboard: View {
                             subtitle2nd: keyConfig.subtitle2nd))
                         .frame(maxWidth: 96, maxHeight: 96)
                         .rotationEffect(Angle(degrees: drand48()*wiggle-wiggle/2))
+                        /*
+                        // different sounds are difficult to distinguish if
+                        // pressing and releasing follow each other quickly
+                        .pressAction {
+                            Sound.play(soundfile: "sdk85-keypress.mp3")
+                        } onRelease: {
+                            Sound.play(soundfile: "sdk85-keyrelease.mp3")
+                        }
+                        */
                     }
                 }
             }
@@ -77,5 +86,33 @@ struct Key: ButtonStyle {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .scaleEffect(configuration.isPressed ? 0.94 : 1)
         }
+    }
+}
+
+struct PreaseActions: ViewModifier {
+    var onPress: () -> Void
+    var onRelease: () -> Void
+    
+    func body(content: Content) -> some View {
+        content
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged({ _ in
+                        onPress()
+                    })
+                    .onEnded({ _ in
+                        onRelease()
+                    })
+            )
+    }
+}
+
+extension View {
+    func pressAction(onPress: @escaping (() -> Void), onRelease: @escaping (() -> Void)) -> some View {
+        modifier(PreaseActions(onPress: {
+            onPress()
+        }, onRelease: {
+            onRelease()
+        }))
     }
 }
