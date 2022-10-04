@@ -61,7 +61,7 @@ Apps used on Winos or Linos
 |Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
 |Intel/SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
 |Intel/SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
-|Resources/sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
+|Intel/sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
 |Resources/sdk85-pcb.jpg|Photo of SDK-85 printed circuit board.|
 |sdk85-keyprease.mp3|Original SDK-85 key press/ release sounds.|
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|

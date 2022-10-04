@@ -1,8 +1,8 @@
 A85 ?= asm85
 
-Resources/sdk85-0000.bin: sdk85.asm
+Intel/sdk85-0000.bin: sdk85.asm
 	$(A85) -b0000:07FF $^
-	install -m 0664 $$(basename $@) Resources
+	install -m 0664 $(@F) $(@D)
 
 Intel/SDK85.SRC: Intel/SDK85.LST
 	gawk < $^ > $@ '             \
@@ -19,4 +19,4 @@ clean:
 	rm -f sdk85.lst
 
 tidy: clean
-	rm -f Resources/sdk85-0000.bin
+	rm -f Intel/sdk85-0000.bin
