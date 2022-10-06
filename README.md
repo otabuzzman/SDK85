@@ -44,16 +44,17 @@ Apps used on Winos or Linos
 ### Build
 - Create and open a new app in SP4
 - Delete predefined `*.swift` files
-- Copy Swift files (except Package.swift) from repository:
+- Copy Swift files (except `Package.swift`) from repository:
 
   - Get repository on iPad (Working Copy)
   - Copy Sources folder from WC to SP4 (Textastic)
 
-- Add background photo (pick from WC Resources folder)
-- Add key press/ release sound file
-- Add [Z80 emulator package](https://github.com/otabuzzman/z80)
+- Add files from `Recources` folder in WC:
+  - Add background photo
+  - Add key press/ release sound files
+  - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 
-- Add ROM image of SDK-85 monitor program
+- Add monitor program
 
 ### Which file for what
 |File|Comment|
