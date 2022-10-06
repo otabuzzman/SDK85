@@ -16,7 +16,7 @@ struct ContentView: View {
         }
     }
     
-    @State private var monitorNotInPlace = true
+    @State private var monitorNotInPlace = false
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
