@@ -1,8 +1,22 @@
 import SwiftUI
 import z80
 
+import UniformTypeIdentifiers
+
 struct ContentView: View {
-    @StateObject var i8279 = I8279(0x1800...0x19FF)
+    @StateObject var i8279 = I8279(0x1800...0x19FF) { rdPort, port, data in
+        let debug = _isDebugAssertConfiguration()
+        let prefs = UserDefaults.standard.bool(forKey: "traceIO")
+        if !(debug && prefs) { return }
+        
+        if rdPort {
+            print(String(format: "  I8279 : IN 0x%04X : 0x%02X", port, data))
+        } else {
+            print(String(format: "  I8279 : OUT 0x%04X : 0x%02X (%@)", port, data, data.bits))
+        }
+    }
+    
+    @State private var monitorNotInPlace = true
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -23,12 +37,21 @@ struct ContentView: View {
             .cornerRadius(16)
         }.task {
             Task.detached(priority: .background) {
-                let url = Bundle.main.url(forResource: "sdk85-0000", withExtension: "bin")
-                let rom = NSData(contentsOf: url!)
+                guard
+                    let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)
+                else { return }
+                
+                let rom = try? Data(contentsOf: url)
                 var ram = Array<Byte>(repeating: 0, count: 0x10000)
                 ram.replaceSubrange(0..<rom!.count, with: rom!)
                 
-                let ioPorts = IOPorts()
+                let ioPorts = IOPorts() { rdPort, port, data in
+                    let debug = _isDebugAssertConfiguration()
+                    let prefs = UserDefaults.standard.bool(forKey: "traceIO")
+                    if !(debug && prefs) { return }
+                    
+                    print(String(format: "  IOPorts : %@ 0x%04X : 0x%02X", rdPort ? "IN" : "OUT", port, data))
+                }
                 let mem = await Memory(ram, 0x1000, [i8279])
                 var z80 = Z80(mem, ioPorts)
                 
@@ -54,16 +77,59 @@ struct ContentView: View {
                 }
             }
         }
+        .fileImporter(isPresented: $monitorNotInPlace,
+                      allowedContentTypes: [.bin],
+                      allowsMultipleSelection: false) { result in
+            guard
+                let monitor = try? result.get().first,
+                monitor.startAccessingSecurityScopedResource()
+            else { return }
+            // defer { monitor.stopAccessingSecurityScopedResource() }
+        }
     }
 }
 
 @main 
 struct MyApp: App {
+    init() {
+        if !UserDefaults.standard.bool(forKey: "launchedBefore") {
+            registerDefaultSettings()
+            
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"]
+            let versionInfo = "\(version!) (\(build!))"
+            UserDefaults.standard.set( versionInfo, forKey: "versionInfo")
+            
+            UserDefaults.standard.set(true, forKey: "launchedBefore")
+        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
     }
+}
+
+private func registerDefaultSettings() {
+    guard
+        let settingsBundle = Bundle.main.url(forResource: "Root.plist", withExtension: nil),
+        let settings = NSDictionary(contentsOf: settingsBundle),
+        let keyValues = settings.object(forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
+    else {
+        return
+    }
+    
+    var defaultSettings = [String : AnyObject]()
+    for keyValue in keyValues {
+        if
+            let key = keyValue["Key"] as? String,
+            let value = keyValue["DefaultValue"] {
+            defaultSettings[key] = value
+        }
+    }
+    
+    UserDefaults.standard.register(defaults: defaultSettings)
 }
 
 struct Credit: View {
@@ -77,5 +143,11 @@ struct Credit: View {
         .background(.pcbLabel)
         .cornerRadius(12)
         .padding(4)
+    }
+}
+
+extension UTType {
+    static var bin: UTType {
+            UTType(tag: "bin", tagClass: .filenameExtension, conformingTo: nil)!
     }
 }

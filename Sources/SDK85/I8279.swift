@@ -6,7 +6,7 @@ final class I8279: ObservableObject, MPorts {
     
     // address fields 1...4
     @Published var AF1: Byte = ~0x67 // H
-    @Published var AF2: Byte = ~0x77 // a
+    @Published var AF2: Byte = ~0x77 // A
     @Published var AF3: Byte = ~0x83 // L
     @Published var AF4: Byte = ~0x8F // t.
     // data fields 1...2
@@ -17,8 +17,11 @@ final class I8279: ObservableObject, MPorts {
     var FIFO = Fifo()
     var RL07 = Fifo()
     
-    init(_ mmap: ClosedRange<UShort>) {
+    private var traceIO: TraceIO?
+    
+    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = nil) {
         self.mmap = mmap
+        self.traceIO = traceIO
     }
     
     func rdPort(_ port: UShort) -> Byte {
@@ -32,7 +35,7 @@ final class I8279: ObservableObject, MPorts {
             break
         }
         
-        // print(String(format: "  \(self) : IN 0x%04X : 0x%02X", port, data))
+        traceIO?(true, port, data)
         return data
     }
     
@@ -72,7 +75,7 @@ final class I8279: ObservableObject, MPorts {
             break
         }
         
-        // print(String(format: "  \(self) : OUT 0x%04X : 0x%02X (%@)", port, data, data.bits))
+        traceIO?(false, port, data)
     }
     
     var mmap: ClosedRange<UShort>

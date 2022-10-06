@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>StringsTable</key>
+	<string>Root</string>
+	<key>PreferenceSpecifiers</key>
+	<array>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>About</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>Version (Build)</string>
+			<key>Key</key>
+			<string>versionInfo</string>
+			<key>DefaultValue</key>
+			<string>0</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>Trace</string>
+			<key>FooterText</key>
+			<string>Trace output...</string>
+			</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Memory fetch cycles</string>
+			<key>Key</key>
+			<string>traceMemory</string>
+			<key>DefaultValue</key>
+			<string>false</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Opcode decoding</string>
+			<key>Key</key>
+			<string>traceOpcode</string>
+			<key>DefaultValue</key>
+			<string>false</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Late cycles</string>
+			<key>Key</key>
+			<string>traceTiming</string>
+			<key>DefaultValue</key>
+			<string>false</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Interrupts</string>
+			<key>Key</key>
+			<string>traceNmiInt</string>
+			<key>DefaultValue</key>
+			<string>false</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Input Output</string>
+			<key>Key</key>
+			<string>traceIO</string>
+			<key>DefaultValue</key>
+			<string>true</string>
+		</dict>
+	</array>
+</dict>
+</plist>

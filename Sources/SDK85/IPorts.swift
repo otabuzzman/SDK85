@@ -10,6 +10,8 @@ enum TimerState {
     case abort
 }
 
+typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
+
 final class IOPorts: IPorts
 {
     private var _NMI = false
@@ -19,6 +21,12 @@ final class IOPorts: IPorts
     private var timerState = TimerState.reset
     private var timerCount: UShort = 0
     private var timerValue: UShort = 0
+    
+    private var traceIO: TraceIO?
+    
+    init(traceIO: TraceIO? = nil) {
+        self.traceIO = traceIO
+    }
     
     func TIMER_IN(pulses: UShort) -> TimerState {
         var returnState = timerState
@@ -43,7 +51,7 @@ final class IOPorts: IPorts
     
     func rdPort(_ port: UShort) -> Byte
     {
-        // print(String(format: "  \(self) : IN 0x%04X", port))
+        traceIO?(true, port, 0)
         return 0
     }
     
@@ -73,7 +81,7 @@ final class IOPorts: IPorts
             break
         }
         
-        // print(String(format: "  \(self) : OUT 0x%04X : 0x%02X", port, data))
+        traceIO?(false, port, data)
     }
     
     var NMI: Bool {

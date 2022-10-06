@@ -1,0 +1,9 @@
+"About" = "Über" ;
+"Version (Build)" = "Version (Build)" ;
+"Trace" = "Ablaufverfolgung" ;
+"Trace output..." = "Die Ablaufverfolgungsausgabe auf der Konsole ist nur verfügbar, wenn die App mit Debugkonfiguration kompiliert wurde." ;
+"Memory fetch cycles" = "Speicherabrufzyklen" ;
+"Opcode decoding" = "Opcode-Decodierung" ;
+"Late cycles" = "Verspätete Zyklen" ;
+"Interrupts" = "Unterbrechungen" ;
+"Input Output" = "Eingabe Ausgabe" ;
