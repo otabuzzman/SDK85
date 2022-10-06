@@ -4,17 +4,7 @@ import z80
 import UniformTypeIdentifiers
 
 struct ContentView: View {
-    @StateObject var i8279 = I8279(0x1800...0x19FF) { rdPort, port, data in
-        let debug = _isDebugAssertConfiguration()
-        let prefs = UserDefaults.standard.bool(forKey: "traceIO")
-        if !(debug && prefs) { return }
-        
-        if rdPort {
-            print(String(format: "  I8279 : IN 0x%04X : 0x%02X", port, data))
-        } else {
-            print(String(format: "  I8279 : OUT 0x%04X : 0x%02X (%@)", port, data, data.bits))
-        }
-    }
+    @StateObject var i8279 = I8279(0x1800...0x19FF, traceIO: Default.traceIO)
     
     @State private var monitorNotInPlace = false
     
@@ -45,15 +35,13 @@ struct ContentView: View {
                 var ram = Array<Byte>(repeating: 0, count: 0x10000)
                 ram.replaceSubrange(0..<rom!.count, with: rom!)
                 
-                let ioPorts = IOPorts() { rdPort, port, data in
-                    let debug = _isDebugAssertConfiguration()
-                    let prefs = UserDefaults.standard.bool(forKey: "traceIO")
-                    if !(debug && prefs) { return }
-                    
-                    print(String(format: "  IOPorts : %@ 0x%04X : 0x%02X", rdPort ? "IN" : "OUT", port, data))
-                }
+                let ioPorts = IOPorts(traceIO: Default.traceIO)
                 let mem = await Memory(ram, 0x1000, [i8279])
-                var z80 = Z80(mem, ioPorts)
+                var z80 = Z80(mem, ioPorts,
+                              traceMemory: Default.traceMemory,
+                              traceOpcode: Default.traceOpcode,
+                              traceTiming: Default.traceTiming,
+                              traceNmiInt: Default.traceNmiInt)
                 
                 while (!z80.Halt) {
                     let tStates = z80.parse()

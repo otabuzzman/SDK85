@@ -81,14 +81,6 @@ final class I8279: ObservableObject, MPorts {
     var mmap: ClosedRange<UShort>
 }
 
-extension Byte {
-    var bits: String {
-        let b = String(self, radix: 2)
-        let a = Array<Character>(repeating: "0", count: 8 - b.count)
-        return String(a + b)
-    }
-}
-
 class Fifo: Queue<Byte> {
     private var state = NSLock()
     
