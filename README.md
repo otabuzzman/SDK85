@@ -54,7 +54,7 @@ Apps used on Winos or Linos
   - Add key press/ release sound files
   - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 
-- Add monitor program
+- Add monitor program from `Intel` folder in WC
 
 ### Which file for what
 |File|Comment|
