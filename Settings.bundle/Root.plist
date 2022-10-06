@@ -78,7 +78,7 @@
 			<key>Key</key>
 			<string>traceIO</string>
 			<key>DefaultValue</key>
-			<string>true</string>
+			<string>false</string>
 		</dict>
 	</array>
 </dict>

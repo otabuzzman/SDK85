@@ -81,10 +81,10 @@ struct ContentView: View {
                       allowedContentTypes: [.bin],
                       allowsMultipleSelection: false) { result in
             guard
-                let monitor = try? result.get().first,
-                monitor.startAccessingSecurityScopedResource()
+                let monitorFile = try? result.get().first,
+                monitorFile.startAccessingSecurityScopedResource()
             else { return }
-            // defer { monitor.stopAccessingSecurityScopedResource() }
+            // defer { monitorFile.stopAccessingSecurityScopedResource() }
         }
     }
 }
@@ -92,16 +92,7 @@ struct ContentView: View {
 @main 
 struct MyApp: App {
     init() {
-        if !UserDefaults.standard.bool(forKey: "launchedBefore") {
-            registerDefaultSettings()
-            
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
-            let build = Bundle.main.infoDictionary?["CFBundleVersion"]
-            let versionInfo = "\(version!) (\(build!))"
-            UserDefaults.standard.set( versionInfo, forKey: "versionInfo")
-            
-            UserDefaults.standard.set(true, forKey: "launchedBefore")
-        }
+        UserDefaults.registerSettingsBundle()
     }
     
     var body: some Scene {
@@ -109,27 +100,6 @@ struct MyApp: App {
             ContentView()
         }
     }
-}
-
-private func registerDefaultSettings() {
-    guard
-        let settingsBundle = Bundle.main.url(forResource: "Root.plist", withExtension: nil),
-        let settings = NSDictionary(contentsOf: settingsBundle),
-        let keyValues = settings.object(forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
-    else {
-        return
-    }
-    
-    var defaultSettings = [String : AnyObject]()
-    for keyValue in keyValues {
-        if
-            let key = keyValue["Key"] as? String,
-            let value = keyValue["DefaultValue"] {
-            defaultSettings[key] = value
-        }
-    }
-    
-    UserDefaults.standard.register(defaults: defaultSettings)
 }
 
 struct Credit: View {
@@ -143,6 +113,41 @@ struct Credit: View {
         .background(.pcbLabel)
         .cornerRadius(12)
         .padding(4)
+    }
+}
+
+extension UserDefaults {
+    static func registerSettingsBundle() {
+        if !UserDefaults.standard.bool(forKey: "firstLaunch") {
+            UserDefaults.registerDefaultSettings()
+            
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"]
+            let versionInfo = "\(version!) (\(build!))"
+            UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
+            
+            UserDefaults.standard.set(true, forKey: "firstLaunch")
+        }
+    }
+    
+    static func registerDefaultSettings() {
+        guard
+            let settingsBundleFile = Bundle.main.url(forResource: "Root.plist", withExtension: nil),
+            let settingsBundleData = NSDictionary(contentsOf: settingsBundleFile),
+            let preferenceDictionaries = settingsBundleData.object(
+                forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
+        else { return }
+        
+        var defaultSettings = [String : AnyObject]()
+        for preferenceDictionary in preferenceDictionaries {
+            if
+                let key = preferenceDictionary["Key"] as? String,
+                let value = preferenceDictionary["DefaultValue"] {
+                defaultSettings[key] = value
+            }
+        }
+        
+        UserDefaults.standard.register(defaults: defaultSettings)
     }
 }
 
