@@ -56,6 +56,9 @@ Apps used on Winos or Linos
 
 - Add monitor program from `Intel` folder in WC
 
+- Copy `Settings.bundle` from WC to TLD
+  - Add `.copy("Settings.bundle")` to `Package.swift`
+
 ### Which file for what
 |File|Comment|
 |:---|:------|
