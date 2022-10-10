@@ -1,35 +1,31 @@
 import SwiftUI
 import z80
 
-typealias KeyConfig = (title: String, subtitle1st: String?, subtitle2nd: String?, code: Byte)
-
-let keyboardLayout: [KeyConfig] = [
-    ("", "RESET", nil, 0xFF), ("", "VECT", "INTR", 0xFE), ("C", nil, nil, 0x0C), ("D", nil, nil, 0x0D), ("E", nil, nil, 0x0E), ("F", nil, nil, 0x0F),
-    ("", "SINGLE", "STEP", 0x15), ("", "GO", nil, 0x12), ("8", "H", nil, 0x08), ("9", "L", nil, 0x09), ("A", nil, nil, 0x0A), ("B", nil, nil, 0x0B),
-    ("", "SUBST", "MEM", 0x13), ("", "EXAM", "REG", 0x14), ("4", "SPH", nil, 0x04), ("5", "SPL", nil, 0x05), ("6", "PCH", nil, 0x06), ("7", "PCL", nil, 0x07),
-    ("", "NEXT", ",", 0x11), ("", "EXEC", ".", 0x10), ("0", nil, nil, 0x00), ("1", nil, nil, 0x01), ("2", nil, nil, 0x02), ("3", "I", nil, 0x03)
-]
-
 struct Keyboard: View {
     @ObservedObject var i8279: I8279
     
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.verticalSizeClass) var verticalSizeClass
+    
     var body: some View {
         let wiggle: CGFloat = 2
+        
+        let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
         
         VStack(spacing: wiggle) {
             ForEach(0..<4, id: \.self) { row in
                 HStack(spacing: wiggle) {
                     ForEach(0..<6, id: \.self) { col in
-                        let keyConfig = keyboardLayout[row*6+col]
+                        let keyConfiguration = Keyboard.keyboardLayout[row*6+col]
                         
-                        Button(keyConfig.title) { // closure on button release
-                            i8279.FIFO.enqueue(keyConfig.code)
+                        Button(keyConfiguration.title) { // closure on button release
+                            i8279.FIFO.enqueue(keyConfiguration.code)
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }
                         .buttonStyle(Key(
-                            subtitle1st: keyConfig.subtitle1st,
-                            subtitle2nd: keyConfig.subtitle2nd))
-                        .frame(maxWidth: 96, maxHeight: 96)
+                            subtitle1st: keyConfiguration.subtitle1st,
+                            subtitle2nd: keyConfiguration.subtitle2nd))
+                        .frame(maxWidth: isCompact ? 56 : 96, maxHeight: isCompact ? 56 : 96)
                         .rotationEffect(Angle(degrees: drand48()*wiggle-wiggle/2))
                         /*
                         // different sounds are difficult to distinguish if
@@ -45,6 +41,19 @@ struct Keyboard: View {
             }
         }
     }
+    
+    private typealias KeyConfiguration = (
+        title: String, 
+        subtitle1st: String?, 
+        subtitle2nd: String?,
+        code: Byte)
+    
+    private static let keyboardLayout: [KeyConfiguration] = [
+        ("", "RESET", nil, 0xFF), ("", "VECT", "INTR", 0xFE), ("C", nil, nil, 0x0C), ("D", nil, nil, 0x0D), ("E", nil, nil, 0x0E), ("F", nil, nil, 0x0F),
+        ("", "SINGLE", "STEP", 0x15), ("", "GO", nil, 0x12), ("8", "H", nil, 0x08), ("9", "L", nil, 0x09), ("A", nil, nil, 0x0A), ("B", nil, nil, 0x0B),
+        ("", "SUBST", "MEM", 0x13), ("", "EXAM", "REG", 0x14), ("4", "SPH", nil, 0x04), ("5", "SPL", nil, 0x05), ("6", "PCH", nil, 0x06), ("7", "PCL", nil, 0x07),
+        ("", "NEXT", ",", 0x11), ("", "EXEC", ".", 0x10), ("0", nil, nil, 0x00), ("1", nil, nil, 0x01), ("2", nil, nil, 0x02), ("3", "I", nil, 0x03)
+    ]
 }
 
 struct Key: ButtonStyle {

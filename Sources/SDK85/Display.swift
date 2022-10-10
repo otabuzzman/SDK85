@@ -3,7 +3,12 @@ import SwiftUI
 struct Display: View {
     @ObservedObject var i8279: I8279
     
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.verticalSizeClass) var verticalSizeClass
+    
     var body: some View {
+        let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
+        
         VStack {
             HStack {
                 HStack(spacing: 4) {
@@ -28,8 +33,8 @@ struct Display: View {
                 }
                 .padding(.leading, 16)
             }
-            .font(.system(size: 64))
-            .padding(32)
+            .font(.system(size: isCompact ? 32 : 64))
+            .padding(isCompact ? 12 : 32)
             .background(.display)
             .cornerRadius(4)
         }
