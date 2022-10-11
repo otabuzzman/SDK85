@@ -1,9 +1,10 @@
 "About" = "About" ;
 "Version (Build)" = "Version (Build)" ;
+"Acknowledgements" = "Acknowledgements" ;
 "Trace" = "Trace" ;
 "Trace output..." = "Trace output on console is only available when app was compiled with debug configuration." ;
 "Memory fetch cycles" = "Memory fetch cycles" ;
 "Opcode decoding" = "Opcode decoding" ;
 "Late cycles" = "Late cycles" ;
 "Interrupts" = "Interrupts" ;
-"Input Output" = "Input and output" ;
+"Input Output" = "Input and Output" ;

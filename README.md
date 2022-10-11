@@ -109,7 +109,7 @@ No part of this document may be copied or reproduced in any form or by any means
 #### SDK-85 printed circuit board photo
 [Photo](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) by [Hans Otten](http://retro.hansotten.nl/contact/) licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
 
-#### SDK-85 key press/ release sounds
+#### SDK-85 key press/ release sound files
 Recordings kindly provided by [Hans Otten](http://retro.hansotten.nl/contact/).
 
 #### Z80 emulator package (referenced)
