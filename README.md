@@ -75,6 +75,7 @@ Apps used on Winos or Linos
 |Sdk85.swift|The main program.|
 |I8279.swift|8279 keyboard/ display interface abstraction.|
 |IPorts.swift|I/O ports and interrupts abstraction for Z80 emulator.|
+|Pcb.swift|A view representing the PCB.|
 |Keyboard.swift|SDK-85 keyboard view.|
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
@@ -82,6 +83,7 @@ Apps used on Winos or Linos
 |SevenSegmentDisplay.swift|A single seven segment digit.|
 |Sound.swift|A simple sound file player.|
 |Queue.swift|A Queue (FIFO) implementation.|
+|Default.swift|Global default values.|
 
 ### License
 Copyright (c) 2022 Jürgen Schuck
