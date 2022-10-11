@@ -10,10 +10,6 @@ struct Pcb: View {
             Image("sdk85-pcb")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(
-                    maxWidth: isPortrait ? UIScreen.main.bounds.width : nil,
-                    maxHeight: isPortrait ? nil : UIScreen.main.bounds.height,
-                    alignment: .bottomTrailing)
                 .overlay(Credit(), alignment: .topLeading)
             
             VStack {
@@ -23,7 +19,12 @@ struct Pcb: View {
             .padding(8)
             .background(.pcbLabel.opacity(0.8))
             .cornerRadius(16)
-        }.onRotate { orientation in
+        }
+        .frame(
+            maxWidth: isPortrait ? UIScreen.main.bounds.width : nil,
+            maxHeight: isPortrait ? nil : UIScreen.main.bounds.height,
+            alignment: .bottomTrailing)
+        .onRotate { orientation in
             if orientation.isFlat {
                 return
             }
