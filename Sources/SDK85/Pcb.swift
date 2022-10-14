@@ -24,6 +24,8 @@ struct Pcb: View {
             .background(.pcbLabel.opacity(0.8))
             .cornerRadius(16)
         }.onRotate { _ in
+			// https://stackoverflow.com/a/65586833/9172095
+			// UIDevice.orientation not save on app launch
             let scenes = UIApplication.shared.connectedScenes
             let windowScenes = scenes.first as? UIWindowScene
             
