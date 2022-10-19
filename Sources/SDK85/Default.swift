@@ -51,15 +51,22 @@ struct Default {
         if rdPort {
             print(String(format: "  IN 0x%04X : 0x%02X", port, data))
         } else {
-            print(String(format: "  OUT 0x%04X : 0x%02X (%@)", port, data, data.bits))
+            print(String(format: "  OUT 0x%04X : 0x%02X (%@)", port, data, data.bitsToString))
         }
     }
 }
 
 extension Byte {
-    var bits: String {
+    var bitsToString: String {
         let b = String(self, radix: 2)
         let a = Array<Character>(repeating: "0", count: 8 - b.count)
         return String(a + b)
     }
-}
+    
+    var reverseBits: Byte {
+        var a = (self & 0xF0) >> 4 | (self & 0x0F) << 4
+        a = (a & 0xCC) >> 2 | (a & 0x33) << 2
+        a = (a & 0xAA) >> 1 | (a & 0x55) << 1
+        return a
+    }
+} 

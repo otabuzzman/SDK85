@@ -25,10 +25,24 @@
 		<dict>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
-            <key>File</key>
-			<string>Acknowledgements</string>
             <key>Title</key>
 			<string>Acknowledgements</string>
+            <key>File</key>
+			<string>Acknowledgements</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key/>
+			<string/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSChildPaneSpecifier</string>
+            <key>Title</key>
+			<string>TTY font color</string>
+            <key>File</key>
+			<string>Tty</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -37,7 +51,7 @@
 			<string>Trace</string>
 			<key>FooterText</key>
 			<string>Trace output...</string>
-			</dict>
+		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>

@@ -250,6 +250,14 @@ extension Color {
     static let pcbLink = Color(hue: 168/360, saturation: 0.8, brightness: 0.69)
     static let pcbLabel = Color(hue: 132/360, saturation: 0.37, brightness: 0.32)
     static let pcbText = Color(hue: 123/360, saturation: 0.25, brightness: 0.59)
+    
+    // crtAmber
+    //FD9309 sRGB
+    //EF9839 Display P3
+    
+    // crtGreen
+    //00CA00 sRGB
+    //5AC63A Display P3
 }
 
 extension ShapeStyle where Self == Color {
