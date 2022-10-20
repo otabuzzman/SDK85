@@ -127,8 +127,10 @@ NODOT   EQU      0       ; INDICATOR FOR NO DOT IN DISPLAY
 ; NUMRG   -        DEFINED LATER ; NUMBER OF REGISTER SAVE LOCATIONS
 PERIO   EQU      10H     ; PERIOD FROM KEYBOARD
 PRMPT   EQU      0FBH    ; PROMPT CHARACTER FOR DISPLAY (DASH)
+RIM     EQU      0FFH    ; PORT FOR RIM OPCODE EMULATION ON Z80
 READ    EQU      40H     ; CONTROL CHARACTER TO INDICATE INPUT FROM
                          ; /KEYBOARD
+SIM     EQU      0FFH    ; PORT FOR SIM OPCODE EMULATION ON Z80
 TIMHI   EQU      25H     ; OUTPUT PORT FOR HIGH ORDER BYTE OF TIMER VALUE
 TIMLO   EQU      24H     ; OUTPUT PORT FOR LOW ORDER BYTE OF TIMER VALUE
 TMODE   EQU      40H     ; TIMER MODE - SQUARE WAVE, AUTO RELOAD
@@ -137,7 +139,7 @@ UNMSK   EQU      0EH     ; UNMASK INPUT INTERRUPT
 USRBR   EQU      RAMST + 256 - (RMUSE + SKLN + UBRLN) ; START OF USER
                          ; /BRANCH LOCATIONS
 ;         IF       1-WAITS ; TIMER VALUE FOR SINGLE STEP IF NO WAIT STATE
-TIMER   EQU      204 + 1 ; NUMBER OF INSTRUCTIONS MEASSURED IN T-STATES TO SKIP
+TIMER   EQU      211 + 1 ; NUMBER OF INSTRUCTIONS MEASSURED IN T-STATES TO SKIP
                          ; /PLUS ONE SO THAT THE INTERRUPT DOES NOT OCCUR UNTIL
                          ; /THE FOLLOWING INSTRUCTION
 ;         ENDIF
@@ -230,14 +232,14 @@ CLDBK:                   ; THEN JUMP BACK HERE
         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
 ;
 RES10:                   ; CONTINUE SAVING USER STATUS
-        XRA A            ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
+        IN      RIM      ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
         ANI     0FH      ; KEEP STATUS & MASK BITS
         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-        NOP              ; WAS SIM
+        OUT     SIM      ; WAS SIM
         DI               ; INTERRUPTS DISABLED WHILE MONITOR IS RUNNING
                          ; (EXCEPT WHEN WAITING FOR INPUT)
-        XRA A            ; TTY OR KEYBOARD MONITOR ? (WAS RIM)
+        IN      RIM      ; TTY OR KEYBOARD MONITOR ? (WAS RIM)
         RLC              ; IS TTY CONNECTED ?
         JC      GO       ; YES - BRANCH TO TTY MONITOR
                          ; NO - ENTER KEYBOARD MONITOR
@@ -452,13 +454,13 @@ STP25:                   ; BRANCH HERE WHEN TIMER INTERRUPTS AFTER
         SPHL             ; /SAVING REMAINING USER REGISTERS
         PUSH    B        ; SAVE B & C
         PUSH    D        ; SAVE D & E
-        XRA A            ; GET USER INTERRUPT MASK (WAS RIM)
+        IN      RIM      ; GET USER INTERRUPT MASK (WAS RIM)
         ANI     07H      ; KEEP MASK BITS
         LXI     H,TEMP   ; GET USER INTERRUPT STATUS
         ORA     M        ; OR IT INTO MASK
         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-        NOP              ; WAS SIM
+        OUT     SIM      ; WAS SIM
         JMP     SSTEP    ; GO GET READY FOR ANOTHER INSTRUCTION
 ;
 ;
@@ -997,7 +999,7 @@ RSTOR:
         LDA     ISAV     ; GET USER INTERRUPT MASK
         ORI     18H      ; ENABLE SETTING OF INTERRUPT MASK AND
                          ; /RESET RST7.5 FLIP FLOP
-        NOP              ; RESTORE USER INTERRUPT MASK (WAS SIM)
+        OUT     SIM      ; RESTORE USER INTERRUPT MASK (WAS SIM)
                          ; RESTORE USER INTERRUPT STATUS
         LDA     ISAV     ; GET USER INTERRUPT MASK
         ANI     08H      ; SHOULD USER INTERRUPTS BE ENABLED ?
@@ -1398,6 +1400,10 @@ UPPER   EQU      0FFH    ; DENOTES UPPER HALF OF BYTE IN ICMD
 ;
 ; DELAY VALUES IF NO WAIT STATE
 ;
+
+
+
+
 ;         IF      1-WAITS
 IBTIM   EQU      1164    ; INTER-BIT TIME DELAY
 OBTIM   EQU      1164    ; OUTPUT INTER-BIT TIME DELAY
@@ -1800,7 +1806,7 @@ CI:
         DI
         PUSH    D        ; SAVE DE
 CI05:
-        RIM              ; GET INPUT BIT
+        IN      RIM      ; GET INPUT BIT (WAS RIM)
         RAL              ; INTO CARRY WITH IT
         JC      CI05     ; BRANCH IF NO START BIT
         LXI     D,WAIT   ; WAIT UNTIL MIDDLE OF BIT
@@ -1810,7 +1816,7 @@ CI05:
 CI10:
         LXI     D,IBTIM
         CALL    DELAY    ; WAIT UNTIL MIDDLE OF NEXT BIT
-        RIM              ; GET THE BIT
+        IN      RIM      ; GET THE BIT (WAS RIM)
         RAL              ; INTO CARRY
         MOV     A,B      ; GET PARTIAL RESULT
         RAR              ; SHIFT IN NEXT DATA BIT
@@ -1864,7 +1870,7 @@ CO:
         MVI     A,STRT   ; START BIT MASK
         MVI     B,7      ; B WILL COUNT BITS TO SEND
 CO05:
-        SIM              ; SEND A BIT
+        OUT     SIM      ; SEND A BIT
         LXI     D,OBTIM  ; WAIT FOR TTY TO HANDLE IT
         CALL    DELAY
         MOV     A,C      ; PICK UP BITS LEFT TO SEND
@@ -1876,7 +1882,7 @@ CO05:
         DCR     B        ; DEC COUNT
         JP      CO05     ; SEND IF MORE BITS NEED TO BE SENT
         MVI     A,STOPB  ; ELSE, SEND STOP BITS
-        SIM
+        OUT     SIM      ; WAS SIM
         LXI     D,TIM4   ; WAIT 4 BIT TIME (FAKE PARITY + 3 STOP BITS)
         CALL    DELAY
         POP     D
