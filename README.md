@@ -1,6 +1,6 @@
 # SDK85
 
-A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: the `RIM` and `SIM` instructions of the 8085 were replaced by `XRA A` and `NOP`. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT, RST 6.5 is not supported.
+A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: the `RIM` and `SIM` instructions of the 8085 were replaced by `IN 0xFF` and `OUT 0xFF`. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT, RST 6.5 is not supported.
 
 The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.hansotten.nl/uploads/sdk85/9800451B.pdf)). A transcript of the relevant pages (67 - 93) had been done with [AWS Textract](https://aws.amazon.com/textract/), followed by numerous AWK scripts, and eventually manually edited. Though the assembler is happy, overseen errors might still hide in the code.
 
@@ -53,7 +53,8 @@ Apps used on Winos or Linos
   - Add background photo
   - Add key press/ release sound files
   - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
-
+  - Add Glass TTY VT220 font files (.plist and .ttf)
+    - Add `additionalInfoPlistContentFilePath: "Resources/Glass_TTY_VT220.plist"` to `.iOSApplication` in `Package.swift`
 - Add monitor program from `Intel` folder in WC
 
 - Copy `Settings.bundle` from WC to TLD
@@ -63,19 +64,21 @@ Apps used on Winos or Linos
 |File|Comment|
 |:---|:------|
 |Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
-|Intel/SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
-|Intel/SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
-|Intel/sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
+|SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
+|SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
+|sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
 |Resources/sdk85-pcb.jpg|Photo of SDK-85 printed circuit board.|
 |sdk85-keyprease.mp3|Original SDK-85 key press/ release sounds.|
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|
 |sdk85-keyrelease.mp3|Original SDK-85 key release sound.|
 |sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
+|Glass_TTY_VT220.plist|Additional property file for Glass TTY VT220 font|
+|Glass_TTY_VT220.ttf|Glass TTY VT220 font file|
 |Sources/SDK85|Swift sources folder.|
 |Sdk85.swift|The main program.|
 |I8279.swift|8279 keyboard/ display interface abstraction.|
 |IPorts.swift|I/O ports and interrupts abstraction for Z80 emulator.|
-|Pcb.swift|A view representing the PCB.|
+|Pcb.swift|The view representing the PCB.|
 |Keyboard.swift|SDK-85 keyboard view.|
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
@@ -114,3 +117,31 @@ Recordings kindly provided by [Hans Otten](http://retro.hansotten.nl/contact/).
 
 #### Z80 emulator package (referenced)
 [License information](https://github.com/otabuzzman/z80#license) in emulator’s repository.
+
+#### Glass TTY VT220 TrueType font
+Viacheslav Slavinsky
+
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <[https://unlicense.org](https://unlicense.org)>
