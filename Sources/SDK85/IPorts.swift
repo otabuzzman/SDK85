@@ -12,7 +12,7 @@ enum TimerState {
 
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
-final class IOPorts: IPorts
+final class IOPorts: ObservableObject, IPorts
 {
     private var _NMI = false
     private var _INT = false
@@ -22,9 +22,17 @@ final class IOPorts: IPorts
     private var timerCount: UShort = 0
     private var timerValue: UShort = 0
     
+    private var bots: UInt = 0
+    private var sod: Byte = 0
+    @Published var SOD = ""
+    
+    private var bits: UInt = 0
+    private var tty = false
+    var SID: Byte = 0
+    
     private var traceIO: TraceIO?
     
-    init(traceIO: TraceIO? = nil) {
+    init(traceIO: TraceIO? = Default.traceIO) {
         self.traceIO = traceIO
     }
     
@@ -51,8 +59,28 @@ final class IOPorts: IPorts
     
     func rdPort(_ port: UShort) -> Byte
     {
-        traceIO?(true, port, 0)
-        return 0
+        var data: Byte = 0
+        switch port & 0xFF {
+        case 0xFF:
+            if !tty {
+                break
+            }
+            data = SID & 0x80
+            if data == 0 {
+                if 8 > bits {
+                    data = Byte(((UShort(SID) * 256) >> bits) & 0x80)
+                    bits += 1
+                } else {
+                    SID |= 0x80
+                    bits = 0
+                }
+            }
+        default:
+            break
+        }
+        
+        traceIO?(true, port, data)
+        return data
     }
     
     func wrPort(_ port: UShort, _ data: Byte)
@@ -77,6 +105,18 @@ final class IOPorts: IPorts
             timerValue = (timerValue & 0xFF00) + (data)
         case 0x25:
             timerValue = (timerValue & 0x00FF) + (UShort(data & 0x3F) << 8)
+        case 0xFF:
+            // SOE (serial output enabled)
+            if data & 0x40 == 0 {
+                break
+            }
+            if 8 > bots {
+                sod = (sod | (~data & 0x80)) >> 1
+                bots += 1
+            } else {
+                Task { @MainActor in SOD.append(Character(UnicodeScalar(sod))) }
+                bots = 0
+            }
         default:
             break
         }
@@ -90,8 +130,8 @@ final class IOPorts: IPorts
             _NMI = false
             return ret
         }
-        set(newNMI) {
-            _NMI = newNMI
+        set(value) {
+            _NMI = value
         }
     }
     var INT: Bool {
@@ -100,8 +140,8 @@ final class IOPorts: IPorts
             _INT = false
             return ret
         }
-        set(newINT) {
-            _INT = newINT
+        set(value) {
+            _INT = value
         }
     }
     var data: Byte {
@@ -110,8 +150,8 @@ final class IOPorts: IPorts
             _data = 0x00
             return ret
         }
-        set(newData) {
-            _data = newData
+        set(value) {
+            _data = value
         }
     }
 }

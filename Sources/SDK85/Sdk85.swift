@@ -4,12 +4,13 @@ import z80
 import UniformTypeIdentifiers
 
 struct Kit: View {
-    @StateObject var i8279 = I8279(0x1800...0x19FF, traceIO: Default.traceIO)
+    @StateObject var ioPorts = IOPorts()
+    @StateObject var i8279 = I8279(0x1800...0x19FF)
     
     @State private var monitorNotInPlace = false
     
     var body: some View {
-        Pcb(i8279: i8279)
+        Pcb(ioPorts: ioPorts, i8279: i8279)
             .task {
                 Task.detached(priority: .background) {
                     guard
@@ -20,9 +21,8 @@ struct Kit: View {
                     var ram = Array<Byte>(repeating: 0, count: 0x10000)
                     ram.replaceSubrange(0..<rom!.count, with: rom!)
                 
-                    let ioPorts = IOPorts(traceIO: Default.traceIO)
                     let mem = await Memory(ram, 0x1000, [i8279])
-                    var z80 = Z80(mem, ioPorts,
+                    var z80 = await Z80(mem, ioPorts,
                                   traceMemory: Default.traceMemory,
                                   traceOpcode: Default.traceOpcode,
                                   traceTiming: Default.traceTiming,
@@ -30,21 +30,25 @@ struct Kit: View {
                 
                     while (!z80.Halt) {
                         let tStates = z80.parse()
-                        if ioPorts.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
+                        if await ioPorts.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
                             print(z80.dumpStateCompact())
-                            ioPorts.NMI = true
+                            await MainActor.run() { ioPorts.NMI = true }
                         }
                         if let key = await i8279.FIFO.dequeue() {
                             switch key {
                             case 0xFF:
                                 z80.reset()
                             case 0xFE:
-                                ioPorts.INT = true
-                                ioPorts.data = 0xFF // RST 7
+                                await MainActor.run() {
+                                    ioPorts.INT = true
+                                    ioPorts.data = 0xFF // RST 7
+                                }
                             default:
                                 await i8279.RL07.enqueue(key)
-                                ioPorts.INT = true
-                                ioPorts.data = 0xEF // RST 5
+                                await MainActor.run() {
+                                    ioPorts.INT = true
+                                    ioPorts.data = 0xEF // RST 5
+                                }
                             }
                         }
                     }

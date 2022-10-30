@@ -2,7 +2,7 @@ import SwiftUI
 import z80
 
 struct Default {
-    static var traceMemory: Z80.TraceMemory = { addr, data in
+    static let traceMemory: Z80.TraceMemory = { addr, data in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceMemory")
         if !(debug && prefs) { return }
@@ -10,7 +10,7 @@ struct Default {
         print(String(format: "  %04X %02X ", addr, data))
     }
     
-    static var traceOpcode: Z80.TraceOpcode = { prefix, opcode, imm, imm16, dimm in
+    static let traceOpcode: Z80.TraceOpcode = { prefix, opcode, imm, imm16, dimm in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceOpcode")
         if !(debug && prefs) { return }
@@ -18,7 +18,7 @@ struct Default {
         print(Z80Mne.mnemonic(prefix, opcode, imm, imm16, dimm))
     }
     
-    static var traceTiming: Z80.TraceTiming = { sleep, CLK in
+    static let traceTiming: Z80.TraceTiming = { sleep, CLK in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceTiming")
         if !(debug && prefs) { return }
@@ -26,7 +26,7 @@ struct Default {
         print(String(format: "%d T states late", Int(abs(sleep * Double(CLK)))))
     }
     
-    static var traceNmiInt: Z80.TraceNmiInt = { interrupt, addr, instruction in
+    static let traceNmiInt: Z80.TraceNmiInt = { interrupt, addr, instruction in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceNmiInt")
         if !(debug && prefs) { return }
@@ -43,7 +43,7 @@ struct Default {
         }
     }
     
-    static var traceIO: TraceIO = { rdPort, port, data in
+    static let traceIO: TraceIO = { rdPort, port, data in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceIO")
         if !(debug && prefs) { return }
@@ -54,6 +54,8 @@ struct Default {
             print(String(format: "  OUT 0x%04X : 0x%02X (%@)", port, data, data.bitsToString))
         }
     }
+    
+    static let crtColor = "Green"
 }
 
 extension Byte {
