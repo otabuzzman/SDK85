@@ -2,7 +2,7 @@ import SwiftUI
 import z80
 
 final class I8279: ObservableObject, MPorts {
-    var CNTRL: Byte = 0x08
+    private var CNTRL: Byte = 0x08
     
     // address fields 1...4
     @Published var AF1: Byte = ~0x67 // H
@@ -22,6 +22,22 @@ final class I8279: ObservableObject, MPorts {
     init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = Default.traceIO) {
         self.mmap = mmap
         self.traceIO = traceIO
+    }
+    
+    func reset() {
+        CNTRL = 0x08
+        
+        AF1 = ~0x67
+        AF2 = ~0x77
+        AF3 = ~0x83
+        AF4 = ~0x8F
+        
+        DF1 = ~0x00
+        DF2 = ~0x00
+        fieldCount = 1
+        
+        FIFO.removeAll()
+        RL07.removeAll()
     }
     
     func rdPort(_ port: UShort) -> Byte {

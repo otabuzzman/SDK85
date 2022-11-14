@@ -23,6 +23,10 @@ class Queue<T> {
     func peek() -> T? {
         return queue.first?.value
     }
+    
+    func removeAll() {
+        queue.removeAll()
+    }
 }
 
 extension Queue: CustomStringConvertible {

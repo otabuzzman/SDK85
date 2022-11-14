@@ -3,84 +3,206 @@ import z80
 
 import UniformTypeIdentifiers
 
-struct Kit: View {
-    @StateObject var ioPorts = IOPorts()
+enum Device: Int {
+    case pcb
+    case tty
+}
+
+struct Hmi: View {
+    @State var i8085: Task<(), Never>?
+    @StateObject var intIO = IntIO()
     @StateObject var i8279 = I8279(0x1800...0x19FF)
     
-    @State private var monitorNotInPlace = false
+    private let device: [Device] = [.pcb, .tty]
+    @State private var thisDeviceIndex = 0
+    @State private var prevDeviceIndex = 0
+    @State private var deviceOffset: CGFloat = 0
+    
+    @State private var isPortrait = UIScreen.main.bounds.isPortrait
     
     var body: some View {
-        Pcb(ioPorts: ioPorts, i8279: i8279)
-            .task {
-                Task.detached(priority: .background) {
-                    guard
-                        let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)
-                    else { return }
+        // https://habr.com/en/post/476494/
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 0) {
+                Pcb(i8279: i8279, isPortrait: isPortrait)
+                    .frame(width: UIScreen.main.bounds.width)
+                Tty(intIO: intIO, isPortrait: isPortrait)
+                    .frame(width: UIScreen.main.bounds.width)
+            }
+            .onAnimated(for: deviceOffset) {
+                guard
+                    thisDeviceIndex != prevDeviceIndex
+                else { return }
                 
-                    let rom = try? Data(contentsOf: url)
-                    var ram = Array<Byte>(repeating: 0, count: 0x10000)
-                    ram.replaceSubrange(0..<rom!.count, with: rom!)
+                i8085?.cancel()
                 
-                    let mem = await Memory(ram, 0x1000, [i8279])
-                    var z80 = await Z80(mem, ioPorts,
-                                  traceMemory: Default.traceMemory,
-                                  traceOpcode: Default.traceOpcode,
-                                  traceTiming: Default.traceTiming,
-                                  traceNmiInt: Default.traceNmiInt)
+                intIO.reset()
+                i8279.reset()
                 
-                    while (!z80.Halt) {
-                        let tStates = z80.parse()
-                        if await ioPorts.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
-                            print(z80.dumpStateCompact())
-                            await MainActor.run() { ioPorts.NMI = true }
+                switch device[thisDeviceIndex] {
+                case .pcb:
+                    intIO.tty = false
+                    intIO.SID = 0x00
+                case .tty:
+                    intIO.tty = true
+                    intIO.SID = 0x80
+                }
+                
+                i8085 = boot()
+            }
+        }
+        .content.offset(x: deviceOffset)
+        .frame(width: UIScreen.main.bounds.width, alignment: .leading)
+        .gesture(DragGesture()
+            .onChanged() { value in
+                deviceOffset = value.translation.width - UIScreen.main.bounds.width * CGFloat(thisDeviceIndex)
+            }
+            .onEnded() { value in
+                prevDeviceIndex = thisDeviceIndex
+                if
+                    -value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
+                     thisDeviceIndex < device.count - 1
+                {
+                    thisDeviceIndex += 1
+                }
+                if
+                    value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
+                    thisDeviceIndex > 0
+                {
+                    thisDeviceIndex -= 1
+                }
+                withAnimation {
+                    deviceOffset = -UIScreen.main.bounds.width * CGFloat(thisDeviceIndex)
+                }
+            })
+        .onRotate { _ in
+            // https://stackoverflow.com/a/65586833/9172095
+            // UIDevice.orientation not save on app launch
+            let scenes = UIApplication.shared.connectedScenes
+            let windowScene = scenes.first as? UIWindowScene
+            
+            guard
+                let isPortrait = windowScene?.interfaceOrientation.isPortrait
+            else { return }
+            
+            if self.isPortrait == isPortrait { return }
+			
+            self.isPortrait = isPortrait
+            deviceOffset = -UIScreen.main.bounds.height * CGFloat(thisDeviceIndex)
+        }
+        .onAppear {
+            i8085 = boot()
+        }
+    }
+}
+
+extension Hmi {
+    private func boot() -> Task<(), Never> {
+        Task.detached(priority: .background) {
+            guard
+                let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)
+            else { return }
+            
+            let rom = try? Data(contentsOf: url)
+            var ram = Array<Byte>(repeating: 0, count: 0x10000)
+            ram.replaceSubrange(0..<rom!.count, with: rom!)
+            
+            let mem = await Memory(ram, 0x1000, [i8279])
+            var z80 = await Z80(mem, intIO,
+                                traceMemory: Default.traceMemory,
+                                traceOpcode: Default.traceOpcode,
+                                traceTiming: Default.traceTiming,
+                                traceNmiInt: Default.traceNmiInt)
+            
+            while (!z80.Halt) {
+                if Task.isCancelled {
+                    break
+                }
+                let tStates = z80.parse()
+                if await intIO.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
+                    print(z80.dumpStateCompact())
+                    await MainActor.run() { intIO.NMI = true }
+                }
+                if let key = await i8279.FIFO.dequeue() {
+                    switch key {
+                    case 0xFF:
+                        z80.reset()
+                    case 0xFE:
+                        await MainActor.run() {
+                            intIO.INT = true
+                            intIO.data = 0xFF // RST 7
                         }
-                        if let key = await i8279.FIFO.dequeue() {
-                            switch key {
-                            case 0xFF:
-                                z80.reset()
-                            case 0xFE:
-                                await MainActor.run() {
-                                    ioPorts.INT = true
-                                    ioPorts.data = 0xFF // RST 7
-                                }
-                            default:
-                                await i8279.RL07.enqueue(key)
-                                await MainActor.run() {
-                                    ioPorts.INT = true
-                                    ioPorts.data = 0xEF // RST 5
-                                }
-                            }
+                    default:
+                        await i8279.RL07.enqueue(key)
+                        await MainActor.run() {
+                            intIO.INT = true
+                            intIO.data = 0xEF // RST 5
                         }
                     }
                 }
             }
-            .fileImporter(isPresented: $monitorNotInPlace,
-                          allowedContentTypes: [.bin],
-                          allowsMultipleSelection: false) { result in
-                guard
-                    let monitorFile = try? result.get().first,
-                    monitorFile.startAccessingSecurityScopedResource()
-                else { return }
-                // defer { monitorFile.stopAccessingSecurityScopedResource() }
-            }
+        }
     }
 }
 
-extension UTType {
-    static var bin: UTType {
-        UTType(tag: "bin", tagClass: .filenameExtension, conformingTo: nil)!
+// https://www.avanderlee.com/swiftui/withanimation-completion-callback/
+struct AnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorArithmetic {
+    var animatableData: Value {
+        didSet {
+            notifyCompletionFinished()
+        }
+    }
+    
+    private var value: Value
+    private var completion: () -> Void
+    
+    init(value: Value, completion: @escaping () -> Void) {
+        animatableData = value
+        self.value = value
+        self.completion = completion
+    }
+    
+    func body(content: Content) -> some View {
+        return content
+    }
+    
+    private func notifyCompletionFinished() {
+        guard
+            animatableData == value
+        else { return }
+        
+        DispatchQueue.main.async {
+            completion()
+        }
+    }
+}
+
+extension View {
+    func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, AnimatedModifier<Value>> {
+        return modifier(AnimatedModifier(value: value, completion: completion))
     }
 }
 
 @main 
 struct Sdk85: App {
+    @State private var monitorNotInPlace = false
+    
     init() {
         UserDefaults.registerSettingsBundle()
     }
     
     var body: some Scene {
         WindowGroup {
-            Kit()
+            Hmi()
+                .fileImporter(isPresented: $monitorNotInPlace,
+                              allowedContentTypes: [.bin],
+                              allowsMultipleSelection: false) { files in
+                    guard
+                        let monitorFile = try? files.get().first,
+                        monitorFile.startAccessingSecurityScopedResource()
+                    else { return }
+                    // defer { monitorFile.stopAccessingSecurityScopedResource() }
+                }
         }
     }
 }
@@ -117,5 +239,11 @@ extension UserDefaults {
         }
         
         UserDefaults.standard.register(defaults: defaultSettings)
+    }
+}
+
+extension UTType {
+    static var bin: UTType {
+        UTType(tag: "bin", tagClass: .filenameExtension, conformingTo: nil)!
     }
 }

@@ -12,8 +12,10 @@ enum TimerState {
 
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
-final class IOPorts: ObservableObject, IPorts
+final class IntIO: ObservableObject, IPorts
 {
+    private var state = NSLock()
+    
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
@@ -27,13 +29,43 @@ final class IOPorts: ObservableObject, IPorts
     @Published var SOD = ""
     
     private var bits: UInt = 0
-    private var tty = false
-    var SID: Byte = 0
+    var tty = false
+    private var sid: Byte = 0
+    var SID: Byte {
+        get {
+            state.lock()
+            defer { state.unlock() }
+            return sid
+        }
+        set(value) {
+            state.lock()
+            defer { state.unlock() }
+            sid = value
+        }
+    }
     
     private var traceIO: TraceIO?
     
     init(traceIO: TraceIO? = Default.traceIO) {
         self.traceIO = traceIO
+    }
+    
+    func reset() {
+        _NMI = false
+        _INT = false
+        _data = 0x00
+        
+        timerState = TimerState.reset
+        timerCount = 0
+        timerValue = 0
+        
+        bots = 0
+        sod = 0
+        SOD = ""
+        
+        bits = 0
+        tty = false
+        sid = 0
     }
     
     func TIMER_IN(pulses: UShort) -> TimerState {
@@ -126,31 +158,43 @@ final class IOPorts: ObservableObject, IPorts
     
     var NMI: Bool {
         get {
+            state.lock()
+            defer { state.unlock() }
             let ret = _NMI
             _NMI = false
             return ret
         }
         set(value) {
+            state.lock()
+            defer { state.unlock() }
             _NMI = value
         }
     }
     var INT: Bool {
         get {
+            state.lock()
+            defer { state.unlock() }
             let ret = _INT
             _INT = false
             return ret
         }
         set(value) {
+            state.lock()
+            defer { state.unlock() }
             _INT = value
         }
     }
     var data: Byte {
         get {
+            state.lock()
+            defer { state.unlock() }
             let ret = _data
             _data = 0x00
             return ret
         }
         set(value) {
+            state.lock()
+            defer { state.unlock() }
             _data = value
         }
     }

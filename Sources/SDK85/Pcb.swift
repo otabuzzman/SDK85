@@ -1,10 +1,9 @@
 import SwiftUI
 
 struct Pcb: View {
-    var ioPorts: IOPorts
     var i8279: I8279
     
-    @State private var isPortrait = UIScreen.main.bounds.height > UIScreen.main.bounds.width
+    var isPortrait: Bool
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -18,25 +17,12 @@ struct Pcb: View {
                 .overlay(Credit(), alignment: .topLeading)
             
             VStack {
-                Tty(ioPorts: ioPorts)
-                
                 Display(i8279: i8279)
                 Keyboard(i8279: i8279)
             }
             .padding(8)
             .background(.pcbLabel.opacity(0.8))
             .cornerRadius(16)
-        }.onRotate { _ in
-            // https://stackoverflow.com/a/65586833/9172095
-            // UIDevice.orientation not save on app launch
-            let scenes = UIApplication.shared.connectedScenes
-            let windowScenes = scenes.first as? UIWindowScene
-            
-            guard
-                let isPortrait = windowScenes?.interfaceOrientation.isPortrait
-            else { return }
-            
-            self.isPortrait = isPortrait
         }
     }
 }

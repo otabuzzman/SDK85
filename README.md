@@ -77,8 +77,9 @@ Apps used on Winos or Linos
 |Sources/SDK85|Swift sources folder.|
 |Sdk85.swift|The main program.|
 |I8279.swift|8279 keyboard/ display interface abstraction.|
-|IPorts.swift|I/O ports and interrupts abstraction for Z80 emulator.|
-|Pcb.swift|The view representing the PCB.|
+|IntIO.swift|Interrupts and I/O ports abstraction for Z80 emulator.|
+|Pcb.swift|View representing PCB with soldered keyboard and display.|
+|Tty.swift|Simple terminal view for TTY monitor usage.|
 |Keyboard.swift|SDK-85 keyboard view.|
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
