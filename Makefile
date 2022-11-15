@@ -1,8 +1,12 @@
 A85 ?= asm85
 
-Intel/sdk85-0000.bin: sdk85.asm
+.SUFFIXES: .asm .bin
+
+.asm.bin:
 	$(A85) -b0000:07FF $^
-	install -m 0664 $(@F) $(@D)
+
+Intel/sdk85-0000.bin: sdk85-0000.bin
+	install -m 0664 $^ $@
 
 Intel/SDK85.SRC: Intel/SDK85.LST
 	gawk < $^ > $@ '             \
