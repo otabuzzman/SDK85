@@ -2,7 +2,11 @@
 "Version (Build)" = "Version (Build)" ;
 "Acknowledgements" = "Anmerkungen" ;
 
-"TTY font color" = "Terminal-Schriftfarbe" ;
+"General" = "Allgemein" ;
+"Load custom monitor" = "Eigenen MONITOR laden" ;
+
+"TTY" = "Terminal (TTY)" ;
+"Font color" = "Schriftfarbe" ;
 
 "Trace" = "Ablaufverfolgung" ;
 "Trace output..." = "Die Ablaufverfolgungsausgabe auf der Konsole ist nur verfügbar, wenn die App mit Debugkonfiguration kompiliert wurde." ;

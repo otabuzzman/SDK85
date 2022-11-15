@@ -2,7 +2,11 @@
 "Version (Build)" = "Version (Build)" ;
 "Acknowledgements" = "Acknowledgements" ;
 
-"TTY font color" = "TTY font color" ;
+"General" = "General" ;
+"Load custom monitor" = "Load custom monitor" ;
+
+"TTY" = "TTY" ;
+"Font color" = "Font color" ;
 
 "Trace" = "Trace" ;
 "Trace output..." = "Trace output on console is only available when app was compiled with debug configuration." ;

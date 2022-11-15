@@ -9,6 +9,8 @@ enum Device: Int {
 }
 
 struct Hmi: View {
+    var rom: Data
+    
     @State var i8085: Task<(), Never>?
     @StateObject var intIO = IntIO()
     @StateObject var i8279 = I8279(0x1800...0x19FF)
@@ -19,6 +21,10 @@ struct Hmi: View {
     @State private var deviceOffset: CGFloat = 0
     
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
+    
+    init(with rom: Data) {
+        self.rom = rom
+    }
     
     var body: some View {
         // https://habr.com/en/post/476494/
@@ -48,7 +54,7 @@ struct Hmi: View {
                     intIO.SID = 0x80
                 }
                 
-                i8085 = boot()
+                i8085 = boot(rom)
             }
         }
         .content.offset(x: deviceOffset)
@@ -85,27 +91,23 @@ struct Hmi: View {
                 let isPortrait = windowScene?.interfaceOrientation.isPortrait
             else { return }
             
+            // interface orientation not affected when rotated to flat 
             if self.isPortrait == isPortrait { return }
-			
+            
             self.isPortrait = isPortrait
             deviceOffset = -UIScreen.main.bounds.height * CGFloat(thisDeviceIndex)
         }
         .onAppear {
-            i8085 = boot()
+            i8085 = boot(rom)
         }
     }
 }
 
 extension Hmi {
-    private func boot() -> Task<(), Never> {
+    private func boot(_ rom: Data) -> Task<(), Never> {
         Task.detached(priority: .background) {
-            guard
-                let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)
-            else { return }
-            
-            let rom = try? Data(contentsOf: url)
             var ram = Array<Byte>(repeating: 0, count: 0x10000)
-            ram.replaceSubrange(0..<rom!.count, with: rom!)
+            ram.replaceSubrange(0..<rom.count, with: rom)
             
             let mem = await Memory(ram, 0x1000, [i8279])
             var z80 = await Z80(mem, intIO,
@@ -146,7 +148,7 @@ extension Hmi {
 }
 
 // https://www.avanderlee.com/swiftui/withanimation-completion-callback/
-struct AnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorArithmetic {
+struct OnAnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorArithmetic {
     var animatableData: Value {
         didSet {
             notifyCompletionFinished()
@@ -178,30 +180,42 @@ struct AnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorArit
 }
 
 extension View {
-    func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, AnimatedModifier<Value>> {
-        return modifier(AnimatedModifier(value: value, completion: completion))
+    func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, OnAnimatedModifier<Value>> {
+        return modifier(OnAnimatedModifier(value: value, completion: completion))
     }
 }
 
 @main 
 struct Sdk85: App {
-    @State private var monitorNotInPlace = false
+    @State private var loadCustomMonitor: Bool
+    @State private var monitor: Data
     
     init() {
         UserDefaults.registerSettingsBundle()
+        
+        loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
+        
+        let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)!
+        monitor = try! Data(contentsOf: url)
     }
     
     var body: some Scene {
         WindowGroup {
-            Hmi()
-                .fileImporter(isPresented: $monitorNotInPlace,
+            Hmi(with: monitor)
+                .fileImporter(isPresented: $loadCustomMonitor,
                               allowedContentTypes: [.bin],
                               allowsMultipleSelection: false) { files in
                     guard
                         let monitorFile = try? files.get().first,
                         monitorFile.startAccessingSecurityScopedResource()
                     else { return }
-                    // defer { monitorFile.stopAccessingSecurityScopedResource() }
+                    defer { monitorFile.stopAccessingSecurityScopedResource() }
+                    
+                    guard
+                        let monitor = try? Data(contentsOf: monitorFile)
+                    else { return }
+                    
+                    self.monitor = monitor
                 }
         }
     }

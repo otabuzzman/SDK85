@@ -33,14 +33,30 @@
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
-			<key/>
-			<string/>
+            <key>Title</key>
+			<string>General</string>
+			</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Load custom monitor</string>
+			<key>Key</key>
+			<string>loadCustomMonitor</string>
+			<key>DefaultValue</key>
+			<string>false</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+            <key>Title</key>
+			<string>TTY</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
             <key>Title</key>
-			<string>TTY font color</string>
+			<string>Font color</string>
             <key>File</key>
 			<string>Tty</string>
 		</dict>
