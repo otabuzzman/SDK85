@@ -8,8 +8,6 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 Tinder the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See _User's Manual_ for the usage of either. Switching between monitors yields CPU restart without preserving RAM.
 
-
-
 **Working**
 - GO command (run a program)
 - SUBST MEM command (enter a program)
@@ -76,21 +74,21 @@ Apps used on Winos or Linos
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|
 |sdk85-keyrelease.mp3|Original SDK-85 key release sound.|
 |sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
-|Glass_TTY_VT220.plist|Additional property file for Glass TTY VT220 font|
-|Glass_TTY_VT220.ttf|Glass TTY VT220 font file|
+|Glass_TTY_VT220.plist|Additional property file for Glass TTY VT220 font.|
+|Glass_TTY_VT220.ttf|Glass TTY VT220 font file.|
 |Sources/SDK85|Swift sources folder.|
 |Sdk85.swift|The main program.|
-|I8279.swift|8279 keyboard/ display interface abstraction.|
-|IntIO.swift|Interrupts and I/O ports abstraction for Z80 emulator.|
-|Pcb.swift|View representing PCB with soldered keyboard and display.|
-|Tty.swift|Simple terminal view for TTY monitor usage.|
+|IntIO.swift|Interrupts and I/O ports abstraction for Z80 emulator. Glue code between Z80 emulator and SwiftUI.|
+|I8279.swift|8279 keyboard/ display interface abstraction. Glue code between Z80 emulator and SwiftUI.|
+|Pcb.swift|SDK-85 PCB view with keyboard and display views.|
 |Keyboard.swift|SDK-85 keyboard view.|
+|Display.swift|SDK-85 display view.|
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
-|Display.swift|SDK-85 display view.|
 |SevenSegmentDisplay.swift|A single seven segment digit.|
+|Tty.swift|Simple terminal view for TTY monitor usage.|
 |Sound.swift|A simple sound file player.|
-|Queue.swift|A Queue (FIFO) implementation.|
+|Queue.swift|A queue (FIFO) implementation.|
 |Default.swift|Global default values.|
 
 ### License
