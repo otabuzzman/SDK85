@@ -1,7 +1,7 @@
 import SwiftUI
 import z80
 
-import UniformTypeIdentifiers
+typealias I8085 = Task<(), Never>
 
 enum Device: Int {
     case pcb
@@ -9,9 +9,10 @@ enum Device: Int {
 }
 
 struct Hmi: View {
-    var rom: Data
+    @State var monitor: Data
+    @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     
-    @State var i8085: Task<(), Never>?
+    @State var i8085: I8085?
     @StateObject var intIO = IntIO()
     @StateObject var i8279 = I8279(0x1800...0x19FF)
     
@@ -21,10 +22,6 @@ struct Hmi: View {
     @State private var deviceOffset: CGFloat = 0
     
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
-    
-    init(with rom: Data) {
-        self.rom = rom
-    }
     
     var body: some View {
         // https://habr.com/en/post/476494/
@@ -54,7 +51,7 @@ struct Hmi: View {
                     intIO.SID = 0x80
                 }
                 
-                i8085 = boot(rom)
+                i8085 = boot(monitor, loadRamWith: nil)
             }
         }
         .content.offset(x: deviceOffset)
@@ -98,16 +95,22 @@ struct Hmi: View {
             deviceOffset = -UIScreen.main.bounds.height * CGFloat(thisDeviceIndex)
         }
         .onAppear {
-            i8085 = boot(rom)
+            i8085 = boot(monitor, loadRamWith: nil)
+        }
+        .sheet(isPresented: $loadCustomMonitor) {
+            BinFileLoader(binData: $monitor)
         }
     }
 }
 
 extension Hmi {
-    private func boot(_ rom: Data) -> Task<(), Never> {
+    private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000) -> I8085? {
         Task.detached(priority: .background) {
             var ram = Array<Byte>(repeating: 0, count: 0x10000)
             ram.replaceSubrange(0..<rom.count, with: rom)
+            if let uram = uram, addr >= rom.count {
+                ram.replaceSubrange(Int(addr)..<uram.count, with: uram)
+            }
             
             let mem = await Memory(ram, 0x1000, [i8279])
             var z80 = await Z80(mem, intIO,
@@ -187,13 +190,10 @@ extension View {
 
 @main 
 struct Sdk85: App {
-    @State private var loadCustomMonitor: Bool
-    @State private var monitor: Data
+    private var monitor: Data
     
     init() {
         UserDefaults.registerSettingsBundle()
-        
-        loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
         
         let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)!
         monitor = try! Data(contentsOf: url)
@@ -201,22 +201,7 @@ struct Sdk85: App {
     
     var body: some Scene {
         WindowGroup {
-            Hmi(with: monitor)
-                .fileImporter(isPresented: $loadCustomMonitor,
-                              allowedContentTypes: [.bin],
-                              allowsMultipleSelection: false) { files in
-                    guard
-                        let monitorFile = try? files.get().first,
-                        monitorFile.startAccessingSecurityScopedResource()
-                    else { return }
-                    defer { monitorFile.stopAccessingSecurityScopedResource() }
-                    
-                    guard
-                        let monitor = try? Data(contentsOf: monitorFile)
-                    else { return }
-                    
-                    self.monitor = monitor
-                }
+            Hmi(monitor: monitor)
         }
     }
 }
@@ -253,11 +238,5 @@ extension UserDefaults {
         }
         
         UserDefaults.standard.register(defaults: defaultSettings)
-    }
-}
-
-extension UTType {
-    static var bin: UTType {
-        UTType(tag: "bin", tagClass: .filenameExtension, conformingTo: nil)!
     }
 }

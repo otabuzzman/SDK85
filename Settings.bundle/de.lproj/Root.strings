@@ -3,13 +3,14 @@
 "Acknowledgements" = "Anmerkungen" ;
 
 "General" = "Allgemein" ;
-"Load custom monitor" = "Eigenen MONITOR laden" ;
+"Load custom monitor" = "Eigenen MONITOR laden¹" ;
+"App restart required" = "¹ Neustart der App erforderlich. Zum Aktivieren nach dem Laden nach links wischen." ;
 
 "TTY" = "Terminal (TTY)" ;
 "Font color" = "Schriftfarbe" ;
 
 "Trace" = "Ablaufverfolgung" ;
-"Trace output..." = "Die Ablaufverfolgungsausgabe auf der Konsole ist nur verfügbar, wenn die App mit Debugkonfiguration kompiliert wurde." ;
+"Trace output..." = "Die Ablaufverfolgungsausgabe auf der Konsole ist in Xcode und Swift Playgrounds für iPadOS verfügbar." ;
 "Memory fetch cycles" = "Speicherabrufzyklen" ;
 "Opcode decoding" = "Opcode-Decodierung" ;
 "Late cycles" = "Verspätete Zyklen" ;

@@ -35,7 +35,9 @@
 			<string>PSGroupSpecifier</string>
             <key>Title</key>
 			<string>General</string>
-			</dict>
+			<key>FooterText</key>
+			<string>App restart required</string>
+		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>

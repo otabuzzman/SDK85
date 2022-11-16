@@ -83,6 +83,7 @@ Apps used on Winos or Linos
 |Pcb.swift|SDK-85 PCB view with keyboard and display views.|
 |Keyboard.swift|SDK-85 keyboard view.|
 |Display.swift|SDK-85 display view.|
+|BinFileLoader.swift|File picker view to load custom MONITOR or user programs.|
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
 |SevenSegmentDisplay.swift|A single seven segment digit.|

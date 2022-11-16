@@ -2,7 +2,6 @@ import SwiftUI
 
 struct Pcb: View {
     var i8279: I8279
-    
     var isPortrait: Bool
     
     var body: some View {
