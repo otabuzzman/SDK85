@@ -67,7 +67,7 @@ Apps used on Winos or Linos
   |    |    |    |    |
   |:---|:---|:---|:---|
   |1) Upload app in SP4. Wait for email confirmation (<5 minutes)|2) Select app in Connect|3) Click _Build Activity_ in _TestFlight_ section|4) Select latest build|
-  |![](img/upload-app.PNG)|![](img/connect-select-app.PNG)|![](img/connect-select-testflight.PNG)|![](img/connect-select-build.PNG)|
+  |![](img/sp4-upload-app.PNG)|![](img/connect-select-app.PNG)|![](img/connect-select-testflight.PNG)|![](img/connect-select-build.PNG)|
   |5) Set _Export Compliance Information_||6) Save _Export Compliance Information_. Wait for email confirmation (<5 minutes)|7) Install app in TestFlight|
   |![](img/connect-set-1.PNG)|![](img/connect-set-2.PNG)|![](img/connect-save.PNG)|![](img/testflight-install.PNG)|
  
