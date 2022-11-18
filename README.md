@@ -61,12 +61,19 @@ Apps used on Winos or Linos
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 - Add monitor program from `Intel` folder in WC
 
-### Upload to TestFlight
+### Upload to TestFlight[^1]
 - Close app in SP4
 - Update `displayVersion` and `bundleVersion` in `Package.swift` (Textastic)
-- Upload app in SP4
+  |    |    |    |    |
+  |:---|:---|:---|:---|
+  |1) Upload app in SP4. Wait for email confirmation (<5 minutes)|2) Select app in Connect|3) Click _Build Activity_ in _TestFlight_ section|4) Select latest build|
+  |||||
+  |5) Set _Export Compliance Information_|6) Save _Export Compliance Information_. Wait for email confirmation (<5 minutes)|7) Install app in TestFlight||
+  |||||
+ 
+[^1]: [Apple Developer Program](https://developer.apple.com/programs/) subscription required ($).
 
-# Which file for what
+### Which file for what
 |File|Comment|
 |:---|:------|
 |Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
