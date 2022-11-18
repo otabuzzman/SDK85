@@ -5,6 +5,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Glass_TTY_VT220.ttf</string>
+		<string>DECTerminalModern.ttf</string>
 	</array>
 </dict>
 </plist>

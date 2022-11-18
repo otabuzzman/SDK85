@@ -3,10 +3,11 @@
 "Acknowledgements" = "Acknowledgements" ;
 
 "General" = "General" ;
-"Load custom monitor" = "Load custom monitor¹" ;
-"App restart required" = "¹ App restart required. Swipe left to activate after loading." ;
+"Load custom MONITOR" = "Load custom MONITOR¹" ;
+"App restart required" = "¹ App restart required." ;
 
 "TTY" = "TTY" ;
+"Font" = "Font" ;
 "Font color" = "Font color" ;
 
 "Trace" = "Trace" ;

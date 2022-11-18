@@ -9,20 +9,27 @@ enum Device: Int {
 }
 
 struct Hmi: View {
-    @State var monitor: Data
+    @State var monitor = try! Data(contentsOf: Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)!)
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     
-    @State var i8085: I8085?
-    @StateObject var intIO = IntIO()
-    @StateObject var i8279 = I8279(0x1800...0x19FF)
+    @State private var program = Data()
+    @State private var loadUserProgram = false
     
-    private let device: [Device] = [.pcb, .tty]
+    @State private var i8085: I8085?
+    @StateObject private var intIO = IntIO()
+    @StateObject private var i8279 = I8279(0x1800...0x19FF)
+    
+    private var device: [Device] = [.pcb, .tty]
     @State private var thisDeviceIndex = 0
     @State private var prevDeviceIndex = 0
     @State private var deviceOffset: CGFloat = 0
     
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
-    
+
+    @State private var rotateToLandscapeShow = false
+    @State private var rotateToLandscapeSeen = false
+  
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
@@ -51,7 +58,7 @@ struct Hmi: View {
                     intIO.SID = 0x80
                 }
                 
-                i8085 = boot(monitor, loadRamWith: nil)
+                i8085 = boot(monitor, loadRamWith: program)
             }
         }
         .content.offset(x: deviceOffset)
@@ -74,9 +81,19 @@ struct Hmi: View {
                 {
                     thisDeviceIndex -= 1
                 }
+                if
+                    !rotateToLandscapeSeen,
+                    sizeClass == .compact && isPortrait
+                {
+                    rotateToLandscapeShow = true
+                }
                 withAnimation {
                     deviceOffset = -UIScreen.main.bounds.width * CGFloat(thisDeviceIndex)
                 }
+            })
+        .gesture(TapGesture(count: 2)
+            .onEnded {
+                loadUserProgram = true
             })
         .onRotate { _ in
             // https://stackoverflow.com/a/65586833/9172095
@@ -98,7 +115,31 @@ struct Hmi: View {
             i8085 = boot(monitor, loadRamWith: nil)
         }
         .sheet(isPresented: $loadCustomMonitor) {
-            BinFileLoader(binData: $monitor)
+            BinFileLoader(binData: $monitor) { result in
+                switch result {
+                case .success(let monitor):
+                    i8085?.cancel()
+                    i8085 = boot(monitor, loadRamWith: program)
+                default:
+                    break
+                }
+            }
+        }
+        .sheet(isPresented: $loadUserProgram) {
+            BinFileLoader(binData: $program) { result in
+                switch result {
+                case .success(let program):
+                    i8085?.cancel()
+                    i8085 = boot(monitor, loadRamWith: program)
+                default:
+                    break
+                }
+            }
+        }
+        .alert("Rotate to landscape", isPresented: $rotateToLandscapeShow) {
+            Button("OK") {
+                rotateToLandscapeSeen = true
+            }
         }
     }
 }
@@ -108,8 +149,10 @@ extension Hmi {
         Task.detached(priority: .background) {
             var ram = Array<Byte>(repeating: 0, count: 0x10000)
             ram.replaceSubrange(0..<rom.count, with: rom)
-            if let uram = uram, addr >= rom.count {
-                ram.replaceSubrange(Int(addr)..<uram.count, with: uram)
+            if let uram = uram, addr >= rom.count, uram.count > 0 {
+                let a = Int(addr)
+                let o = a + uram.count
+                ram.replaceSubrange(a..<o, with: uram)
             }
             
             let mem = await Memory(ram, 0x1000, [i8279])
@@ -190,18 +233,13 @@ extension View {
 
 @main 
 struct Sdk85: App {
-    private var monitor: Data
-    
     init() {
         UserDefaults.registerSettingsBundle()
-        
-        let url = Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)!
-        monitor = try! Data(contentsOf: url)
     }
     
     var body: some Scene {
         WindowGroup {
-            Hmi(monitor: monitor)
+            Hmi()
         }
     }
 }

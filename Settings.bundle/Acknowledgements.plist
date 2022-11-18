@@ -10,7 +10,7 @@
 			<key>FooterText</key>
 			<string>
 Acknowledgements
-Portions of this software utilizes the following copyrighted materials, the use of which is hereby acknoledged.
+Portions of this software utilizes the following copyrighted materials, the use of which is hereby acknowledged.
 
 
 
@@ -70,6 +70,11 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to &lt;https://unlicense.org&gt;
+
+
+
+Dan Mecklenburg Jr. - (DEC Terminal Modern font)
+Free for personal use.
 			</string>
 		</dict>
 	</array>

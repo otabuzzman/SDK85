@@ -10,7 +10,27 @@
 			<key>Type</key>
 			<string>PSRadioGroupSpecifier</string>
 			<key>Title</key>
-			<string/>
+			<string>Font</string>
+			<key>Key</key>
+			<string>crtFont</string>
+			<key>DefaultValue</key>
+			<string>Glass_TTY_VT220</string>
+			<key>Titles</key>
+			<array>
+				<string>Glass_TTY_VT220</string>
+				<string>DEC Terminal Modern</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>Glass_TTY_VT220</string>
+				<string>DEC Terminal Modern</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSRadioGroupSpecifier</string>
+			<key>Title</key>
+			<string>Font color</string>
 			<key>Key</key>
 			<string>crtColor</string>
 			<key>DefaultValue</key>

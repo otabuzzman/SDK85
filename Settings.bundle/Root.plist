@@ -42,7 +42,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Load custom monitor</string>
+			<string>Load custom MONITOR</string>
 			<key>Key</key>
 			<string>loadCustomMonitor</string>
 			<key>DefaultValue</key>
@@ -50,15 +50,9 @@
 		</dict>
 		<dict>
 			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-            <key>Title</key>
-			<string>TTY</string>
-		</dict>
-		<dict>
-			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
             <key>Title</key>
-			<string>Font color</string>
+			<string>TTY</string>
             <key>File</key>
 			<string>Tty</string>
 		</dict>
