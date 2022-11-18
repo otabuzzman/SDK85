@@ -6,8 +6,6 @@ struct Tty: View {
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     
-    private let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? Default.crtFont
-    
     var crtColor: Dictionary<String, Color> = [
         "Amber": .crtAmber,
         "Green": .crtGreen
@@ -18,6 +16,7 @@ struct Tty: View {
             let width = geometry.size.width
             let height = geometry.size.height
             
+            let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? Default.crtFont
             let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
             
             VStack { // https://swiftui-lab.com/geometryreader-bug/ (FB7971927)
