@@ -4,11 +4,8 @@
 
 "General" = "General" ;
 "Load custom MONITOR" = "Load custom MONITOR¹" ;
-"App restart required" = "¹ App restart required." ;
-
 "TTY" = "TTY" ;
-"Font" = "Font" ;
-"Font color" = "Font color" ;
+"App restart required" = "¹ App restart required." ;
 
 "Trace" = "Trace" ;
 "Trace output..." = "Trace output on console is available in Xcode and Swift Playgrounds on iPadOS." ;

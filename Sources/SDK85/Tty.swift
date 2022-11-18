@@ -5,8 +5,8 @@ struct Tty: View {
     var isPortrait: Bool
     
     @Environment(\.horizontalSizeClass) private var sizeClass
-    private let characterUnitWidth = " "
-        .width(withFont: UIFont(name: "DEC Terminal Modern", size: 1)!)
+    
+    private let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? Default.crtFont
     
     var crtColor: Dictionary<String, Color> = [
         "Amber": .crtAmber,
@@ -18,6 +18,8 @@ struct Tty: View {
             let width = geometry.size.width
             let height = geometry.size.height
             
+            let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
+            
             VStack { // https://swiftui-lab.com/geometryreader-bug/ (FB7971927)
                 Text(intIO.SOD)
                     .padding(16)
@@ -25,7 +27,7 @@ struct Tty: View {
                         width: width,
                         height: height,
                         alignment: .topLeading)
-                    .font(Font.custom("DEC Terminal Modern", size: UIScreen.main.bounds.width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))))
+                    .font(Font.custom(crtFont, size: UIScreen.main.bounds.width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))))
                     .background { Color.black } // https://stackoverflow.com/a/71935851
                     .foregroundColor(crtColor[UserDefaults.standard.string(forKey: "crtColor") ?? Default.crtColor])
             }.frame(width: width, height: height)

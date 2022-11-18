@@ -270,7 +270,8 @@ extension UserDefaults {
         for preferenceDictionary in preferenceDictionaries {
             if
                 let key = preferenceDictionary["Key"] as? String,
-                let value = preferenceDictionary["DefaultValue"] {
+                let value = preferenceDictionary["DefaultValue"]
+            {
                 defaultSettings[key] = value
             }
         }

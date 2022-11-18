@@ -55,6 +55,7 @@ struct Default {
         }
     }
     
+    static let crtFont = "Glass_TTY_VT220"
     static let crtColor = "Green"
 }
 
