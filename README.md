@@ -6,7 +6,7 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 ### Usage
 
-Tinder the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See _User's Manual_ for the usage of either. Switching between monitors yields CPU restart without preserving RAM.
+Swipe the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See _User's Manual_ for the usage of either. Switching between monitors yields CPU restart without preserving RAM. Double-tap PCB to load a user program file with 8085 machine code at 0x2000.
 
 **Working**
 - GO command (run a program)
@@ -38,6 +38,9 @@ Apps used on iPad
 - [Working Copy](https://workingcopyapp.com/) (WC)
 - [Textastic](https://www.textasticapp.com/) (can handle files in *Swift Playgrounds* and *Working Copy* folders)
 - [GitHub](https://apps.apple.com/us/app/github/id1477376905)
+- [App Store Connect](https://apps.apple.com/de/app/app-store-connect/id1234793120) (Connect)
+- [TestFlight](https://apps.apple.com/de/app/testflight/id899247664) (TF)
+- [UniChar](https://apps.apple.com/de/app/unichar-unicode-keyboard/id880811847) (Unicode keyboard)
  
 Apps used on Winos or Linos
 - [8085 assembler](https://github.com/TomNisbet/asm85) (optional)
@@ -47,22 +50,23 @@ Apps used on Winos or Linos
 - Create and open a new app in SP4
 - Delete predefined `*.swift` files
 - Copy Swift files (except `Package.swift`) from repository:
-
   - Get repository on iPad (Working Copy)
   - Copy Sources folder from WC to SP4 (Textastic)
-
-- Add files from `Recources` folder in WC:
+- Add files from `Recources` folder in WC: 
   - Add background photo
   - Add key press/ release sound files
-  - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
-  - Add Glass TTY VT220 font files (.plist and .ttf)
-    - Add `additionalInfoPlistContentFilePath: "Resources/Glass_TTY_VT220.plist"` to `.iOSApplication` in `Package.swift`
+- Add entries to `Package.swift`
+  - Add `additionalInfoPlistContentFilePath: „Resources/FontInfo.plist“` to `.iOSApplication`
+  - Add `.copy(„Settings.bundle“)` to `.executableTarget/resources`
+- Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 - Add monitor program from `Intel` folder in WC
 
-- Copy `Settings.bundle` from WC to TLD
-  - Add `.copy("Settings.bundle")` to `Package.swift`
+### Upload to TestFlight
+- Close app in SP4
+- Update `displayVersion` and `bundleVersion` in `Package.swift` (Textastic)
+- Upload app in SP4
 
-### Which file for what
+# Which file for what
 |File|Comment|
 |:---|:------|
 |Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
@@ -122,7 +126,7 @@ Recordings kindly provided by [Hans Otten](http://retro.hansotten.nl/contact/).
 #### Z80 emulator package (referenced)
 [License information](https://github.com/otabuzzman/z80#license) in emulator’s repository.
 
-#### Glass TTY VT220 TrueType font
+#### Glass TTY VT220 font
 Viacheslav Slavinsky
 
 This is free and unencumbered software released into the public domain.
@@ -149,3 +153,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <[https://unlicense.org](https://unlicense.org)>
+
+#### DEC Terminal Modern font
+Copyright (c) Dan Mecklenburg Jr.
+
+Free for personal use.
