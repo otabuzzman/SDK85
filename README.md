@@ -56,7 +56,7 @@ Apps used on Winos or Linos
 - Add files from `Recources` folder in WC: 
   - Add background photo
   - Add key press/ release sound files
-- Add files from `Intel` folder in WC
+- Add files from `Intel` folder in WC:
   - Add monitor program
 
 ### Upload to TestFlight[^1]
@@ -161,6 +161,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <[https://unlicense.org](https://unlicense.org)>
 
 #### DEC Terminal Modern font
-Copyright (c) Dan Mecklenburg Jr.
+Copyright (c) 2015 Dan Mecklenburg Jr.
 
 Free for personal use.
