@@ -137,7 +137,7 @@ struct Hmi: View {
             }
         }
         .alert("Rotate to landscape", isPresented: $rotateToLandscapeShow) {
-            Button("OK") {
+            Button("Good to know") {
                 rotateToLandscapeSeen = true
             }
         }

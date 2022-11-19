@@ -52,14 +52,12 @@ Apps used on Winos or Linos
 - Copy Swift files (except `Package.swift`) from repository:
   - Get repository on iPad (Working Copy)
   - Copy Sources folder from WC to SP4 (Textastic)
+- Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 - Add files from `Recources` folder in WC: 
   - Add background photo
   - Add key press/ release sound files
-- Add entries to `Package.swift`
-  - Add `additionalInfoPlistContentFilePath: „Resources/FontInfo.plist“` to `.iOSApplication`
-  - Add `.copy(„Settings.bundle“)` to `.executableTarget/resources`
-- Add [Z80 emulator package](https://github.com/otabuzzman/z80)
-- Add monitor program from `Intel` folder in WC
+- Add files from `Intel` folder in WC
+  - Add monitor program
 
 ### Upload to TestFlight[^1]
 - Close app in SP4
