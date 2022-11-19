@@ -1,15 +1,15 @@
 import SwiftUI
 
+private var crtColor: Dictionary<String, Color> = [
+    "Amber": .crtAmber,
+    "Green": .crtGreen
+]
+
 struct Tty: View {
     @ObservedObject var intIO: IntIO
     var isPortrait: Bool
     
     @Environment(\.horizontalSizeClass) private var sizeClass
-    
-    var crtColor: Dictionary<String, Color> = [
-        "Amber": .crtAmber,
-        "Green": .crtGreen
-    ]
     
     var body: some View {
         GeometryReader { geometry in

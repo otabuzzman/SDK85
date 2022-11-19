@@ -85,8 +85,9 @@ Apps used on Winos or Linos
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|
 |sdk85-keyrelease.mp3|Original SDK-85 key release sound.|
 |sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
-|Glass_TTY_VT220.plist|Additional property file for Glass TTY VT220 font.|
+|FontInfo.plist|Additional property file for custum fonts.|
 |Glass_TTY_VT220.ttf|Glass TTY VT220 font file.|
+|DECTerminalModerm.ttf|DEC Terminal Modern font file.
 |Sources/SDK85|Swift sources folder.|
 |Sdk85.swift|The main program.|
 |IntIO.swift|Interrupts and I/O ports abstraction for Z80 emulator. Glue code between Z80 emulator and SwiftUI.|
