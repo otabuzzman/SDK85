@@ -245,20 +245,27 @@ struct Sdk85: App {
 }
 
 extension UserDefaults {
+    static var appLaunchedBefore: Bool {
+        if UserDefaults.standard.bool(forKey: "launchedBefore") {
+            return true
+        } else {
+            UserDefaults.standard.set(true, forKey: "launchedBefore")
+            return false
+        }
+    }
+    
     static func registerSettingsBundle() {
-        if !UserDefaults.standard.bool(forKey: "firstLaunch") {
-            UserDefaults.registerDefaultSettings()
+        if !UserDefaults.appLaunchedBefore {
+            UserDefaults.registerUserDefaults()
             
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
             let build = Bundle.main.infoDictionary?["CFBundleVersion"]
             let versionInfo = "\(version!) (\(build!))"
             UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
-            
-            UserDefaults.standard.set(true, forKey: "firstLaunch")
         }
     }
     
-    static func registerDefaultSettings() {
+    static func registerUserDefaults() {
         guard
             let settingsBundleFile = Bundle.main.url(forResource: "Root.plist", withExtension: nil),
             let settingsBundleData = NSDictionary(contentsOf: settingsBundleFile),
@@ -266,16 +273,16 @@ extension UserDefaults {
                 forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
         else { return }
         
-        var defaultSettings = [String : AnyObject]()
+        var userDefaults = [String : AnyObject]()
         for preferenceDictionary in preferenceDictionaries {
             if
                 let key = preferenceDictionary["Key"] as? String,
                 let value = preferenceDictionary["DefaultValue"]
             {
-                defaultSettings[key] = value
+                userDefaults[key] = value
             }
         }
         
-        UserDefaults.standard.register(defaults: defaultSettings)
+        UserDefaults.standard.register(defaults: userDefaults)
     }
 }
