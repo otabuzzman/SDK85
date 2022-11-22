@@ -10,15 +10,15 @@ struct Tty: View {
     var isPortrait: Bool
     
     @Environment(\.horizontalSizeClass) private var sizeClass
-    
+        
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = geometry.size.height
             
-            let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? Default.crtFont
-            let crtColor = UserDefaults.standard.string(forKey: "crtColor") ?? Default.crtColor
-
+            let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? "Glass_TTY_VT220"
+            let crtColor = UserDefaults.standard.string(forKey: "crtColor") ?? "Green"
+            
             let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
                 
             VStack { // https://swiftui-lab.com/geometryreader-bug/ (FB7971927)

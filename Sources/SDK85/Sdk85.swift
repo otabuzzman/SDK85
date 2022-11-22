@@ -256,7 +256,7 @@ extension UserDefaults {
     
     static func registerSettingsBundle() {
         if !UserDefaults.appLaunchedBefore {
-            UserDefaults.registerUserDefaults()
+            UserDefaults.registerUserDefaults(fromPlistFiles: ["Root", "Tty"])
             
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
             let build = Bundle.main.infoDictionary?["CFBundleVersion"]
@@ -264,25 +264,34 @@ extension UserDefaults {
             UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
         }
     }
-    
-    static func registerUserDefaults() {
+ 
+    static func registerUserDefaults(fromPlistFiles files: [String] = ["Root"]) {
         guard
-            let settingsBundleFile = Bundle.main.url(forResource: "Root.plist", withExtension: nil),
-            let settingsBundleData = NSDictionary(contentsOf: settingsBundleFile),
-            let preferenceDictionaries = settingsBundleData.object(
-                forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
+            let settingsBundle = Bundle.main.url(forResource: "Settings.bundle", withExtension: nil)
         else { return }
-        
-        var userDefaults = [String : AnyObject]()
-        for preferenceDictionary in preferenceDictionaries {
-            if
-                let key = preferenceDictionary["Key"] as? String,
-                let value = preferenceDictionary["DefaultValue"]
-            {
-                userDefaults[key] = value
+
+        for plist in files {
+            let sbUrl = settingsBundle
+            guard
+                let settingsBundleData =
+                    NSDictionary(contentsOf: sbUrl
+                        .appendingPathComponent(plist)
+                        .appendingPathExtension("plist")),
+                let preferenceSpecifiers =
+                    settingsBundleData.object(forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
+            else { return }
+            
+            var userDefaults = [String : AnyObject]()
+            for preferenceSpecifier in preferenceSpecifiers {
+                if
+                    let key = preferenceSpecifier["Key"] as? String,
+                    let value = preferenceSpecifier["DefaultValue"]
+                {
+                    userDefaults[key] = value
+                }
             }
+            
+            UserDefaults.standard.register(defaults: userDefaults)
         }
-        
-        UserDefaults.standard.register(defaults: userDefaults)
     }
 }

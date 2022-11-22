@@ -54,9 +54,6 @@ struct Default {
             print(String(format: "  OUT 0x%04X : 0x%02X (%@)", port, data, data.bitsToString))
         }
     }
-    
-    static let crtFont = "Glass_TTY_VT220"
-    static let crtColor = "Green"
 }
 
 extension Byte {
