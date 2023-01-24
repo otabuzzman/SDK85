@@ -38,7 +38,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/otabuzzman/z80.git", "0.1.7"..<"1.0.0")
+        .package(url: "https://github.com/otabuzzman/z80.git", "0.1.8"..<"1.0.0")
     ],
     targets: [
         .executableTarget (
