@@ -5,7 +5,10 @@ A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_Syst
 The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.hansotten.nl/uploads/sdk85/9800451B.pdf)). A transcript of the relevant pages (67 - 93) had been done with [AWS Textract](https://aws.amazon.com/textract/), followed by numerous AWK scripts, and eventually manually edited. Though the assembler is happy, overseen errors might still hide in the code.
 
 ### Tools
-- [Swift on Windows](https://www.swift.org/blog/swift-on-windows/) 5.6
+- [Visual Studio Community 2022](https://visualstudio.microsoft.com/de/vs/community/)
+- [Swift on Windows](https://www.swift.org/blog/swift-on-windows/) 5.7
+  - Tradition Installation of MSI
+  - `winget install Git.Git`
 - [8085 assembler](https://github.com/TomNisbet/asm85) (optional)
 - [Cygwin](https://www.cygwin.com/) with development tools (to compile 8085 assembler)
 
