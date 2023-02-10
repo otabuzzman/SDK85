@@ -54,10 +54,9 @@ Apps used on Winos or Linos
   - Copy Sources folder from WC to SP4 (Textastic)
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 - Add files from `Recources` folder in WC: 
+  - Add monitor program
   - Add background photo
   - Add key press/ release sound files
-- Add files from `Intel` folder in WC:
-  - Add monitor program
 
 ### Upload to TestFlight[^1]
 - Close app in SP4
