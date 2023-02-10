@@ -159,7 +159,6 @@ extension Hmi {
             var z80 = await Z80(mem, intIO,
                                 traceMemory: Default.traceMemory,
                                 traceOpcode: Default.traceOpcode,
-                                traceTiming: Default.traceTiming,
                                 traceNmiInt: Default.traceNmiInt)
             
             while (!z80.Halt) {

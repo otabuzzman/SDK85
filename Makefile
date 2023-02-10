@@ -5,7 +5,7 @@ A85 ?= asm85
 .asm.bin:
 	$(A85) -b0000:07FF $^
 
-Intel/sdk85-0000.bin: sdk85-0000.bin
+Resources/sdk85-0000.bin: sdk85-0000.bin
 	install -m 0664 $^ $@
 
 Intel/SDK85.SRC: Intel/SDK85.LST

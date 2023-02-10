@@ -17,15 +17,7 @@ struct Default {
         
         print(Z80Mne.mnemonic(prefix, opcode, imm, imm16, dimm))
     }
-    
-    static let traceTiming: Z80.TraceTiming = { sleep, CLK in
-        let debug = _isDebugAssertConfiguration()
-        let prefs = UserDefaults.standard.bool(forKey: "traceTiming")
-        if !(debug && prefs) { return }
-        
-        print(String(format: "%d T states late", Int(abs(sleep * Double(CLK)))))
-    }
-    
+
     static let traceNmiInt: Z80.TraceNmiInt = { interrupt, addr, instruction in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceNmiInt")
