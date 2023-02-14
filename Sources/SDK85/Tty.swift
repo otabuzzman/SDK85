@@ -8,19 +8,19 @@ private var crtColorMap: Dictionary<String, Color> = [
 struct Tty: View {
     @ObservedObject var intIO: IntIO
     var isPortrait: Bool
-    
+
     @Environment(\.horizontalSizeClass) private var sizeClass
-        
+
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = geometry.size.height
-            
+
             let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? "Glass_TTY_VT220"
             let crtColor = UserDefaults.standard.string(forKey: "crtColor") ?? "Green"
-            
+
             let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
-                
+
             VStack { // https://swiftui-lab.com/geometryreader-bug/ (FB7971927)
                 Text(intIO.SOD)
                     .padding(16)
@@ -37,7 +37,7 @@ extension String {
     func width(withFont font: UIFont) -> CGFloat {
         let attr = [NSAttributedString.Key.font: font]
         let size = self.size(withAttributes: attr)
-        
+
         return size.width
     }
 }

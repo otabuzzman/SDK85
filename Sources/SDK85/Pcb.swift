@@ -3,7 +3,7 @@ import SwiftUI
 struct Pcb: View {
     var i8279: I8279
     var isPortrait: Bool
-    
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             Image("sdk85-pcb")
@@ -14,7 +14,7 @@ struct Pcb: View {
                     maxHeight: isPortrait ? nil : UIScreen.main.bounds.height,
                     alignment: .bottomTrailing)
                 .overlay(Credit(), alignment: .topLeading)
-            
+
             VStack {
                 Display(i8279: i8279)
                 Keyboard(i8279: i8279)
@@ -41,12 +41,27 @@ struct Credit: View {
 }
 
 struct OnRotate: ViewModifier {
+    @Binding var isPortrait: Bool
     let action: (UIDeviceOrientation) -> Void
-    
+
     func body(content: Content) -> some View {
         content
             .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { orientation in
-                action(UIDevice.current.orientation)
+                // https://stackoverflow.com/a/65586833/9172095
+                // UIDevice.orientation not save on app launch
+                let scenes = UIApplication.shared.connectedScenes
+                let windowScene = scenes.first as? UIWindowScene
+
+                guard
+                    let isPortrait = windowScene?.interfaceOrientation.isPortrait
+                else { return }
+
+                // interface orientation not affected when rotated to flat 
+                if self.isPortrait == isPortrait { return }
+
+                self.isPortrait = isPortrait
+
+                action(orientation)
             }
     }
 }

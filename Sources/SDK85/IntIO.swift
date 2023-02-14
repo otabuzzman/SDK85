@@ -15,19 +15,19 @@ typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 final class IntIO: ObservableObject, IPorts
 {
     private var state = NSLock()
-    
+
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
-    
+
     private var timerState = TimerState.reset
     private var timerCount: UShort = 0
     private var timerValue: UShort = 0
-    
+
     private var bots: UInt = 0
     private var sod: Byte = 0
     @Published var SOD = ""
-    
+
     private var bits: UInt = 0
     var tty = false
     private var sid: Byte = 0
@@ -43,31 +43,31 @@ final class IntIO: ObservableObject, IPorts
             sid = value
         }
     }
-    
+
     private var traceIO: TraceIO?
-    
+
     init(traceIO: TraceIO? = Default.traceIO) {
         self.traceIO = traceIO
     }
-    
+
     func reset() {
         _NMI = false
         _INT = false
         _data = 0x00
-        
+
         timerState = TimerState.reset
         timerCount = 0
         timerValue = 0
-        
+
         bots = 0
         sod = 0
         SOD = ""
-        
+
         bits = 0
         tty = false
         sid = 0
     }
-    
+
     func TIMER_IN(pulses: UShort) -> TimerState {
         var returnState = timerState
         if timerState == .started || timerState == .pending {
@@ -88,7 +88,7 @@ final class IntIO: ObservableObject, IPorts
         }
         return returnState
     }
-    
+
     func rdPort(_ port: UShort) -> Byte
     {
         var data: Byte = 0
@@ -110,11 +110,11 @@ final class IntIO: ObservableObject, IPorts
         default:
             break
         }
-        
+
         traceIO?(true, port, data)
         return data
     }
-    
+
     func wrPort(_ port: UShort, _ data: Byte)
     {
         switch port & 0xFF {
@@ -152,10 +152,10 @@ final class IntIO: ObservableObject, IPorts
         default:
             break
         }
-        
+
         traceIO?(false, port, data)
     }
-    
+
     var NMI: Bool {
         get {
             state.lock()

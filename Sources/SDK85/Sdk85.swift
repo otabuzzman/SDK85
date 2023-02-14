@@ -11,25 +11,25 @@ enum Device: Int {
 struct Hmi: View {
     @State var monitor = try! Data(contentsOf: Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)!)
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
-    
+
     @State private var program = Data()
     @State private var loadUserProgram = false
-    
+
     @State private var i8085: I8085?
     @StateObject private var intIO = IntIO()
     @StateObject private var i8279 = I8279(0x1800...0x19FF)
-    
+
     private var device: [Device] = [.pcb, .tty]
     @State private var thisDeviceIndex = 0
     @State private var prevDeviceIndex = 0
     @State private var deviceOffset: CGFloat = 0
-    
+
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
 
     @State private var rotateToLandscapeShow = false
     @State private var rotateToLandscapeSeen = false
-  
+
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
@@ -43,12 +43,12 @@ struct Hmi: View {
                 guard
                     thisDeviceIndex != prevDeviceIndex
                 else { return }
-                
+
                 i8085?.cancel()
-                
+
                 intIO.reset()
                 i8279.reset()
-                
+
                 switch device[thisDeviceIndex] {
                 case .pcb:
                     intIO.tty = false
@@ -57,7 +57,7 @@ struct Hmi: View {
                     intIO.tty = true
                     intIO.SID = 0x80
                 }
-                
+
                 i8085 = boot(monitor, loadRamWith: program)
             }
         }
@@ -95,20 +95,7 @@ struct Hmi: View {
             .onEnded {
                 loadUserProgram = true
             })
-        .onRotate { _ in
-            // https://stackoverflow.com/a/65586833/9172095
-            // UIDevice.orientation not save on app launch
-            let scenes = UIApplication.shared.connectedScenes
-            let windowScene = scenes.first as? UIWindowScene
-            
-            guard
-                let isPortrait = windowScene?.interfaceOrientation.isPortrait
-            else { return }
-            
-            // interface orientation not affected when rotated to flat 
-            if self.isPortrait == isPortrait { return }
-            
-            self.isPortrait = isPortrait
+        .onRotate(isPortrait: $isPortrait) { _ in
             deviceOffset = -UIScreen.main.bounds.height * CGFloat(thisDeviceIndex)
         }
         .onAppear {
@@ -154,13 +141,13 @@ extension Hmi {
                 let o = a + uram.count
                 ram.replaceSubrange(a..<o, with: uram)
             }
-            
+
             let mem = await Memory(ram, 0x1000, [i8279])
             var z80 = await Z80(mem, intIO,
                                 traceMemory: Default.traceMemory,
                                 traceOpcode: Default.traceOpcode,
                                 traceNmiInt: Default.traceNmiInt)
-            
+
             while (!z80.Halt) {
                 if Task.isCancelled {
                     break
@@ -199,25 +186,25 @@ struct OnAnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorAr
             notifyCompletionFinished()
         }
     }
-    
+
     private var value: Value
     private var completion: () -> Void
-    
+
     init(value: Value, completion: @escaping () -> Void) {
         animatableData = value
         self.value = value
         self.completion = completion
     }
-    
+
     func body(content: Content) -> some View {
         return content
     }
-    
+
     private func notifyCompletionFinished() {
         guard
             animatableData == value
         else { return }
-        
+
         DispatchQueue.main.async {
             completion()
         }
@@ -235,7 +222,7 @@ struct Sdk85: App {
     init() {
         UserDefaults.registerSettingsBundle()
     }
-    
+
     var body: some Scene {
         WindowGroup {
             Hmi()
@@ -252,18 +239,18 @@ extension UserDefaults {
             return false
         }
     }
-    
+
     static func registerSettingsBundle() {
         if !UserDefaults.appLaunchedBefore {
             UserDefaults.registerUserDefaults(fromPlistFiles: ["Root", "Tty"])
-            
+
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
             let build = Bundle.main.infoDictionary?["CFBundleVersion"]
             let versionInfo = "\(version!) (\(build!))"
             UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
         }
     }
- 
+
     static func registerUserDefaults(fromPlistFiles files: [String] = ["Root"]) {
         guard
             let settingsBundle = Bundle.main.url(forResource: "Settings.bundle", withExtension: nil)
@@ -279,7 +266,7 @@ extension UserDefaults {
                 let preferenceSpecifiers =
                     settingsBundleData.object(forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
             else { return }
-            
+
             var userDefaults = [String : AnyObject]()
             for preferenceSpecifier in preferenceSpecifiers {
                 if
@@ -289,7 +276,7 @@ extension UserDefaults {
                     userDefaults[key] = value
                 }
             }
-            
+
             UserDefaults.standard.register(defaults: userDefaults)
         }
     }

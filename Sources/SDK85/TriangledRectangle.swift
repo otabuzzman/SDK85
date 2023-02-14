@@ -34,10 +34,10 @@ struct TriangledRectangle: View {
 
 struct IsoscelesTriangle: Shape {
     var apexDirection: Alignment = .top
-    
+
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        
+
         switch apexDirection {
         case .top:
             path.move(to: CGPoint(x: rect.midX, y: rect.midY))
@@ -65,7 +65,7 @@ struct IsoscelesTriangle: Shape {
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
             path.addLine(to: CGPoint(x: rect.midX, y: rect.midY))
         }
-        
+
         return path
     }
 }

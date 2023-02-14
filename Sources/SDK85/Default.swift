@@ -6,15 +6,15 @@ struct Default {
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceMemory")
         if !(debug && prefs) { return }
-        
+
         print(String(format: "  %04X %02X ", addr, data))
     }
-    
+
     static let traceOpcode: Z80.TraceOpcode = { prefix, opcode, imm, imm16, dimm in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceOpcode")
         if !(debug && prefs) { return }
-        
+
         print(Z80Mne.mnemonic(prefix, opcode, imm, imm16, dimm))
     }
 
@@ -22,7 +22,7 @@ struct Default {
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceNmiInt")
         if !(debug && prefs) { return }
-        
+
         switch interrupt {
         case .Nmi:
             print(String(format: "NMI PC: 0x%04X", addr))
@@ -34,12 +34,12 @@ struct Default {
             print(String(format: "IM2 PC: 0x%04X", addr))
         }
     }
-    
+
     static let traceIO: TraceIO = { rdPort, port, data in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceIO")
         if !(debug && prefs) { return }
-        
+
         if rdPort {
             print(String(format: "  IN 0x%04X : 0x%02X", port, data))
         } else {
@@ -54,7 +54,7 @@ extension Byte {
         let a = Array<Character>(repeating: "0", count: 8 - b.count)
         return String(a + b)
     }
-    
+
     var reverseBits: Byte {
         var a = (self & 0xF0) >> 4 | (self & 0x0F) << 4
         a = (a & 0xCC) >> 2 | (a & 0x33) << 2

@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct Display: View {
-    @ObservedObject var i8279: I8279
-    
+    var i8279: I8279
+
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
-    
+
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
-        
+
         VStack {
             HStack {
                 HStack(spacing: 4) {
@@ -22,7 +22,7 @@ struct Display: View {
                     .background(.package)
                 }
                 .padding(.trailing, 16)
-                
+
                 HStack(spacing: 4) {
                     Group {
                         SevenSegmentDisplay(dcbapgfe: i8279.DF1)

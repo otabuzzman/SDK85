@@ -3,7 +3,7 @@ import z80
 
 final class I8279: ObservableObject, MPorts {
     private var CNTRL: Byte = 0x08
-    
+
     // address fields 1...4
     @Published var AF1: Byte = ~0x67 // H
     @Published var AF2: Byte = ~0x77 // A
@@ -13,33 +13,33 @@ final class I8279: ObservableObject, MPorts {
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
     private var fieldCount = 1
-    
+
     var FIFO = Fifo()
     var RL07 = Fifo()
-    
+
     private var traceIO: TraceIO?
-    
+
     init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = Default.traceIO) {
         self.mmap = mmap
         self.traceIO = traceIO
     }
-    
+
     func reset() {
         CNTRL = 0x08
-        
+
         AF1 = ~0x67
         AF2 = ~0x77
         AF3 = ~0x83
         AF4 = ~0x8F
-        
+
         DF1 = ~0x00
         DF2 = ~0x00
         fieldCount = 1
-        
+
         FIFO.removeAll()
         RL07.removeAll()
     }
-    
+
     func rdPort(_ port: UShort) -> Byte {
         var data: Byte = 0x00
         switch port {
@@ -50,11 +50,11 @@ final class I8279: ObservableObject, MPorts {
         default:
             break
         }
-        
+
         traceIO?(true, port, data)
         return data
     }
-    
+
     func wrPort(_ port: UShort, _ data: Byte) {
         switch port {
         case 0x1800:
@@ -90,22 +90,22 @@ final class I8279: ObservableObject, MPorts {
         default:
             break
         }
-        
+
         traceIO?(false, port, data)
     }
-    
+
     var mmap: ClosedRange<UShort>
 }
 
 class Fifo: Queue<Byte> {
     private var state = NSLock()
-    
+
     override func enqueue(_ element: Byte) {
         state.lock()
         defer { state.unlock() }
         super.enqueue(element)
     }
-    
+
     override func dequeue() -> Byte? {
         state.lock()
         defer { state.unlock() }
