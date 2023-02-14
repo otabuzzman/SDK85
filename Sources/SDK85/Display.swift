@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Display: View {
-    var i8279: I8279
+    @ObservedObject var i8279: I8279
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass

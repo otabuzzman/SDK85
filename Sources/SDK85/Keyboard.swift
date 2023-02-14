@@ -2,7 +2,7 @@ import SwiftUI
 import z80
 
 struct Keyboard: View {
-    var i8279: I8279
+    @ObservedObject var i8279: I8279
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass

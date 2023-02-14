@@ -61,13 +61,13 @@ struct OnRotate: ViewModifier {
 
                 self.isPortrait = isPortrait
 
-                action(orientation)
+                action(UIDevice.current.orientation)
             }
     }
 }
 
 extension View {
-    func onRotate(perform action: @escaping (UIDeviceOrientation) -> Void) -> some View {
-        self.modifier(OnRotate(action: action))
+    func onRotate(isPortrait: Binding<Bool>, action: @escaping (UIDeviceOrientation) -> Void) -> some View {
+        self.modifier(OnRotate(isPortrait: isPortrait, action: action))
     }
 }
