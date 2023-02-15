@@ -17,6 +17,7 @@ final class I8279: ObservableObject, MPorts {
     var FIFO = Fifo()
     var RL07 = Fifo()
 
+    var mmap: ClosedRange<UShort>
     private var traceIO: TraceIO?
 
     init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = Default.traceIO) {
@@ -93,8 +94,6 @@ final class I8279: ObservableObject, MPorts {
 
         traceIO?(false, port, data)
     }
-
-    var mmap: ClosedRange<UShort>
 }
 
 class Fifo: Queue<Byte> {
