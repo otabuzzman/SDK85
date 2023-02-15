@@ -154,7 +154,7 @@ extension Hmi {
                 }
                 let tStates = z80.parse()
                 if await intIO.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
-                    print(z80.dumpStateCompact())
+                    // print(z80.dumpStateCompact())
                     await MainActor.run() { intIO.NMI = true }
                 }
                 if let key = await i8279.FIFO.dequeue() {
@@ -167,8 +167,8 @@ extension Hmi {
                             intIO.data = 0xFF // RST 7
                         }
                     default:
-                        await i8279.RL07.enqueue(key)
                         await MainActor.run() {
+                            i8279.RL07.enqueue(key)
                             intIO.INT = true
                             intIO.data = 0xEF // RST 5
                         }

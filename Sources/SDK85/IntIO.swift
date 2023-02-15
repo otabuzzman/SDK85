@@ -69,7 +69,7 @@ final class IntIO: ObservableObject, IPorts
     }
 
     func TIMER_IN(pulses: UShort) -> TimerState {
-        var returnState = timerState
+        var state = timerState
         if timerState == .started || timerState == .pending {
             for _ in 1...pulses {
                 timerCount -= 1
@@ -82,11 +82,11 @@ final class IntIO: ObservableObject, IPorts
                     default:
                         break
                     }
-                    returnState = .elapsed
+                    state = .elapsed
                 }
             }
         }
-        return returnState
+        return state
     }
 
     func rdPort(_ port: UShort) -> Byte
@@ -134,7 +134,7 @@ final class IntIO: ObservableObject, IPorts
                 break
             }
         case 0x24:
-            timerValue = (timerValue & 0xFF00) + (data)
+            timerValue = (timerValue & 0xFF00) + data
         case 0x25:
             timerValue = (timerValue & 0x00FF) + (UShort(data & 0x3F) << 8)
         case 0xFF:
