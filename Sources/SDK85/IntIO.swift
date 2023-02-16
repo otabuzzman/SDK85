@@ -12,14 +12,15 @@ enum TimerState {
 
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
-final class IntIO: ObservableObject, IPorts
-{
+final class IntIO: ObservableObject, IPorts {
     private var state = NSLock()
 
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
-
+    
+    private var _RESET = false
+    
     private var timerState = TimerState.reset
     private var timerCount: UShort = 0
     private var timerValue: UShort = 0
@@ -156,13 +157,13 @@ final class IntIO: ObservableObject, IPorts
         traceIO?(false, port, data)
     }
 
-    var NMI: Bool {
+    nonisolated var NMI: Bool {
         get {
             state.lock()
             defer { state.unlock() }
-            let ret = _NMI
+            let tmp = _NMI
             _NMI = false
-            return ret
+            return tmp
         }
         set(value) {
             state.lock()
@@ -170,13 +171,13 @@ final class IntIO: ObservableObject, IPorts
             _NMI = value
         }
     }
-    var INT: Bool {
+    nonisolated var INT: Bool {
         get {
             state.lock()
             defer { state.unlock() }
-            let ret = _INT
+            let tmp = _INT
             _INT = false
-            return ret
+            return tmp
         }
         set(value) {
             state.lock()
@@ -184,18 +185,33 @@ final class IntIO: ObservableObject, IPorts
             _INT = value
         }
     }
-    var data: Byte {
+    nonisolated var data: Byte {
         get {
             state.lock()
             defer { state.unlock() }
-            let ret = _data
+            let tmp = _data
             _data = 0x00
-            return ret
+            return tmp
         }
         set(value) {
             state.lock()
             defer { state.unlock() }
             _data = value
+        }
+    }
+    
+    nonisolated var RESET: Bool {
+        get {
+            state.lock()
+            defer { state.unlock() }
+            let tmp = _RESET
+            _RESET = false
+            return tmp
+        }
+        set(value) {
+            state.lock()
+            defer { state.unlock() }
+            _RESET = value
         }
     }
 }

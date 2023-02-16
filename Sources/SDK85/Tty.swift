@@ -28,7 +28,8 @@ struct Tty: View {
                     .font(Font.custom(crtFont, size: UIScreen.main.bounds.width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))))
                     .background { Color.black } // https://stackoverflow.com/a/71935851
                     .foregroundColor(crtColorMap[crtColor])
-            }.frame(width: width, height: height)
+            }
+            .frame(width: width, height: height)
         }
     }
 }

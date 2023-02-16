@@ -14,7 +14,6 @@ final class I8279: ObservableObject, MPorts {
     @Published var DF2: Byte = ~0x00
     private var fieldCount = 1
 
-    var FIFO = Fifo()
     var RL07 = Fifo()
 
     var mmap: ClosedRange<UShort>
@@ -37,7 +36,6 @@ final class I8279: ObservableObject, MPorts {
         DF2 = ~0x00
         fieldCount = 1
 
-        FIFO.removeAll()
         RL07.removeAll()
     }
 

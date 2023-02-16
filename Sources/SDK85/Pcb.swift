@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct Pcb: View {
+    var intIO: IntIO
     var i8279: I8279
     var isPortrait: Bool
 
@@ -17,7 +18,7 @@ struct Pcb: View {
 
             VStack {
                 Display(i8279: i8279)
-                Keyboard(i8279: i8279)
+                Keyboard(intIO: intIO, i8279: i8279)
             }
             .padding(8)
             .background(.pcbLabel.opacity(0.8))

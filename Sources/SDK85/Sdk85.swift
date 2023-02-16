@@ -34,7 +34,7 @@ struct Hmi: View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
-                Pcb(i8279: i8279, isPortrait: isPortrait)
+                Pcb(intIO: intIO, i8279: i8279, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
                 Tty(intIO: intIO, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
@@ -143,36 +143,19 @@ extension Hmi {
             }
 
             let mem = await Memory(ram, 0x1000, [i8279])
-            var z80 = await Z80(mem, intIO,
+            let c80 = await C80(mem, intIO,
                                 traceMemory: Default.traceMemory,
                                 traceOpcode: Default.traceOpcode,
                                 traceNmiInt: Default.traceNmiInt)
 
-            while (!z80.Halt) {
+            while (!c80.Halt) {
                 if Task.isCancelled {
                     break
                 }
-                let tStates = z80.parse()
+                let tStates = c80.parse()
                 if await intIO.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
                     await MainActor.run() { intIO.NMI = true }
-                    if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
-                }
-                if let key = await i8279.FIFO.dequeue() {
-                    switch key {
-                    case 0xFF:
-                        z80.reset()
-                    case 0xFE:
-                        await MainActor.run() {
-                            intIO.INT = true
-                            intIO.data = 0xFF // RST 7
-                        }
-                    default:
-                        await MainActor.run() {
-                            i8279.RL07.enqueue(key)
-                            intIO.INT = true
-                            intIO.data = 0xEF // RST 5
-                        }
-                    }
+                    if _isDebugAssertConfiguration() { print(c80.dumpStateCompact()) }
                 }
             }
             await MainActor.run() {

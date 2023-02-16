@@ -2,6 +2,7 @@ import SwiftUI
 import z80
 
 struct Keyboard: View {
+    @ObservedObject var intIO: IntIO
     @ObservedObject var i8279: I8279
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -19,7 +20,17 @@ struct Keyboard: View {
                         let keyConfiguration = Keyboard.keyboardLayout[row*6+col]
 
                         Button(keyConfiguration.title) { // closure on button release
-                            i8279.FIFO.enqueue(keyConfiguration.code)
+                            switch keyConfiguration.code {
+                            case 0xFF: // RESET
+                                intIO.RESET = true
+                            case 0xFE: // VECT INTR
+                                intIO.INT = true
+                                intIO.data = 0xFF // RST 7
+                            default:
+                                i8279.RL07.enqueue(keyConfiguration.code)
+                                intIO.INT = true
+                                intIO.data = 0xEF // RST 5
+                            }
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }
                         .buttonStyle(Key(
