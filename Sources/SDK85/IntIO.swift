@@ -1,13 +1,42 @@
 import SwiftUI
 import z80
 
-enum TimerState {
-    case reset
-    case started
-    case elapsed // transient
-    case stopped
-    case pending
-    case abort
+struct Timer {
+    enum State {
+        case started
+        case pending
+        case stopped
+        case abort
+    }
+    
+    var state: State { didSet { if state == .started { count = value } } }
+    var value: UShort
+    var count: UShort
+    
+    mutating func state(_ state: State) { self.state = state }
+    mutating func value(LOB: Byte) { value = (value & 0xFF00) + LOB }
+    mutating func value(HOB: Byte) { value = (value & 0x00FF) + (UShort(HOB & 0x3F) << 8) }
+    mutating func count(minus: UShort) -> Bool {
+        var elapsed = false
+        if state == .started || state == .pending {
+            for _ in 1...minus {
+                count -= 1
+                if count == 0 {
+                    switch state {
+                    case .started:
+                        count = value
+                    case .pending:
+                        state = .stopped
+                    default:
+                        break
+                    }
+                    elapsed = true
+                    break
+                }
+            }
+        }
+        return elapsed
+    }
 }
 
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
@@ -21,9 +50,7 @@ final class IntIO: ObservableObject, IPorts {
     
     private var _RESET = false
     
-    private var timerState = TimerState.reset
-    private var timerCount: UShort = 0
-    private var timerValue: UShort = 0
+    private(set) var timer = Timer(state: .abort, value: 0, count: 0)
 
     private var bots: UInt = 0
     private var sod: Byte = 0
@@ -56,9 +83,7 @@ final class IntIO: ObservableObject, IPorts {
         _INT = false
         _data = 0x00
 
-        timerState = TimerState.reset
-        timerCount = 0
-        timerValue = 0
+        timer = Timer(state: .abort, value: 0, count: 0)
 
         bots = 0
         sod = 0
@@ -69,29 +94,11 @@ final class IntIO: ObservableObject, IPorts {
         sid = 0
     }
 
-    func TIMER_IN(pulses: UShort) -> TimerState {
-        var state = timerState
-        if timerState == .started || timerState == .pending {
-            for _ in 1...pulses {
-                timerCount -= 1
-                if timerCount == 0 {
-                    switch timerState {
-                    case .started:
-                        timerCount = timerValue
-                    case .pending:
-                        timerState = .stopped
-                    default:
-                        break
-                    }
-                    state = .elapsed
-                }
-            }
-        }
-        return state
+    func TIMER_IN(pulses: UShort) -> Bool {
+        timer.count(minus: pulses)
     }
-
-    func rdPort(_ port: UShort) -> Byte
-    {
+    
+    func rdPort(_ port: UShort) -> Byte {
         var data: Byte = 0
         switch port & 0xFF {
         case 0xFF:
@@ -116,8 +123,7 @@ final class IntIO: ObservableObject, IPorts {
         return data
     }
 
-    func wrPort(_ port: UShort, _ data: Byte)
-    {
+    func wrPort(_ port: UShort, _ data: Byte) {
         switch port & 0xFF {
         case 0x20:
             // timer command
@@ -125,19 +131,18 @@ final class IntIO: ObservableObject, IPorts {
             case 0x00:
                 break
             case 0x40:
-                timerState = .abort
+                timer.state(.abort)
             case 0x80:
-                timerState = .pending
+                timer.state(.pending)
             case 0xC0:
-                timerCount = timerValue
-                timerState = .started
+                timer.state(.started)
             default:
                 break
             }
         case 0x24:
-            timerValue = (timerValue & 0xFF00) + data
+            timer.value(LOB: data)
         case 0x25:
-            timerValue = (timerValue & 0x00FF) + (UShort(data & 0x3F) << 8)
+            timer.value(HOB: data)
         case 0xFF:
             // SOE (serial output enabled)
             if data & 0x40 == 0 {
@@ -157,7 +162,7 @@ final class IntIO: ObservableObject, IPorts {
         traceIO?(false, port, data)
     }
 
-    nonisolated var NMI: Bool {
+    var NMI: Bool {
         get {
             state.lock()
             defer { state.unlock() }
@@ -171,7 +176,7 @@ final class IntIO: ObservableObject, IPorts {
             _NMI = value
         }
     }
-    nonisolated var INT: Bool {
+    var INT: Bool {
         get {
             state.lock()
             defer { state.unlock() }
@@ -185,7 +190,7 @@ final class IntIO: ObservableObject, IPorts {
             _INT = value
         }
     }
-    nonisolated var data: Byte {
+    var data: Byte {
         get {
             state.lock()
             defer { state.unlock() }
@@ -200,7 +205,7 @@ final class IntIO: ObservableObject, IPorts {
         }
     }
     
-    nonisolated var RESET: Bool {
+    var RESET: Bool {
         get {
             state.lock()
             defer { state.unlock() }

@@ -149,20 +149,14 @@ extension Hmi {
                                 traceNmiInt: Default.traceNmiInt)
 
             while (!c80.Halt) {
-                if Task.isCancelled {
-                    break
-                }
-                let tStates = c80.parse()
-                if await intIO.TIMER_IN(pulses: UShort(tStates)) == .elapsed {
-                    await MainActor.run() { intIO.NMI = true }
-                    if _isDebugAssertConfiguration() { print(c80.dumpStateCompact()) }
-                }
+                c80.parse()
+                if Task.isCancelled { break }
             }
             await MainActor.run() {
                 i8279.AF1 = ~0x67 // H
                 i8279.AF2 = ~0x77 // A
                 i8279.AF3 = ~0x83 // L
-                i8279.AF4 = ~0x8F // t.
+                i8279.AF4 = ~0x87 // t
                 
                 i8279.DF1 = ~0x70 // 7
                 i8279.DF2 = ~0xD7 // 6
