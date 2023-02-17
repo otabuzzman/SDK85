@@ -50,6 +50,16 @@
 		</dict>
 		<dict>
 			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Fast CPU emulation</string>
+			<key>Key</key>
+			<string>fastCPU</string>
+			<key>DefaultValue</key>
+			<string>false</string>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
             <key>Title</key>
 			<string>TTY</string>

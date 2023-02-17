@@ -133,7 +133,10 @@ struct Hmi: View {
 
 extension Hmi {
     private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000) -> I8085? {
-        Task.detached(priority: .background) {
+        let fastCPU = UserDefaults.standard.bool(forKey: "fastCPU")
+        let priority: TaskPriority = fastCPU ? .medium : .background
+
+        return Task.detached(priority: priority) {
             var ram = Array<Byte>(repeating: 0, count: 0x10000)
             ram.replaceSubrange(0..<rom.count, with: rom)
             if let uram = uram, addr >= rom.count, uram.count > 0 {
