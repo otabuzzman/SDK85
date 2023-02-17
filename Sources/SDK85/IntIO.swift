@@ -72,6 +72,8 @@ final class IntIO: ObservableObject, IPorts {
         }
     }
 
+    @Published var MHz: Double = 0
+
     private var traceIO: TraceIO?
 
     init(traceIO: TraceIO? = Default.traceIO) {

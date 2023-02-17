@@ -14,7 +14,7 @@ struct Pcb: View {
                     maxWidth: isPortrait ? UIScreen.main.bounds.width : nil,
                     maxHeight: isPortrait ? nil : UIScreen.main.bounds.height,
                     alignment: .bottomTrailing)
-                .overlay(Credit(), alignment: .topLeading)
+                .overlay(Headline(intIO: intIO), alignment: .topLeading)
 
             VStack {
                 Display(i8279: i8279)
@@ -27,13 +27,19 @@ struct Pcb: View {
     }
 }
 
-struct Credit: View {
+struct Headline: View {
+    @ObservedObject var intIO: IntIO
+
     var body: some View {
         ZStack {
-            Text("Credit: [SDK-85 printed cicuit board](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) photo by [Hans Otten](http://retro.hansotten.nl/contact/) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)")
-                .foregroundColor(.pcbText)
-                .accentColor(.pcbLink)
-                .padding(4)
+            HStack {
+                Text("Credit: [SDK-85 printed cicuit board](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) photo by [Hans Otten](http://retro.hansotten.nl/contact/) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)")
+                Spacer()
+                Text(String(format: "%.2f MHz", intIO.MHz / 1_000_000))
+            }
+            .foregroundColor(.pcbText)
+            .accentColor(.pcbLink)
+            .padding(4)
         }
         .background(.pcbLabel)
         .cornerRadius(12)

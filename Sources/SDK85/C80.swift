@@ -19,11 +19,11 @@ class C80: Z80 { // custom Z80
                    traceOpcode: traceOpcode,
                    traceNmiInt: traceNmiInt)
 
-        Task {
+        Task { @MainActor in
             while true {
                 let t1 = Date.timeIntervalSinceReferenceDate - state.timeStarted
+                intIO.MHz = Double(state.tStatesSum) / t1
                 try! await Task.sleep(nanoseconds: 10_000_000_000)
-                if _isDebugAssertConfiguration() { print(Double(state.tStatesSum) / t1) }
             }
         }
     }
