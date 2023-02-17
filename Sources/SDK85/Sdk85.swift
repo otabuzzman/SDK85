@@ -16,7 +16,7 @@ struct Hmi: View {
     @State private var loadUserProgram = false
 
     @State private var i8085: I8085?
-    @StateObject private var intIO = IntIO()
+    @StateObject private var intIO = IntIO() // interupts and I8155
     @StateObject private var i8279 = I8279(0x1800...0x19FF)
 
     private var device: [Device] = [.pcb, .tty]
@@ -152,6 +152,7 @@ extension Hmi {
                 c80.parse()
                 if Task.isCancelled { break }
             }
+
             await MainActor.run() {
                 i8279.AF1 = ~0x67 // H
                 i8279.AF2 = ~0x77 // A
