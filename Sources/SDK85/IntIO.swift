@@ -8,11 +8,11 @@ struct Timer {
         case stopped
         case abort
     }
-    
+
     var state: State { didSet { if state == .started { count = value } } }
     var value: UShort
     var count: UShort
-    
+
     mutating func state(_ state: State) { self.state = state }
     mutating func value(LOB: Byte) { value = (value & 0xFF00) + LOB }
     mutating func value(HOB: Byte) { value = (value & 0x00FF) + (UShort(HOB & 0x3F) << 8) }
@@ -47,9 +47,9 @@ final class IntIO: ObservableObject, IPorts {
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
-    
+
     private var _RESET = false
-    
+
     private(set) var timer = Timer(state: .abort, value: 0, count: 0)
 
     private var bots: UInt = 0
@@ -99,7 +99,7 @@ final class IntIO: ObservableObject, IPorts {
     func TIMER_IN(pulses: UShort) -> Bool {
         timer.count(minus: pulses)
     }
-    
+
     func rdPort(_ port: UShort) -> Byte {
         var data: Byte = 0
         switch port & 0xFF {
@@ -206,7 +206,7 @@ final class IntIO: ObservableObject, IPorts {
             _data = value
         }
     }
-    
+
     var RESET: Bool {
         get {
             state.lock()

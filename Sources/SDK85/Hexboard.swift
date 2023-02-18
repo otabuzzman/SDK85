@@ -1,23 +1,23 @@
 import SwiftUI
 import z80
 
-struct Keyboard: View {
+struct Hexboard: View {
     @ObservedObject var intIO: IntIO
     @ObservedObject var i8279: I8279
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
 
-    var body: some View {
-        let wiggle: CGFloat = 2
+    private static let spacing: CGFloat = 2
 
+    var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
 
-        VStack(spacing: wiggle) {
+        VStack(spacing: Hexboard.spacing) {
             ForEach(0..<4, id: \.self) { row in
-                HStack(spacing: wiggle) {
+                HStack(spacing: Hexboard.spacing) {
                     ForEach(0..<6, id: \.self) { col in
-                        let keyConfiguration = Keyboard.keyboardLayout[row*6+col]
+                        let keyConfiguration = Hexboard.layout[row*6+col]
 
                         Button(keyConfiguration.title) { // closure on button release
                             switch keyConfiguration.code {
@@ -37,7 +37,7 @@ struct Keyboard: View {
                             subtitle1st: keyConfiguration.subtitle1st,
                             subtitle2nd: keyConfiguration.subtitle2nd))
                         .frame(maxWidth: isCompact ? 56 : 96, maxHeight: isCompact ? 56 : 96)
-                        .rotationEffect(Angle(degrees: drand48()*wiggle-wiggle/2))
+                        .rotationEffect(Angle(degrees: Hexboard.wiggles[row * col]))
                         /*
                         // different sounds are difficult to distinguish if
                         // pressing and releasing follow each other quickly
@@ -59,12 +59,20 @@ struct Keyboard: View {
         subtitle2nd: String?,
         code: Byte)
 
-    private static let keyboardLayout: [KeyConfiguration] = [
+    private static let layout: [KeyConfiguration] = [
         ("", "RESET", nil, 0xFF), ("", "VECT", "INTR", 0xFE), ("C", nil, nil, 0x0C), ("D", nil, nil, 0x0D), ("E", nil, nil, 0x0E), ("F", nil, nil, 0x0F),
         ("", "SINGLE", "STEP", 0x15), ("", "GO", nil, 0x12), ("8", "H", nil, 0x08), ("9", "L", nil, 0x09), ("A", nil, nil, 0x0A), ("B", nil, nil, 0x0B),
         ("", "SUBST", "MEM", 0x13), ("", "EXAM", "REG", 0x14), ("4", "SPH", nil, 0x04), ("5", "SPL", nil, 0x05), ("6", "PCH", nil, 0x06), ("7", "PCL", nil, 0x07),
         ("", "NEXT", ",", 0x11), ("", "EXEC", ".", 0x10), ("0", nil, nil, 0x00), ("1", nil, nil, 0x01), ("2", nil, nil, 0x02), ("3", "I", nil, 0x03)
     ]
+
+    private static let wiggles: [CGFloat] = {
+        var wiggles = [CGFloat]()
+        for _ in 1...layout.count {
+            wiggles.append(drand48() * spacing - spacing / 2)
+        }
+        return wiggles
+    }()
 }
 
 struct Key: ButtonStyle {
@@ -106,33 +114,5 @@ struct Key: ButtonStyle {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .scaleEffect(configuration.isPressed ? 0.94 : 1)
         }
-    }
-}
-
-struct PreaseActions: ViewModifier {
-    var onPress: () -> Void
-    var onRelease: () -> Void
-
-    func body(content: Content) -> some View {
-        content
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged({ _ in
-                        onPress()
-                    })
-                    .onEnded({ _ in
-                        onRelease()
-                    })
-            )
-    }
-}
-
-extension View {
-    func pressAction(onPress: @escaping (() -> Void), onRelease: @escaping (() -> Void)) -> some View {
-        modifier(PreaseActions(onPress: {
-            onPress()
-        }, onRelease: {
-            onRelease()
-        }))
     }
 }

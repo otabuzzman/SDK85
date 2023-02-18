@@ -161,7 +161,7 @@ extension Hmi {
                 i8279.AF2 = ~0x77 // A
                 i8279.AF3 = ~0x83 // L
                 i8279.AF4 = ~0x87 // t
-                
+
                 i8279.DF1 = ~0x70 // 7
                 i8279.DF2 = ~0xD7 // 6
             }
@@ -201,9 +201,39 @@ struct OnAnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorAr
     }
 }
 
+struct OnRotate: ViewModifier {
+    @Binding var isPortrait: Bool
+    let action: (UIDeviceOrientation) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { orientation in
+                // https://stackoverflow.com/a/65586833/9172095
+                // UIDevice.orientation not save on app launch
+                let scenes = UIApplication.shared.connectedScenes
+                let windowScene = scenes.first as? UIWindowScene
+
+                guard
+                    let isPortrait = windowScene?.interfaceOrientation.isPortrait
+                else { return }
+
+                // interface orientation not affected when rotated to flat 
+                if self.isPortrait == isPortrait { return }
+
+                self.isPortrait = isPortrait
+
+                action(UIDevice.current.orientation)
+            }
+    }
+}
+
 extension View {
     func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, OnAnimatedModifier<Value>> {
         return modifier(OnAnimatedModifier(value: value, completion: completion))
+    }
+
+    func onRotate(isPortrait: Binding<Bool>, action: @escaping (UIDeviceOrientation) -> Void) -> some View {
+        self.modifier(OnRotate(isPortrait: isPortrait, action: action))
     }
 }
 
