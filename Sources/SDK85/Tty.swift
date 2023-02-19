@@ -1,6 +1,6 @@
 import SwiftUI
 
-private var crtColorMap: Dictionary<String, Color> = [
+private let crtColorMap: Dictionary<String, Color> = [
     "Amber": .crtAmber,
     "Green": .crtGreen
 ]
@@ -20,12 +20,13 @@ struct Tty: View {
             let crtColor = UserDefaults.standard.string(forKey: "crtColor") ?? "Green"
 
             let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
+            let derivedFontSize = width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))
 
             VStack { // https://swiftui-lab.com/geometryreader-bug/ (FB7971927)
                 Text(intIO.SOD)
                     .padding(16)
                     .frame(width: width, height: height, alignment: .topLeading)
-                    .font(Font.custom(crtFont, size: UIScreen.main.bounds.width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))))
+                    .font(Font.custom(crtFont, size: derivedFontSize))
                     .background { Color.black } // https://stackoverflow.com/a/71935851
                     .foregroundColor(crtColorMap[crtColor])
             }

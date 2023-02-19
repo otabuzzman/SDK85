@@ -21,7 +21,7 @@ struct Pcb: View {
                 Hexboard(intIO: intIO, i8279: i8279)
             }
             .padding(8)
-            .background(.pcbLabel.opacity(0.8))
+            .background(Color.pcbLabel.opacity(0.8)) // https://stackoverflow.com/a/71935851
             .cornerRadius(16)
         }
     }

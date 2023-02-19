@@ -1,9 +1,8 @@
 import SwiftUI
 import z80
 
-struct Hexboard: View {
+struct Keyboard: View {
     @ObservedObject var intIO: IntIO
-    @ObservedObject var i8279: I8279
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
@@ -13,40 +12,20 @@ struct Hexboard: View {
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
 
-        VStack(spacing: Hexboard.spacing) {
+        VStack(spacing: Keyboard.spacing) {
             ForEach(0..<4, id: \.self) { row in
-                HStack(spacing: Hexboard.spacing) {
+                HStack(spacing: Keyboard.spacing) {
                     ForEach(0..<6, id: \.self) { col in
-                        let keyConfiguration = Hexboard.layout[row * 6 + col]
+                        let keyConfiguration = Keyboard.layout[row * 6 + col]
 
                         Button(keyConfiguration.title) { // closure on button release
-                            switch keyConfiguration.code {
-                            case 0xFF: // RESET
-                                intIO.RESET = true
-                            case 0xFE: // VECT INTR
-                                intIO.INT = true
-                                intIO.data = 0xFF // RST 7
-                            default:
-                                i8279.RL07.enqueue(keyConfiguration.code)
-                                intIO.INT = true
-                                intIO.data = 0xEF // RST 5
-                            }
-                            Sound.play(soundfile: "sdk85-keyprease.mp3")
+
                         }
                         .buttonStyle(Key(
                             subtitle1st: keyConfiguration.subtitle1st,
                             subtitle2nd: keyConfiguration.subtitle2nd))
                         .frame(maxWidth: isCompact ? 56 : 96, maxHeight: isCompact ? 56 : 96)
-                        .rotationEffect(Angle(degrees: Hexboard.wiggles[row * col]))
-                        /*
-                        // different sounds are difficult to distinguish if
-                        // pressing and releasing follow each other quickly
-                        .pressAction {
-                            Sound.play(soundfile: "sdk85-keypress.mp3")
-                        } onRelease: {
-                            Sound.play(soundfile: "sdk85-keyrelease.mp3")
-                        }
-                        */
+                        .rotationEffect(Angle(degrees: Keyboard.wiggles[row * col]))
                     }
                 }
             }
