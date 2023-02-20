@@ -252,11 +252,11 @@ extension Color {
     static let pcbText = Color(hue: 123/360, saturation: 0.25, brightness: 0.59)
 
     // sRGB
-    static let crtAmber = Color(red: Double(0xFD)/255, green: Double(0x93)/255, blue: Double(0x09)/255)
-    static let crtGreen = Color(red: 0, green: Double(0xCA)/255, blue: 0)
+    static let ttyAmber = Color(red: Double(0xFD)/255, green: Double(0x93)/255, blue: Double(0x09)/255)
+    static let ttyGreen = Color(red: 0, green: Double(0xCA)/255, blue: 0)
     // P3
-    // static let crtAmber = Color(red: Double(0xEF)/255, green: Double(0x98)/255, blue: Double(0x39)/255)
-    // static let crtGreen = Color(red: Double(0x5A)/255, green: Double(0xC6)/255, blue: Double(0x3A)/255)
+    // static let ttyAmber = Color(red: Double(0xEF)/255, green: Double(0x98)/255, blue: Double(0x39)/255)
+    // static let ttyGreen = Color(red: Double(0x5A)/255, green: Double(0xC6)/255, blue: Double(0x3A)/255)
 }
 
 extension ShapeStyle where Self == Color {

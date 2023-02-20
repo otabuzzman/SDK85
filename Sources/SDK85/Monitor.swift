@@ -2,8 +2,8 @@ import SwiftUI
 
 struct Monitor: View {
     @ObservedObject var intIO: IntIO
-    var crtFont: String
-    var crtColor: Color
+    var ttyFont: String
+    var ttyColor: Color
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -11,12 +11,12 @@ struct Monitor: View {
         GeometryReader { geometry in
             let width = geometry.size.width
 
-            let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
+            let characterUnitWidth = " ".width(withFont: UIFont(name: ttyFont, size: 1)!)
             let derivedFontSize = width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))
 
             Text(intIO.SOD)
-                .foregroundColor(crtColor)
-                .font(Font.custom(crtFont, size: derivedFontSize))
+                .foregroundColor(ttyColor)
+                .font(Font.custom(ttyFont, size: derivedFontSize))
         }
     }
 }

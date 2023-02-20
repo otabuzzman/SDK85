@@ -3,12 +3,17 @@ import z80
 
 struct Keyboard: View {
     @ObservedObject var intIO: IntIO
-    var crtColor: Color
+    var ttyColor: Color
+
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.verticalSizeClass) var verticalSizeClass
 
     @State private var input = ""
     @FocusState private var focus: Bool
 
     var body: some View {
+        let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
+
         if !focus {
             Button() {
                 focus = true
@@ -16,11 +21,12 @@ struct Keyboard: View {
                 Image(systemName: "keyboard")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .foregroundColor(crtColor)
+                    .frame(width: isCompact ? 56 : 96)
+                    .foregroundColor(ttyColor)
                     .brightness(-0.2)
-                    .frame(width: 96)
             }
         }
+
         TextField("", text: Binding<String>( // https://stackoverflow.com/a/60969666
             get: { self.input },
             set: { value in self.input = value.uppercased() }))

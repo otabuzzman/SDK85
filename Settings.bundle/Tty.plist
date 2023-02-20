@@ -12,7 +12,7 @@
 			<key>Title</key>
 			<string>Font</string>
 			<key>Key</key>
-			<string>crtFont</string>
+			<string>ttyFont</string>
 			<key>DefaultValue</key>
 			<string>Glass_TTY_VT220</string>
 			<key>Titles</key>
@@ -32,7 +32,7 @@
 			<key>Title</key>
 			<string>Font color</string>
 			<key>Key</key>
-			<string>crtColor</string>
+			<string>ttyColor</string>
 			<key>DefaultValue</key>
 			<string>Green</string>
 			<key>Titles</key>
