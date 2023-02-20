@@ -1,12 +1,9 @@
 import SwiftUI
 
-private let crtColorMap: Dictionary<String, Color> = [
-    "Amber": .crtAmber,
-    "Green": .crtGreen
-]
-
 struct Monitor: View {
     @ObservedObject var intIO: IntIO
+    var crtFont: String
+    var crtColor: Color
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -14,14 +11,11 @@ struct Monitor: View {
         GeometryReader { geometry in
             let width = geometry.size.width
 
-            let crtFont = UserDefaults.standard.string(forKey: "crtFont") ?? "Glass_TTY_VT220"
-            let crtColor = UserDefaults.standard.string(forKey: "crtColor") ?? "Green"
-
             let characterUnitWidth = " ".width(withFont: UIFont(name: crtFont, size: 1)!)
             let derivedFontSize = width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))
 
             Text(intIO.SOD)
-                .foregroundColor(crtColorMap[crtColor])
+                .foregroundColor(crtColor)
                 .font(Font.custom(crtFont, size: derivedFontSize))
         }
     }
