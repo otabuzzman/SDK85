@@ -13,11 +13,11 @@ Swipe the main view left to enter the TTY monitor, and right to return to the ke
 - SUBST MEM command (enter a program)
 - EXAM REG command (examine/ set registers)
 - SINGLE STEP command (debug a program)
+- TTY monitor (rather simple implementation)
 
 **Wanted**
 - Improved 8279 (keyboard/ display interface)
 - 8155 support (RAM, I/O ports and timer)
-- TTY monitor
 
 **Example (video)**
 1. Set stack pointer (EXAM REG) to address 0x20C2
@@ -90,13 +90,16 @@ Apps used on Winos or Linos
 |IntIO.swift|Interrupts and I/O ports abstraction for Z80 emulator. Glue code between Z80 emulator and SwiftUI.|
 |I8279.swift|8279 keyboard/ display interface abstraction. Glue code between Z80 emulator and SwiftUI.|
 |Pcb.swift|SDK-85 PCB view with keyboard and display views.|
-|Keyboard.swift|SDK-85 keyboard view.|
+|Hexboard.swift|SDK-85 hex keyboard view.|
 |Display.swift|SDK-85 display view.|
+|Tty.swift|Simple terminal view for TTY monitor usage.|
+|Keyboard.swift|SDK-85 terminal keyboard view.|
+|Monitor.swift|SDK-85 terminal monitor view.|
 |BinFileLoader.swift|File picker view to load custom MONITOR or user programs.|
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
 |SevenSegmentDisplay.swift|A single seven segment digit.|
-|Tty.swift|Simple terminal view for TTY monitor usage.|
+|C80.swift|A (custom) Z80 subclass to address actor isolation.|
 |Sound.swift|A simple sound file player.|
 |Queue.swift|A queue (FIFO) implementation.|
 |Default.swift|Global default values.|

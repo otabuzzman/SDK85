@@ -14,9 +14,11 @@ struct Monitor: View {
             let characterUnitWidth = " ".width(withFont: UIFont(name: ttyFont, size: 1)!)
             let derivedFontSize = width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))
 
-            Text(intIO.SOD)
-                .foregroundColor(ttyColor)
-                .font(Font.custom(ttyFont, size: derivedFontSize))
+            ScrollView {
+                Text(intIO.SOD)
+                    .foregroundColor(ttyColor)
+                    .font(Font.custom(ttyFont, size: derivedFontSize))
+            }
         }
     }
 }
