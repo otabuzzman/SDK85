@@ -19,7 +19,7 @@ final class I8279: ObservableObject, MPorts {
     var mmap: ClosedRange<UShort>
     private var traceIO: TraceIO?
 
-    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = Default.traceIO) {
+    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = UserDefaults.traceIO) {
         self.mmap = mmap
         self.traceIO = traceIO
     }

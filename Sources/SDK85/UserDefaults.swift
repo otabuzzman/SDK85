@@ -1,7 +1,57 @@
 import SwiftUI
 import z80
 
-struct Default {
+extension UserDefaults {
+    static func registerSettingsBundle() {
+        if !UserDefaults.appLaunchedBefore {
+            UserDefaults.registerUserDefaults(fromPlistFiles: ["Root", "Tty"])
+
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"]
+            let versionInfo = "\(version!) (\(build!))"
+            UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
+        }
+    }
+
+    private static var appLaunchedBefore: Bool {
+        if UserDefaults.standard.bool(forKey: "launchedBefore") {
+            return true
+        } else {
+            UserDefaults.standard.set(true, forKey: "launchedBefore")
+            return false
+        }
+    }
+
+    private static func registerUserDefaults(fromPlistFiles files: [String] = ["Root"]) {
+        guard
+            let settingsBundle = Bundle.main.url(forResource: "Settings.bundle", withExtension: nil)
+        else { return }
+
+        for plist in files {
+            let sbUrl = settingsBundle
+            guard
+                let settingsBundleData =
+                    NSDictionary(contentsOf: sbUrl
+                        .appendingPathComponent(plist)
+                        .appendingPathExtension("plist")),
+                let preferenceSpecifiers =
+                    settingsBundleData.object(forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
+            else { return }
+
+            var userDefaults = [String : AnyObject]()
+            for preferenceSpecifier in preferenceSpecifiers {
+                if
+                    let key = preferenceSpecifier["Key"] as? String,
+                    let value = preferenceSpecifier["DefaultValue"]
+                {
+                    userDefaults[key] = value
+                }
+            }
+
+            UserDefaults.standard.register(defaults: userDefaults)
+        }
+    }
+
     static let traceMemory: Z80.TraceMemory = { addr, data in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceMemory")

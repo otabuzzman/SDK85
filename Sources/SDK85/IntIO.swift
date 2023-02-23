@@ -76,7 +76,7 @@ final class IntIO: ObservableObject, IPorts {
 
     private var traceIO: TraceIO?
 
-    init(traceIO: TraceIO? = Default.traceIO) {
+    init(traceIO: TraceIO? = UserDefaults.traceIO) {
         self.traceIO = traceIO
     }
 

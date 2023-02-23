@@ -102,7 +102,7 @@ Apps used on Winos or Linos
 |C80.swift|A (custom) Z80 subclass to address actor isolation.|
 |Sound.swift|A simple sound file player.|
 |Queue.swift|A queue (FIFO) implementation.|
-|Default.swift|Global default values.|
+|UserDefaults.swift|Settings and app-wide default values.|
 
 ### License
 Copyright (c) 2022 Jürgen Schuck
