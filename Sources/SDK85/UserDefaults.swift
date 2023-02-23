@@ -102,7 +102,7 @@ extension Byte {
     var bitsToString: String {
         let b = String(self, radix: 2)
         let a = Array<Character>(repeating: "0", count: 8 - b.count)
-        return String(a + b)
+        return String("0b" + a + b)
     }
 
     var reverseBits: Byte {
