@@ -33,7 +33,7 @@ struct Headline: View {
     var body: some View {
         ZStack {
             HStack(alignment: .top) {
-                Text("Credit: [SDK-85 printed cicuit board](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) photo by [Hans Otten](http://retro.hansotten.nl/contact/) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)")
+                Text("Credit: [SDK-85 printed circuit board](http://retro.hansotten.nl/wp-content/uploads/2021/03/20210318_112214-scaled.jpg) photo by [Hans Otten](http://retro.hansotten.nl/contact/) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en)")
                 Spacer()
                 Text(String(format: "%.2f MHz", intIO.MHz / 1_000_000))
             }

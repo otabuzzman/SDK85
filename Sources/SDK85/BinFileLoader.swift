@@ -29,7 +29,7 @@ class BinFileLoaderCoordinator: NSObject, UINavigationControllerDelegate {
     @Binding var binData: Data
     var completion: ((Result<Data, BinFileLoaderError>) -> Void)?
 
-    init(_ binData: Binding<Data>, _ completion: ((Result<Data, BinFileLoaderError>) -> Void)?){
+    init(_ binData: Binding<Data>, _ completion: ((Result<Data, BinFileLoaderError>) -> Void)?) {
         _binData = binData
         self.completion = completion
     }
