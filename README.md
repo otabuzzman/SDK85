@@ -52,8 +52,8 @@ Apps used on Winos or Linos
 - Copy Swift files (except `Package.swift`) from repository:
   - Get repository on iPad (Working Copy)
   - Copy Sources folder from WC to SP4 (Textastic)
-- Add `additionalInfoPlistContentFilePath` key to `Package.swift` in new app
-  - Find template in repository's `Package.swift`
+- Add `additionalInfoPlistContentFilePath` and `resources` keys to `Package.swift` in new app
+  - Lookup key templates in repository's `Package.swift`
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 - Add files from `Recources` folder in WC: 
   - Add monitor program
