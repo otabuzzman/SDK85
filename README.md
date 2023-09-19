@@ -52,6 +52,8 @@ Apps used on Winos or Linos
 - Copy Swift files (except `Package.swift`) from repository:
   - Get repository on iPad (Working Copy)
   - Copy Sources folder from WC to SP4 (Textastic)
+- Add `additionalInfoPlistContentFilePath` key to `Package.swift` in new app
+  - Find template in repository's `Package.swift`
 - Add [Z80 emulator package](https://github.com/otabuzzman/z80)
 - Add files from `Recources` folder in WC: 
   - Add monitor program
@@ -73,7 +75,7 @@ Apps used on Winos or Linos
 ### Which file for what
 |File|Comment|
 |:---|:------|
-|Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual|
+|Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual.|
 |SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
 |SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
 |sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
