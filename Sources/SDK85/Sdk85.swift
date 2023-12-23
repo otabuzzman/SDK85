@@ -130,7 +130,7 @@ struct Circuit: View {
     }
 }
 
-class CircuitVM {
+class CircuitVM: ObservableObject {
     // I8085
     private var i8085: I8085?
     // serial IO
@@ -150,9 +150,13 @@ class CircuitVM {
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
     
+    // I8155
+    let i8155 = IntIO()
+    
     @Published var MHz: Double = 0
 }
 
+// https://developer.apple.com/documentation/xcode/improving-app-responsiveness
 private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitVM) async {
     var ram = Array<Byte>(repeating: 0, count: 0x10000)
     ram.replaceSubrange(0..<rom.count, with: rom)
@@ -162,11 +166,9 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
         ram.replaceSubrange(a..<o, with: uram)
     }
     
-    let i8155 = IntIO()
     let i8279 = I8279(0x1800...0x19FF)
     let mem = Memory(ram, 0x1000, [i8279])
-    
-    let z80 = Z80(mem, i8155,
+    let z80 = Z80(mem, circuit.i8155,
                         traceMemory: UserDefaults.traceMemory,
                         traceOpcode: UserDefaults.traceOpcode,
                         traceNmiInt: UserDefaults.traceNmiInt)
@@ -174,8 +176,8 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
     while (!z80.Halt) {
         let tStates = z80.parse()
         
-        if i8155.TIMER_IN(pulses: UShort(tStates)) {
-            i8155.NMI = true
+        if circuit.i8155.TIMER_IN(pulses: UShort(tStates)) {
+            circuit.i8155.NMI = true
             if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
         }
         
