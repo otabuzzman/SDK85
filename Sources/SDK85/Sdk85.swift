@@ -9,9 +9,9 @@ enum Control: Int {
 }
 
 struct Circuit: View {
-    @ObservedObject var circuit = CircuitVM()
+    @ObservedObject private var circuit = CircuitVM()
     
-    @State var monitor = try! Data(fromBinFile: "sdk85-0000")!
+    @State private var monitor = try! Data(fromBinFile: "sdk85-0000")!
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
 
     @State private var program = Data()
@@ -173,12 +173,21 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
                         traceOpcode: UserDefaults.traceOpcode,
                         traceNmiInt: UserDefaults.traceNmiInt)
     
+    var tStatesSum: UInt = 0
+    let t0 = Date.timeIntervalSinceReferenceDate
+    
     while (!z80.Halt) {
         let tStates = z80.parse()
+        tStatesSum += UInt(tStates)
         
         if i8155.TIMER_IN(pulses: UShort(tStates)) {
             i8155.NMI = true
             if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
+        }
+        
+        if _isDebugAssertConfiguration() && tStatesSum % 10000 == 0 {
+            let t1 = Date.timeIntervalSinceReferenceDate - t0
+            print(String(format: "%.2f MHz", Double(tStatesSum) / t1 / 1_000_000))
         }
         
         if Task.isCancelled { break }
