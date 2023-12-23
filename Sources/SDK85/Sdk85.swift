@@ -3,13 +3,13 @@ import z80
 
 typealias I8085 = Task<(), Never>
 
-enum Device: Int {
+enum Control: Int {
     case pcb
     case tty
 }
 
-struct Hmi: View {
-    @State var monitor = try! Data(contentsOf: Bundle.main.url(forResource: "sdk85-0000.bin", withExtension: nil)!)
+struct Circuit: View {
+    @State var monitor = try! Data(fromBinFile: "sdk85-0000")!
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
 
     @State private var program = Data()
@@ -19,10 +19,9 @@ struct Hmi: View {
     @StateObject private var intIO = IntIO() // interupts and I8155
     @StateObject private var i8279 = I8279(0x1800...0x19FF)
 
-    private var device: [Device] = [.pcb, .tty]
-    @State private var thisDeviceIndex = 0
-    @State private var prevDeviceIndex = 0
-    @State private var deviceOffset: CGFloat = 0
+    @State private var thisControl: Control = .pcb
+    @State private var pastControl: Control = .pcb
+    @State private var controlOffset: CGFloat = 0
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
@@ -39,9 +38,9 @@ struct Hmi: View {
                 Tty(intIO: intIO, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
             }
-            .onAnimated(for: deviceOffset) {
+            .onAnimated(for: controlOffset) {
                 guard
-                    thisDeviceIndex != prevDeviceIndex
+                    thisControl != pastControl
                 else { return }
 
                 i8085?.cancel()
@@ -49,7 +48,7 @@ struct Hmi: View {
                 intIO.reset()
                 i8279.reset()
 
-                switch device[thisDeviceIndex] {
+                switch thisControl {
                 case .pcb:
                     intIO.tty = false
                     intIO.SID = 0x00
@@ -61,25 +60,25 @@ struct Hmi: View {
                 i8085 = boot(monitor, loadRamWith: program)
             }
         }
-        .content.offset(x: deviceOffset)
+        .content.offset(x: controlOffset)
         .frame(width: UIScreen.main.bounds.width, alignment: .leading)
         .gesture(DragGesture()
             .onChanged() { value in
-                deviceOffset = value.translation.width - UIScreen.main.bounds.width * CGFloat(thisDeviceIndex)
+                controlOffset = value.translation.width - UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
             }
             .onEnded() { value in
-                prevDeviceIndex = thisDeviceIndex
+                pastControl = thisControl
                 if
                     -value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
-                     thisDeviceIndex < device.count - 1
+                     let nextDevice = Control(rawValue: thisControl.rawValue + 1)
                 {
-                    thisDeviceIndex += 1
+                    thisControl = nextDevice
                 }
                 if
                     value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
-                    thisDeviceIndex > 0
+                    let nextDevice = Control(rawValue: thisControl.rawValue - 1)
                 {
-                    thisDeviceIndex -= 1
+                    thisControl = nextDevice
                 }
                 if
                     !rotateToLandscapeSeen,
@@ -88,7 +87,7 @@ struct Hmi: View {
                     rotateToLandscapeShow = true
                 }
                 withAnimation {
-                    deviceOffset = -UIScreen.main.bounds.width * CGFloat(thisDeviceIndex)
+                    controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
                 }
             })
         .gesture(TapGesture(count: 2)
@@ -96,7 +95,7 @@ struct Hmi: View {
                 loadUserProgram = true
             })
         .onRotate(isPortrait: $isPortrait) { _ in
-            deviceOffset = -UIScreen.main.bounds.height * CGFloat(thisDeviceIndex)
+            controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
         }
         .onAppear {
             i8085 = boot(monitor, loadRamWith: nil)
@@ -131,7 +130,60 @@ struct Hmi: View {
     }
 }
 
-extension Hmi {
+class CircuitVM {
+    // I8085
+    private var i8085: I8085?
+    // serial IO
+    func SID(_ byte: Byte) -> Void {}
+    @Published var SOD = ""
+    // interrupts
+    func RESET() -> Void {}
+    func INT(_ byte: Byte = 0) -> Void {}
+    
+    // I8279
+    // address fields 1...4
+    @Published var AF1: Byte = ~0x67 // H
+    @Published var AF2: Byte = ~0x77 // A
+    @Published var AF3: Byte = ~0x83 // L
+    @Published var AF4: Byte = ~0x8F // t.
+    // data fields 1...2
+    @Published var DF1: Byte = ~0x00
+    @Published var DF2: Byte = ~0x00
+    
+    @Published var MHz: Double = 0
+}
+
+private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitVM) async {
+    var ram = Array<Byte>(repeating: 0, count: 0x10000)
+    ram.replaceSubrange(0..<rom.count, with: rom)
+    if let uram = uram, addr >= rom.count, uram.count > 0 {
+        let a = Int(addr)
+        let o = a + uram.count
+        ram.replaceSubrange(a..<o, with: uram)
+    }
+    
+    let i8155 = IntIO()
+    let i8279 = I8279(0x1800...0x19FF)
+    let mem = Memory(ram, 0x1000, [i8279])
+    
+    let z80 = Z80(mem, i8155,
+                        traceMemory: UserDefaults.traceMemory,
+                        traceOpcode: UserDefaults.traceOpcode,
+                        traceNmiInt: UserDefaults.traceNmiInt)
+    
+    while (!z80.Halt) {
+        let tStates = z80.parse()
+        
+        if i8155.TIMER_IN(pulses: UShort(tStates)) {
+            i8155.NMI = true
+            if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
+        }
+        
+        if Task.isCancelled { break }
+    }
+}
+
+extension Circuit {
     private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000) -> I8085? {
         let fastCPU = UserDefaults.standard.bool(forKey: "fastCPU")
         let priority: TaskPriority = fastCPU ? .medium : .background
@@ -245,7 +297,16 @@ struct Sdk85: App {
 
     var body: some Scene {
         WindowGroup {
-            Hmi()
+            Circuit()
         }
+    }
+}
+
+extension Data {
+    init?(fromBinFile: String) throws {
+        guard
+            let binFile = Bundle.main.url(forResource: fromBinFile, withExtension: ".bin")
+        else { return nil }
+        try self.init(contentsOf: binFile)
     }
 }

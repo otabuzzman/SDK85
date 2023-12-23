@@ -4,13 +4,12 @@ import z80
 class C80: Z80 { // custom Z80
     private var intIO: IntIO!
 
-    struct State {
-        var timeStarted: TimeInterval
-        var tStatesSum: UInt
+    private struct State {
+        var timeStarted = Date.timeIntervalSinceReferenceDate
+        var tStatesSum: UInt = 0
     }
-    private var state = State(
-        timeStarted: Date.timeIntervalSinceReferenceDate,
-        tStatesSum: 0)
+    
+    private var state = State()
 
     init(_ mem: Memory, _ intIO: IntIO, traceMemory: TraceMemory? = nil, traceOpcode: TraceOpcode? = nil, traceNmiInt: TraceNmiInt? = nil) {
         self.intIO = intIO
@@ -32,7 +31,7 @@ class C80: Z80 { // custom Z80
     override func parse() -> Int {
         let tStates = super.parse()
         state.tStatesSum += UInt(tStates)
-
+        
         if intIO.RESET {
             reset()
         }

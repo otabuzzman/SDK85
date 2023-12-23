@@ -43,7 +43,7 @@ typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
 final class IntIO: ObservableObject, IPorts {
     private var state = NSLock()
-
+    
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
@@ -75,11 +75,17 @@ final class IntIO: ObservableObject, IPorts {
     @Published var MHz: Double = 0
 
     private var traceIO: TraceIO?
-
+    private var circuit: CircuitVM!
+    
     init(traceIO: TraceIO? = UserDefaults.traceIO) {
         self.traceIO = traceIO
     }
 
+    init(traceIO: TraceIO? = UserDefaults.traceIO, _ circuit: CircuitVM) {
+        self.circuit = circuit
+        self.traceIO = traceIO
+    }
+    
     func reset() {
         _NMI = false
         _INT = false
