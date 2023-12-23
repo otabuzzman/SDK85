@@ -52,12 +52,13 @@ final class IntIO: ObservableObject, IPorts {
 
     private(set) var timer = Timer(state: .abort, value: 0, count: 0)
 
+    private var ttyOn = false // TTY connected
+    
     private var bots: UInt = 0
     private var sod: Byte = 0
     @Published var SOD = ""
 
     private var bits: UInt = 0
-    var tty = false
     private var sid: Byte = 0
     var SID: Byte {
         get {
@@ -98,7 +99,7 @@ final class IntIO: ObservableObject, IPorts {
         SOD = ""
 
         bits = 0
-        tty = false
+        ttyOn = false
         sid = 0
     }
 
@@ -110,7 +111,13 @@ final class IntIO: ObservableObject, IPorts {
         var data: Byte = 0
         switch port & 0xFF {
         case 0xFF:
-            if !tty {
+            if SID == 0x00 && ttyOn {
+                ttyOn.toggle()
+            }
+            if SID == 0x80 && !ttyOn {
+                ttyOn.toggle()
+            }
+            if !ttyOn {
                 break
             }
             data = SID & 0x80

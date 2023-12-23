@@ -52,10 +52,8 @@ struct Circuit: View {
 
                 switch thisControl {
                 case .pcb:
-                    intIO.tty = false
                     intIO.SID = 0x00
                 case .tty:
-                    intIO.tty = true
                     intIO.SID = 0x80
                 }
 
@@ -132,58 +130,15 @@ struct Circuit: View {
     }
 }
 
+@MainActor
 class CircuitVM: ObservableObject {
-    private var state = NSLock()
-    
     // I8085
     private var i8085: I8085?
-    // serial IO
-    private var _SID: Byte = 0
-    var SID: Byte {
-        get {
-            state.lock()
-            defer { state.unlock() }
-            return _SID
-        }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _SID = value
-        }
-    }
+    // serial IO data
+    func SID(_ byte: Byte) -> Void {}
     @Published var SOD = ""
-    // interrupt flag
-    private var _INT = false
-    var INT: Bool {
-        get {
-            state.lock()
-            defer { state.unlock() }
-            let tmp = _INT
-            _INT = false
-            return tmp
-        }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _INT = value
-        }
-    }
-    // interrupt data (IM0 and IM2)
-    private var _data: Byte = 0x00
-    var data: Byte {
-        get {
-            state.lock()
-            defer { state.unlock() }
-            let tmp = _data
-            _data = 0x00
-            return tmp
-        }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _data = value
-        }
-    }
+    // interrupt flag and dat
+    func INT(_ data: Byte = 0) -> Void {}
     
     // I8279
     // address fields 1...4
