@@ -135,10 +135,15 @@ class CircuitVM: ObservableObject {
     // I8085
     private var i8085: I8085?
     // serial IO data
-    func SID(_ byte: Byte) -> Void {}
+    func SID(_ byte: Byte) -> Void { i8155.SID = byte }
     @Published var SOD = ""
     // interrupt flag and dat
-    func INT(_ data: Byte = 0) -> Void {}
+    func INT(_ data: Byte = 0) -> Void {
+        i8155.INT = true
+        i8155.data = data
+    }
+    
+    func RESET() -> Void { i8155.RESET = true }
     
     // I8279
     // address fields 1...4
@@ -149,11 +154,13 @@ class CircuitVM: ObservableObject {
     // data fields 1...2
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
-    
-    // miscellaneous
-    var control: Control = .pcb
-    @Published var MHz: Double = 0
+    // key input
+    func RL07(_ data: Byte) -> Void { i8279.RL07.enqueue(data) }
 }
+
+private var i8085: I8085!
+private var i8155: IntIO!
+private var i8279: I8279!
 
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
 private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitVM) async {
@@ -165,8 +172,8 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
         ram.replaceSubrange(a..<o, with: uram)
     }
     
-    let i8155 = IntIO()
-    let i8279 = I8279(0x1800...0x19FF)
+    i8155 = IntIO(circuit)
+    i8279 = I8279(0x1800...0x19FF, circuit)
     let mem = Memory(ram, 0x1000, [i8279])
     let z80 = Z80(mem, i8155,
                         traceMemory: UserDefaults.traceMemory,
