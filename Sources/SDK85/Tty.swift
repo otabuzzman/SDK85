@@ -7,7 +7,6 @@ private let ttyColorMap: Dictionary<String, Color> = [
 
 struct Tty: View {
     var circuit: CircuitVM
-    var intIO: IntIO
     var isPortrait: Bool
 
     let ttyFont = UserDefaults.standard.string(forKey: "ttyFont") ?? "Glass_TTY_VT220"
@@ -15,8 +14,8 @@ struct Tty: View {
 
     var body: some View {
         VStack {
-            Monitor(intIO: intIO, ttyFont: ttyFont, ttyColor: ttyColor)
-            Keyboard(intIO: intIO, ttyColor: ttyColor)
+            Monitor(circuit: circuit, ttyFont: ttyFont, ttyColor: ttyColor)
+            Keyboard(circuit: circuit, ttyColor: ttyColor)
         }
         .padding(16)
         .background(Color.black) // https://stackoverflow.com/a/71935851

@@ -17,10 +17,6 @@ struct Circuit: View {
     @State private var program = Data()
     @State private var loadUserProgram = false
 
-    @State private var i8085: I8085?
-    @StateObject private var intIO = IntIO() // interupts and I8155
-    @StateObject private var i8279 = I8279(0x1800...0x19FF)
-
     @State private var thisControl: Control = .pcb
     @State private var pastControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
@@ -35,9 +31,9 @@ struct Circuit: View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
-                Pcb(circuit: circuit, intIO: intIO, i8279: i8279, isPortrait: isPortrait)
+                Pcb(circuit: circuit, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
-                Tty(circuit: circuit, intIO: intIO, isPortrait: isPortrait)
+                Tty(circuit: circuit, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
             }
             .onAnimated(for: controlOffset) {
@@ -45,19 +41,10 @@ struct Circuit: View {
                     thisControl != pastControl
                 else { return }
 
+                circuit.control = thisControl
+                
                 i8085?.cancel()
-
-                intIO.reset()
-                i8279.reset()
-
-                switch thisControl {
-                case .pcb:
-                    intIO.SID = 0x00
-                case .tty:
-                    intIO.SID = 0x80
-                }
-
-                i8085 = boot(monitor, loadRamWith: program)
+                i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
             }
         }
         .content.offset(x: controlOffset)
@@ -98,14 +85,14 @@ struct Circuit: View {
             controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
         }
         .onAppear {
-            i8085 = boot(monitor, loadRamWith: nil)
+            i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
         }
         .sheet(isPresented: $loadCustomMonitor) {
             BinFileLoader(binData: $monitor) { result in
                 switch result {
                 case .success(let monitor):
                     i8085?.cancel()
-                    i8085 = boot(monitor, loadRamWith: program)
+                    i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
                 default:
                     break
                 }
@@ -116,7 +103,7 @@ struct Circuit: View {
                 switch result {
                 case .success(let program):
                     i8085?.cancel()
-                    i8085 = boot(monitor, loadRamWith: program)
+                    i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
                 default:
                     break
                 }
@@ -132,6 +119,8 @@ struct Circuit: View {
 
 @MainActor
 class CircuitVM: ObservableObject {
+    var control: Control = .pcb
+    
     // I8085
     private var i8085: I8085?
     // serial IO data
@@ -173,7 +162,10 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
     }
     
     i8155 = IntIO(circuit)
+    i8155.SID = await circuit.control == .tty ? 0x80 : 0x00
+    
     i8279 = I8279(0x1800...0x19FF, circuit)
+    
     let mem = Memory(ram, 0x1000, [i8279])
     let z80 = Z80(mem, i8155,
                         traceMemory: UserDefaults.traceMemory,
@@ -208,44 +200,6 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
         
         circuit.DF1 = ~0x70 // 7
         circuit.DF2 = ~0xD7 // 6
-    }
-}
-
-extension Circuit {
-    private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000) -> I8085? {
-        let fastCPU = UserDefaults.standard.bool(forKey: "fastCPU")
-        let priority: TaskPriority = fastCPU ? .medium : .background
-
-        return Task.detached(priority: priority) {
-            var ram = Array<Byte>(repeating: 0, count: 0x10000)
-            ram.replaceSubrange(0..<rom.count, with: rom)
-            if let uram = uram, addr >= rom.count, uram.count > 0 {
-                let a = Int(addr)
-                let o = a + uram.count
-                ram.replaceSubrange(a..<o, with: uram)
-            }
-
-            let mem = await Memory(ram, 0x1000, [i8279])
-            let c80 = await C80(mem, intIO,
-                                traceMemory: UserDefaults.traceMemory,
-                                traceOpcode: UserDefaults.traceOpcode,
-                                traceNmiInt: UserDefaults.traceNmiInt)
-
-            while (!c80.Halt) {
-                c80.parse()
-                if Task.isCancelled { break }
-            }
-
-            await MainActor.run() {
-                i8279.AF1 = ~0x67 // H
-                i8279.AF2 = ~0x77 // A
-                i8279.AF3 = ~0x83 // L
-                i8279.AF4 = ~0x87 // t
-
-                i8279.DF1 = ~0x70 // 7
-                i8279.DF2 = ~0xD7 // 6
-            }
-        }
     }
 }
 

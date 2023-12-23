@@ -41,7 +41,7 @@ struct Timer {
 
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
-final class IntIO: ObservableObject, IPorts {
+final class IntIO: IPorts {
     private var state = NSLock()
     
     private var _NMI = false
@@ -56,7 +56,6 @@ final class IntIO: ObservableObject, IPorts {
     
     private var bots: UInt = 0
     private var sod: Byte = 0
-    @Published var SOD = ""
 
     private var bits: UInt = 0
     private var sid: Byte = 0
@@ -96,7 +95,6 @@ final class IntIO: ObservableObject, IPorts {
 
         bots = 0
         sod = 0
-        SOD = ""
 
         bits = 0
         ttyOn = false
@@ -167,7 +165,7 @@ final class IntIO: ObservableObject, IPorts {
                 sod = (sod | (~data & 0x80)) >> 1
                 bots += 1
             } else {
-                Task { @MainActor in SOD.append(Character(UnicodeScalar(sod))) }
+                Task { @MainActor in circuit.SOD.append(Character(UnicodeScalar(sod))) }
                 bots = 0
             }
         default:

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Monitor: View {
-    @ObservedObject var intIO: IntIO
+    @ObservedObject var circuit: CircuitVM
     var ttyFont: String
     var ttyColor: Color
 
@@ -15,7 +15,7 @@ struct Monitor: View {
             let derivedFontSize = width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))
 
             ScrollView {
-                Text(intIO.SOD)
+                Text(circuit.SOD)
                     .foregroundColor(ttyColor)
                     .font(Font.custom(ttyFont, size: derivedFontSize))
             }

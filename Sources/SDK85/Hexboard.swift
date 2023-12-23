@@ -2,8 +2,7 @@ import SwiftUI
 import z80
 
 struct Hexboard: View {
-    @ObservedObject var intIO: IntIO
-    @ObservedObject var i8279: I8279
+    @ObservedObject var circuit: CircuitVM
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
@@ -22,14 +21,12 @@ struct Hexboard: View {
                         Button(keyConfiguration.title) { // closure on button release
                             switch keyConfiguration.code {
                             case 0xFF: // RESET
-                                intIO.RESET = true
+                                circuit.RESET()
                             case 0xFE: // VECT INTR
-                                intIO.INT = true
-                                intIO.data = 0xFF // RST 7
+                                circuit.INT(0xFF) // RST 7
                             default:
-                                i8279.RL07.enqueue(keyConfiguration.code)
-                                intIO.INT = true
-                                intIO.data = 0xEF // RST 5
+                                circuit.RL07(keyConfiguration.code)
+                                circuit.INT(0xEF) // RST 5
                             }
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }

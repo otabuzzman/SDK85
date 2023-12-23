@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Display: View {
-    @ObservedObject var i8279: I8279
+    @ObservedObject var circuit: CircuitVM
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
@@ -13,10 +13,10 @@ struct Display: View {
             HStack {
                 HStack(spacing: 4) {
                     Group {
-                        SevenSegmentDisplay(dcbapgfe: i8279.AF1)
-                        SevenSegmentDisplay(dcbapgfe: i8279.AF2)
-                        SevenSegmentDisplay(dcbapgfe: i8279.AF3)
-                        SevenSegmentDisplay(dcbapgfe: i8279.AF4)
+                        SevenSegmentDisplay(dcbapgfe: circuit.AF1)
+                        SevenSegmentDisplay(dcbapgfe: circuit.AF2)
+                        SevenSegmentDisplay(dcbapgfe: circuit.AF3)
+                        SevenSegmentDisplay(dcbapgfe: circuit.AF4)
                     }
                     .padding(8)
                     .background(.package)
@@ -25,8 +25,8 @@ struct Display: View {
 
                 HStack(spacing: 4) {
                     Group {
-                        SevenSegmentDisplay(dcbapgfe: i8279.DF1)
-                        SevenSegmentDisplay(dcbapgfe: i8279.DF2)
+                        SevenSegmentDisplay(dcbapgfe: circuit.DF1)
+                        SevenSegmentDisplay(dcbapgfe: circuit.DF2)
                     }
                     .padding(8)
                     .background(.package)

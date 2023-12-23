@@ -2,7 +2,7 @@ import SwiftUI
 import z80
 
 struct Keyboard: View {
-    @ObservedObject var intIO: IntIO
+    @ObservedObject var circuit: CircuitVM
     var ttyColor: Color
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -33,10 +33,10 @@ struct Keyboard: View {
         .focused($focus)
         .onChange(of: input, perform: { value in
             if value.isEmpty { return }
-            intIO.SID = input.last!.asciiValue!
+            circuit.SID(input.last!.asciiValue!)
         })
         .onSubmit {
-            intIO.SID = 0x0D
+            circuit.SID(0x0D)
             input = ""
             focus = true
         }

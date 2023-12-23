@@ -1,17 +1,9 @@
 import SwiftUI
 import z80
 
-final class I8279: ObservableObject, MPorts {
+final class I8279: MPorts {
     private var CNTRL: Byte = 0x08
 
-    // address fields 1...4
-    @Published var AF1: Byte = ~0x67 // H
-    @Published var AF2: Byte = ~0x77 // A
-    @Published var AF3: Byte = ~0x83 // L
-    @Published var AF4: Byte = ~0x8F // t.
-    // data fields 1...2
-    @Published var DF1: Byte = ~0x00
-    @Published var DF2: Byte = ~0x00
     private var fieldCount = 1
 
     var RL07 = Fifo()
@@ -34,13 +26,6 @@ final class I8279: ObservableObject, MPorts {
     func reset() {
         CNTRL = 0x08
 
-        AF1 = ~0x67
-        AF2 = ~0x77
-        AF3 = ~0x83
-        AF4 = ~0x8F
-
-        DF1 = ~0x00
-        DF2 = ~0x00
         fieldCount = 1
 
         RL07.removeAll()
@@ -67,13 +52,13 @@ final class I8279: ObservableObject, MPorts {
             if CNTRL == 0x90 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in AF1 = data }
+                    Task { @MainActor in circuit.AF1 = data }
                 case 2:
-                    Task { @MainActor in AF2 = data }
+                    Task { @MainActor in circuit.AF2 = data }
                 case 3:
-                    Task { @MainActor in AF3 = data }
+                    Task { @MainActor in circuit.AF3 = data }
                 case 4:
-                    Task { @MainActor in AF4 = data }
+                    Task { @MainActor in circuit.AF4 = data }
                 default:
                     break
                 }
@@ -82,9 +67,9 @@ final class I8279: ObservableObject, MPorts {
             if CNTRL == 0x94 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in DF1 = data }
+                    Task { @MainActor in circuit.DF1 = data }
                 case 2:
-                    Task { @MainActor in DF2 = data }
+                    Task { @MainActor in circuit.DF2 = data }
                 default:
                     break
                 }
