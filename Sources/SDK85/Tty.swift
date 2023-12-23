@@ -6,6 +6,7 @@ private let ttyColorMap: Dictionary<String, Color> = [
 ]
 
 struct Tty: View {
+    var circuit: CircuitVM
     var intIO: IntIO
     var isPortrait: Bool
 

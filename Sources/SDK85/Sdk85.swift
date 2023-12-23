@@ -9,6 +9,8 @@ enum Control: Int {
 }
 
 struct Circuit: View {
+    @ObservedObject var circuit = CircuitVM()
+    
     @State var monitor = try! Data(fromBinFile: "sdk85-0000")!
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
 
@@ -33,9 +35,9 @@ struct Circuit: View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
-                Pcb(intIO: intIO, i8279: i8279, isPortrait: isPortrait)
+                Pcb(circuit: circuit, intIO: intIO, i8279: i8279, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
-                Tty(intIO: intIO, isPortrait: isPortrait)
+                Tty(circuit: circuit, intIO: intIO, isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
             }
             .onAnimated(for: controlOffset) {
@@ -131,14 +133,57 @@ struct Circuit: View {
 }
 
 class CircuitVM: ObservableObject {
+    private var state = NSLock()
+    
     // I8085
     private var i8085: I8085?
     // serial IO
-    func SID(_ byte: Byte) -> Void {}
+    private var _SID: Byte = 0
+    var SID: Byte {
+        get {
+            state.lock()
+            defer { state.unlock() }
+            return _SID
+        }
+        set(value) {
+            state.lock()
+            defer { state.unlock() }
+            _SID = value
+        }
+    }
     @Published var SOD = ""
-    // interrupts
-    func RESET() -> Void {}
-    func INT(_ byte: Byte = 0) -> Void {}
+    // interrupt flag
+    private var _INT = false
+    var INT: Bool {
+        get {
+            state.lock()
+            defer { state.unlock() }
+            let tmp = _INT
+            _INT = false
+            return tmp
+        }
+        set(value) {
+            state.lock()
+            defer { state.unlock() }
+            _INT = value
+        }
+    }
+    // interrupt data (IM0 and IM2)
+    private var _data: Byte = 0x00
+    var data: Byte {
+        get {
+            state.lock()
+            defer { state.unlock() }
+            let tmp = _data
+            _data = 0x00
+            return tmp
+        }
+        set(value) {
+            state.lock()
+            defer { state.unlock() }
+            _data = value
+        }
+    }
     
     // I8279
     // address fields 1...4
@@ -150,9 +195,8 @@ class CircuitVM: ObservableObject {
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
     
-    // I8155
-    let i8155 = IntIO()
-    
+    // miscellaneous
+    var control: Control = .pcb
     @Published var MHz: Double = 0
 }
 
@@ -166,9 +210,10 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
         ram.replaceSubrange(a..<o, with: uram)
     }
     
+    let i8155 = IntIO()
     let i8279 = I8279(0x1800...0x19FF)
     let mem = Memory(ram, 0x1000, [i8279])
-    let z80 = Z80(mem, circuit.i8155,
+    let z80 = Z80(mem, i8155,
                         traceMemory: UserDefaults.traceMemory,
                         traceOpcode: UserDefaults.traceOpcode,
                         traceNmiInt: UserDefaults.traceNmiInt)
@@ -176,12 +221,22 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
     while (!z80.Halt) {
         let tStates = z80.parse()
         
-        if circuit.i8155.TIMER_IN(pulses: UShort(tStates)) {
-            circuit.i8155.NMI = true
+        if i8155.TIMER_IN(pulses: UShort(tStates)) {
+            i8155.NMI = true
             if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
         }
         
         if Task.isCancelled { break }
+    }
+    
+    await MainActor.run() {
+        circuit.AF1 = ~0x67 // H
+        circuit.AF2 = ~0x77 // A
+        circuit.AF3 = ~0x83 // L
+        circuit.AF4 = ~0x87 // t
+        
+        circuit.DF1 = ~0x70 // 7
+        circuit.DF2 = ~0xD7 // 6
     }
 }
 

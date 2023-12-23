@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct Pcb: View {
+    var circuit: CircuitVM
     var intIO: IntIO
     var i8279: I8279
     var isPortrait: Bool
