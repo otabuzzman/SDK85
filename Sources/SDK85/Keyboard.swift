@@ -33,10 +33,10 @@ struct Keyboard: View {
         .focused($focus)
         .onChange(of: input, perform: { value in
             if value.isEmpty { return }
-            circuit.SID(input.last!.asciiValue!)
+            i8155.SID = input.last!.asciiValue!
         })
         .onSubmit {
-            circuit.SID(0x0D)
+            i8155.SID = 0x0D
             input = ""
             focus = true
         }

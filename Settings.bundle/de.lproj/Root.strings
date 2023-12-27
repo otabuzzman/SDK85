@@ -4,7 +4,6 @@
 
 "General" = "Allgemein" ;
 "Load custom MONITOR" = "Eigenen MONITOR laden¹" ;
-"Fast CPU emulation" = "Schnelle CPU-Emulation" ;
 "TTY" = "Terminal (TTY)" ;
 "App restart required" = "¹ Neustart der App erforderlich." ;
 

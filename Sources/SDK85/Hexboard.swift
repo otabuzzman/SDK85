@@ -21,12 +21,15 @@ struct Hexboard: View {
                         Button(keyConfiguration.title) { // closure on button release
                             switch keyConfiguration.code {
                             case 0xFF: // RESET
-                                circuit.RESET()
+                                break
+                               // circuit.RESET()
                             case 0xFE: // VECT INTR
-                                circuit.INT(0xFF) // RST 7
+                                i8155.data = 0xFF
+                                i8155.INT = true // RST 7
                             default:
-                                circuit.RL07(keyConfiguration.code)
-                                circuit.INT(0xEF) // RST 5
+                                i8279.RL07.enqueue(keyConfiguration.code)
+                                i8155.data = 0xEF
+                                i8155.INT = true // RST 5
                             }
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }

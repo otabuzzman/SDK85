@@ -47,9 +47,7 @@ final class IntIO: IPorts {
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
-
-    private var _RESET = false
-
+    
     private(set) var timer = Timer(state: .abort, value: 0, count: 0)
 
     private var ttyOn = false // TTY connected
@@ -72,14 +70,8 @@ final class IntIO: IPorts {
         }
     }
 
-    @Published var MHz: Double = 0
-
     private var traceIO: TraceIO?
     private var circuit: CircuitVM!
-    
-    init(traceIO: TraceIO? = UserDefaults.traceIO) {
-        self.traceIO = traceIO
-    }
 
     init(traceIO: TraceIO? = UserDefaults.traceIO, _ circuit: CircuitVM) {
         self.circuit = circuit
@@ -93,11 +85,12 @@ final class IntIO: IPorts {
 
         timer = Timer(state: .abort, value: 0, count: 0)
 
+        ttyOn = false
+        
         bots = 0
         sod = 0
 
         bits = 0
-        ttyOn = false
         sid = 0
     }
 
@@ -215,21 +208,6 @@ final class IntIO: IPorts {
             state.lock()
             defer { state.unlock() }
             _data = value
-        }
-    }
-
-    var RESET: Bool {
-        get {
-            state.lock()
-            defer { state.unlock() }
-            let tmp = _RESET
-            _RESET = false
-            return tmp
-        }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _RESET = value
         }
     }
 }

@@ -101,7 +101,6 @@ Apps used on Winos or Linos
 |BarreledRectangle.swift|A barrel-shaped rectangle.|
 |TriangledRectangle.swift|A double-crossed rectangle.|
 |SevenSegmentDisplay.swift|A single seven segment digit.|
-|C80.swift|A (custom) Z80 subclass to address actor isolation.|
 |Sound.swift|A simple sound file player.|
 |Queue.swift|A queue (FIFO) implementation.|
 |UserDefaults.swift|Settings and app-wide default values.|

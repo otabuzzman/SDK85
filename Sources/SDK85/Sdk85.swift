@@ -41,10 +41,10 @@ struct Circuit: View {
                     thisControl != pastControl
                 else { return }
 
-                circuit.control = thisControl
+                circuit.SOD = ""
                 
                 i8085?.cancel()
-                i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
+                i8085 = Task { await boot(monitor, loadRamWith: program, circuit, thisControl) }
             }
         }
         .content.offset(x: controlOffset)
@@ -85,6 +85,7 @@ struct Circuit: View {
             controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
         }
         .onAppear {
+            i8085?.cancel()
             i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
         }
         .sheet(isPresented: $loadCustomMonitor) {
@@ -119,20 +120,11 @@ struct Circuit: View {
 
 @MainActor
 class CircuitVM: ObservableObject {
-    var control: Control = .pcb
-    
     // I8085
-    private var i8085: I8085?
-    // serial IO data
-    func SID(_ byte: Byte) -> Void { i8155.SID = byte }
+    // clock output
+    @Published var CLK: Double = 0
+    // serial output data
     @Published var SOD = ""
-    // interrupt flag and dat
-    func INT(_ data: Byte = 0) -> Void {
-        i8155.INT = true
-        i8155.data = data
-    }
-    
-    func RESET() -> Void { i8155.RESET = true }
     
     // I8279
     // address fields 1...4
@@ -143,16 +135,14 @@ class CircuitVM: ObservableObject {
     // data fields 1...2
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
-    // key input
-    func RL07(_ data: Byte) -> Void { i8279.RL07.enqueue(data) }
 }
 
 private var i8085: I8085!
-private var i8155: IntIO!
-private var i8279: I8279!
+var i8155: IntIO!
+var i8279: I8279!
 
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
-private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitVM) async {
+private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitVM, _ control: Control = .pcb) async {
     var ram = Array<Byte>(repeating: 0, count: 0x10000)
     ram.replaceSubrange(0..<rom.count, with: rom)
     if let uram = uram, addr >= rom.count, uram.count > 0 {
@@ -162,7 +152,7 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
     }
     
     i8155 = IntIO(circuit)
-    i8155.SID = await circuit.control == .tty ? 0x80 : 0x00
+    i8155.SID = control == .tty ? 0x80 : 0x00
     
     i8279 = I8279(0x1800...0x19FF, circuit)
     
@@ -176,6 +166,8 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
     let t0 = Date.timeIntervalSinceReferenceDate
     
     while (!z80.Halt) {
+//        let t1 = Date.timeIntervalSinceReferenceDate
+        
         let tStates = z80.parse()
         tStatesSum += UInt(tStates)
         
@@ -184,15 +176,25 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
             if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
         }
         
-        if _isDebugAssertConfiguration() && tStatesSum % 10000 == 0 {
-            let t1 = Date.timeIntervalSinceReferenceDate - t0
-            print(String(format: "%.2f MHz", Double(tStatesSum) / t1 / 1_000_000))
+        /*
+         with clock adjustment, the cpu is faster in debug than in release configuration: the reason for this is that no adjustment is required in debug configuration because the CPU is already too slow, but at least it runs at about 1.4 MHz. in release configuration, the adaptation is active, but the sleep nanosecond lasts up to 500ms, at least about 50ms, even if only say 300ms is requested, which causes the CPU to effectively run much slower than requested, also as in the debug configuration.
+         */
+        
+//        let t2 = Date.timeIntervalSinceReferenceDate - t1
+//        let t3 = Double(tStates) / 3_072_000 - t2
+//        if t3 > 0 {
+//            try? await Task.sleep(nanoseconds: UInt64(t3 * 1_000_000_000))
+//        }
+        
+        let t4 = Date.timeIntervalSinceReferenceDate - t0
+        if tStatesSum % 10000 == 0 {
+            await MainActor.run { [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
         }
         
         if Task.isCancelled { break }
     }
     
-    await MainActor.run() {
+    await MainActor.run {
         circuit.AF1 = ~0x67 // H
         circuit.AF2 = ~0x77 // A
         circuit.AF3 = ~0x83 // L

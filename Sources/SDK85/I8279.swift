@@ -11,11 +11,6 @@ final class I8279: MPorts {
     var mmap: ClosedRange<UShort>
     private var traceIO: TraceIO?
     private var circuit: CircuitVM!
-    
-    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = UserDefaults.traceIO) {
-        self.mmap = mmap
-        self.traceIO = traceIO
-    }
 
     init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = UserDefaults.traceIO, _ circuit: CircuitVM) {
         self.mmap = mmap
