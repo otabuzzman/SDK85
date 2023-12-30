@@ -2,7 +2,8 @@ import SwiftUI
 import z80
 
 struct Keyboard: View {
-    @ObservedObject var circuit: CircuitVM
+    @EnvironmentObject var circuitIO: CircuitIO
+    
     var ttyColor: Color
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass

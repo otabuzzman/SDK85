@@ -6,7 +6,6 @@ enum BinFileLoaderError: Error {
 }
 
 struct BinFileLoader: UIViewControllerRepresentable {
-    @Binding var binData: Data
     var completion: ((Result<Data, BinFileLoaderError>) -> Void)?
 
     func makeUIViewController(context: UIViewControllerRepresentableContext<BinFileLoader>) -> UIDocumentPickerViewController {
@@ -21,16 +20,14 @@ struct BinFileLoader: UIViewControllerRepresentable {
     }
 
     func makeCoordinator() -> BinFileLoaderCoordinator {
-        BinFileLoaderCoordinator($binData, completion)
+        BinFileLoaderCoordinator(completion)
     }
 }
 
 class BinFileLoaderCoordinator: NSObject, UINavigationControllerDelegate {
-    @Binding var binData: Data
     var completion: ((Result<Data, BinFileLoaderError>) -> Void)?
 
-    init(_ binData: Binding<Data>, _ completion: ((Result<Data, BinFileLoaderError>) -> Void)?) {
-        _binData = binData
+    init(_ completion: ((Result<Data, BinFileLoaderError>) -> Void)?) {
         self.completion = completion
     }
 }
@@ -52,7 +49,6 @@ extension BinFileLoaderCoordinator: UIDocumentPickerDelegate {
             let binData = try? Data(contentsOf: binFile)
         else { return }
 
-        self.binData = binData
         completion?(.success(binData))
     }
 }

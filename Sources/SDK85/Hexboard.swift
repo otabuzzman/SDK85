@@ -2,7 +2,7 @@ import SwiftUI
 import z80
 
 struct Hexboard: View {
-    @ObservedObject var circuit: CircuitVM
+    @EnvironmentObject var circuitIO: CircuitIO
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
@@ -21,8 +21,7 @@ struct Hexboard: View {
                         Button(keyConfiguration.title) { // closure on button release
                             switch keyConfiguration.code {
                             case 0xFF: // RESET
-                                break
-                               // circuit.RESET()
+                                circuitIO.reset()
                             case 0xFE: // VECT INTR
                                 i8155.data = 0xFF
                                 i8155.INT = true // RST 7

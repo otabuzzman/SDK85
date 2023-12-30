@@ -9,42 +9,37 @@ enum Control: Int {
 }
 
 struct Circuit: View {
-    @ObservedObject private var circuit = CircuitVM()
+    @ObservedObject private var circuitIO = CircuitIO()
     
-    @State private var monitor = try! Data(fromBinFile: "sdk85-0000")!
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
-
-    @State private var program = Data()
     @State private var loadUserProgram = false
-
+    
     @State private var thisControl: Control = .pcb
     @State private var pastControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
-
+    
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
-
+    
     @State private var rotateToLandscapeShow = false
     @State private var rotateToLandscapeSeen = false
-
+    
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
-                Pcb(circuit: circuit, isPortrait: isPortrait)
+                Pcb(isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
-                Tty(circuit: circuit, isPortrait: isPortrait)
+                Tty(isPortrait: isPortrait)
                     .frame(width: UIScreen.main.bounds.width)
             }
             .onAnimated(for: controlOffset) {
                 guard
                     thisControl != pastControl
                 else { return }
-
-                circuit.SOD = ""
                 
-                i8085?.cancel()
-                i8085 = Task { await boot(monitor, loadRamWith: program, circuit, thisControl) }
+                circuitIO.control = thisControl
+                circuitIO.reset()
             }
         }
         .content.offset(x: controlOffset)
@@ -84,27 +79,23 @@ struct Circuit: View {
         .onRotate(isPortrait: $isPortrait) { _ in
             controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
         }
-        .onAppear {
-            i8085?.cancel()
-            i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
-        }
         .sheet(isPresented: $loadCustomMonitor) {
-            BinFileLoader(binData: $monitor) { result in
+            BinFileLoader() { result in
                 switch result {
                 case .success(let monitor):
-                    i8085?.cancel()
-                    i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
+                    circuitIO.monitor = monitor
+                    circuitIO.reset()
                 default:
                     break
                 }
             }
         }
         .sheet(isPresented: $loadUserProgram) {
-            BinFileLoader(binData: $program) { result in
+            BinFileLoader() { result in
                 switch result {
                 case .success(let program):
-                    i8085?.cancel()
-                    i8085 = Task { await boot(monitor, loadRamWith: program, circuit) }
+                    circuitIO.program = program
+                    circuitIO.reset()
                 default:
                     break
                 }
@@ -115,11 +106,42 @@ struct Circuit: View {
                 rotateToLandscapeSeen = true
             }
         }
+        .environmentObject(circuitIO)
     }
 }
 
+// must live outside CircuitIO
+var i8155: IntIO!
+var i8279: I8279!
+
 @MainActor
-class CircuitVM: ObservableObject {
+class CircuitIO: ObservableObject {
+    private var i8085: I8085?
+    
+    var monitor = try! Data(fromBinFile: "sdk85-0000")!
+    var program: Data?
+    
+    var control: Control = .pcb
+    
+    init() {
+        i8155 = IntIO(self)
+        i8279 = I8279(0x1800...0x19FF, self)
+        
+        reset()
+    }
+    
+    func reset() {
+        i8085?.cancel()
+        
+        i8155.reset()
+        i8279.reset()
+        
+        self.SOD = ""
+        i8155.SID = control == .tty ? 0x80 : 0x00
+        
+        i8085 = Task { await boot(monitor, loadRamWith: program, self) }
+    }
+    
     // I8085
     // clock output
     @Published var CLK: Double = 0
@@ -137,12 +159,8 @@ class CircuitVM: ObservableObject {
     @Published var DF2: Byte = ~0x00
 }
 
-private var i8085: I8085!
-var i8155: IntIO!
-var i8279: I8279!
-
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
-private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitVM, _ control: Control = .pcb) async {
+func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitIO) async {
     var ram = Array<Byte>(repeating: 0, count: 0x10000)
     ram.replaceSubrange(0..<rom.count, with: rom)
     if let uram = uram, addr >= rom.count, uram.count > 0 {
@@ -151,16 +169,11 @@ private func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000
         ram.replaceSubrange(a..<o, with: uram)
     }
     
-    i8155 = IntIO(circuit)
-    i8155.SID = control == .tty ? 0x80 : 0x00
-    
-    i8279 = I8279(0x1800...0x19FF, circuit)
-    
     let mem = Memory(ram, 0x1000, [i8279])
     let z80 = Z80(mem, i8155,
-                        traceMemory: UserDefaults.traceMemory,
-                        traceOpcode: UserDefaults.traceOpcode,
-                        traceNmiInt: UserDefaults.traceNmiInt)
+                  traceMemory: UserDefaults.traceMemory,
+                  traceOpcode: UserDefaults.traceOpcode,
+                  traceNmiInt: UserDefaults.traceNmiInt)
     
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
@@ -212,25 +225,25 @@ struct OnAnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorAr
             notifyCompletionFinished()
         }
     }
-
+    
     private var value: Value
     private var completion: () -> Void
-
+    
     init(value: Value, completion: @escaping () -> Void) {
         animatableData = value
         self.value = value
         self.completion = completion
     }
-
+    
     func body(content: Content) -> some View {
         return content
     }
-
+    
     private func notifyCompletionFinished() {
         guard
             animatableData == value
         else { return }
-
+        
         DispatchQueue.main.async {
             completion()
         }
@@ -240,7 +253,7 @@ struct OnAnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorAr
 struct OnRotate: ViewModifier {
     @Binding var isPortrait: Bool
     let action: (UIDeviceOrientation) -> Void
-
+    
     func body(content: Content) -> some View {
         content
             .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { orientation in
@@ -248,16 +261,16 @@ struct OnRotate: ViewModifier {
                 // UIDevice.orientation not save on app launch
                 let scenes = UIApplication.shared.connectedScenes
                 let windowScene = scenes.first as? UIWindowScene
-
+                
                 guard
                     let isPortrait = windowScene?.interfaceOrientation.isPortrait
                 else { return }
-
+                
                 // interface orientation not affected when rotated to flat 
                 if self.isPortrait == isPortrait { return }
-
+                
                 self.isPortrait = isPortrait
-
+                
                 action(UIDevice.current.orientation)
             }
     }
@@ -267,7 +280,7 @@ extension View {
     func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, OnAnimatedModifier<Value>> {
         return modifier(OnAnimatedModifier(value: value, completion: completion))
     }
-
+    
     func onRotate(isPortrait: Binding<Bool>, action: @escaping (UIDeviceOrientation) -> Void) -> some View {
         self.modifier(OnRotate(isPortrait: isPortrait, action: action))
     }
@@ -278,7 +291,7 @@ struct Sdk85: App {
     init() {
         UserDefaults.registerSettingsBundle()
     }
-
+    
     var body: some Scene {
         WindowGroup {
             Circuit()

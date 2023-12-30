@@ -48,7 +48,7 @@ final class IntIO: IPorts {
     private var _INT = false
     private var _data: Byte = 0x00
     
-    private(set) var timer = Timer(state: .abort, value: 0, count: 0)
+    private var timer = Timer(state: .abort, value: 0, count: 0)
 
     private var ttyOn = false // TTY connected
     
@@ -71,10 +71,10 @@ final class IntIO: IPorts {
     }
 
     private var traceIO: TraceIO?
-    private var circuit: CircuitVM!
+    private var circuitIO: CircuitIO!
 
-    init(traceIO: TraceIO? = UserDefaults.traceIO, _ circuit: CircuitVM) {
-        self.circuit = circuit
+    init(traceIO: TraceIO? = UserDefaults.traceIO, _ circuitIO: CircuitIO) {
+        self.circuitIO = circuitIO
         self.traceIO = traceIO
     }
     
@@ -158,7 +158,7 @@ final class IntIO: IPorts {
                 sod = (sod | (~data & 0x80)) >> 1
                 bots += 1
             } else {
-                Task { @MainActor in circuit.SOD.append(Character(UnicodeScalar(sod))) }
+                Task { @MainActor in circuitIO.SOD.append(Character(UnicodeScalar(sod))) }
                 bots = 0
             }
         default:

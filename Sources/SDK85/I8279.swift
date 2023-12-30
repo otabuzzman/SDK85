@@ -2,28 +2,26 @@ import SwiftUI
 import z80
 
 final class I8279: MPorts {
-    private var CNTRL: Byte = 0x08
-
-    private var fieldCount = 1
-
     var RL07 = Fifo()
+    
+    private var CNTRL: Byte = 0x08
+    private var fieldCount = 1
 
     var mmap: ClosedRange<UShort>
     private var traceIO: TraceIO?
-    private var circuit: CircuitVM!
+    private var circuitIO: CircuitIO!
 
-    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = UserDefaults.traceIO, _ circuit: CircuitVM) {
+    init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = UserDefaults.traceIO, _ circuitIO: CircuitIO) {
         self.mmap = mmap
         self.traceIO = traceIO
-        self.circuit = circuit
+        self.circuitIO = circuitIO
     }
     
     func reset() {
-        CNTRL = 0x08
-
-        fieldCount = 1
-
         RL07.removeAll()
+        
+        CNTRL = 0x08
+        fieldCount = 1
     }
 
     func rdPort(_ port: UShort) -> Byte {
@@ -47,13 +45,13 @@ final class I8279: MPorts {
             if CNTRL == 0x90 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuit.AF1 = data }
+                    Task { @MainActor in circuitIO.AF1 = data }
                 case 2:
-                    Task { @MainActor in circuit.AF2 = data }
+                    Task { @MainActor in circuitIO.AF2 = data }
                 case 3:
-                    Task { @MainActor in circuit.AF3 = data }
+                    Task { @MainActor in circuitIO.AF3 = data }
                 case 4:
-                    Task { @MainActor in circuit.AF4 = data }
+                    Task { @MainActor in circuitIO.AF4 = data }
                 default:
                     break
                 }
@@ -62,9 +60,9 @@ final class I8279: MPorts {
             if CNTRL == 0x94 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuit.DF1 = data }
+                    Task { @MainActor in circuitIO.DF1 = data }
                 case 2:
-                    Task { @MainActor in circuit.DF2 = data }
+                    Task { @MainActor in circuitIO.DF2 = data }
                 default:
                     break
                 }
