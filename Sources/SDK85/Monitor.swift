@@ -1,10 +1,15 @@
 import SwiftUI
 
+private let ttyColorMap: Dictionary<String, Color> = [
+    "Amber": .ttyAmber,
+    "Green": .ttyGreen
+]
+
 struct Monitor: View {
     @EnvironmentObject var circuitIO: CircuitIO
     
-    var ttyFont: String
-    var ttyColor: Color
+    private let ttyFont = UserDefaults.standard.string(forKey: "ttyFont") ?? "Glass_TTY_VT220"
+    private let ttyColor = ttyColorMap[UserDefaults.standard.string(forKey: "ttyColor") ?? "Green"]!
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 

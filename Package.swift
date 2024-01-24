@@ -19,8 +19,8 @@ let package = Package(
             targets: ["AppModule"],
             bundleIdentifier: "com.otabuzzman.sdk85.ios",
             teamIdentifier: "28FV44657B",
-            displayVersion: "1.4.0",
-            bundleVersion: "35",
+            displayVersion: "1.4.1",
+            bundleVersion: "36",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.teal),
             supportedDeviceFamilies: [

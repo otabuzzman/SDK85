@@ -11,6 +11,7 @@ struct Hexboard: View {
 
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
+        let keySize: CGFloat = isCompact ? 56 : 96
 
         VStack(spacing: Hexboard.spacing) {
             ForEach(0..<4, id: \.self) { row in
@@ -33,9 +34,10 @@ struct Hexboard: View {
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }
                         .buttonStyle(Key(
+                            keySize: keySize,
                             subtitle1st: keyConfiguration.subtitle1st,
                             subtitle2nd: keyConfiguration.subtitle2nd))
-                        .frame(maxWidth: isCompact ? 56 : 96, maxHeight: isCompact ? 56 : 96)
+                        .frame(maxWidth: keySize, maxHeight: keySize)
                         .rotationEffect(Angle(degrees: Hexboard.wiggles[row * col]))
                         /*
                         // different sounds are difficult to distinguish if
@@ -53,8 +55,8 @@ struct Hexboard: View {
     }
 
     private typealias KeyConfiguration = (
-        title: String, 
-        subtitle1st: String?, 
+        title: String,
+        subtitle1st: String?,
         subtitle2nd: String?,
         code: Byte)
 
@@ -75,43 +77,38 @@ struct Hexboard: View {
 }
 
 private struct Key: ButtonStyle {
+    let keySize: CGFloat!
     let subtitle1st: String?
     let subtitle2nd: String?
 
     func makeBody(configuration: Configuration) -> some View {
-        GeometryReader { geometry in
-            let buttonSize = min(geometry.size.width, geometry.size.height)
-
-            ZStack {
-                TriangledRectangle()
-                    .border(.white)
-
-                BarreledRectangle(barrelness: 0.12)
-                    .fill(.white)
-                    .scaleEffect(0.72)
-
-                VStack {
-                    configuration.label
-                        .font(.system(size: buttonSize * 0.5))
-                        .foregroundColor(Color(white: 0.24))
-
-                    if let subtitle = subtitle1st {
-                        Text(subtitle)
-                            .font(.system(size: buttonSize * 0.15))
-                            .offset(y: -buttonSize * 0.08)
-                    }
-
-                    if let subtitle = subtitle2nd {
-                        Text(subtitle)
-                            .font(.system(size: buttonSize * 0.15))
-                            .offset(y: -buttonSize * 0.08)
-                    }
+        ZStack {
+            TriangledRectangle()
+                .border(.white)
+            
+            BarreledRectangle(barrelness: 0.12)
+                .fill(.white)
+                .scaleEffect(0.72)
+            
+            VStack {
+                configuration.label
+                    .font(.system(size: keySize * 0.5))
+                    .foregroundColor(Color(white: 0.24))
+                
+                if let subtitle = subtitle1st {
+                    Text(subtitle)
+                        .font(.system(size: keySize * 0.15))
+                        .offset(y: -keySize * 0.08)
+                }
+                
+                if let subtitle = subtitle2nd {
+                    Text(subtitle)
+                        .font(.system(size: keySize * 0.15))
+                        .offset(y: -keySize * 0.08)
                 }
             }
-            // https://swiftui-lab.com/geometryreader-bug/ (FB7971927)
-            .frame(width: buttonSize, height: buttonSize, alignment: .center)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .scaleEffect(configuration.isPressed ? 0.94 : 1)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .scaleEffect(configuration.isPressed ? 0.94 : 1)
     }
 }
