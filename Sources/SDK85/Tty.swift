@@ -1,14 +1,13 @@
 import SwiftUI
 
 struct Tty: View {
-    var isPortrait: Bool
-
     var body: some View {
         VStack {
             Monitor()
+                .padding(16)
             Keyboard()
         }
-        .padding(16)
+        .padding(.bottom, 16)
         .background(Color.black) // https://stackoverflow.com/a/71935851
     }
 }

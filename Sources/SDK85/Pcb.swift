@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct Pcb: View {
-    var isPortrait: Bool
-
     var body: some View {
+        let isPortrait = UIScreen.main.bounds.isPortrait
+        
         ZStack(alignment: .bottomTrailing) {
             Image("sdk85-pcb")
                 .resizable()

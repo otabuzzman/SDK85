@@ -38,7 +38,7 @@ struct Keyboard: View {
     
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
-        let keySize: CGFloat = isCompact ? 30.75 : 56
+        let keySize: CGFloat = isCompact ? 35.05 : 56
         let spacing: CGFloat = isCompact ? 1 : 2
         
         VStack(spacing: spacing) {

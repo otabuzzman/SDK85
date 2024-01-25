@@ -28,9 +28,9 @@ struct Circuit: View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 0) {
-                Pcb(isPortrait: isPortrait)
+                Pcb()
                     .frame(width: UIScreen.main.bounds.width)
-                Tty(isPortrait: isPortrait)
+                Tty()
                     .frame(width: UIScreen.main.bounds.width)
             }
             .onAnimated(for: controlOffset) {
