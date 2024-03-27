@@ -33,14 +33,6 @@ struct Circuit: View {
                 Tty()
                     .frame(width: UIScreen.main.bounds.width)
             }
-            .onAnimated(for: controlOffset) {
-                guard
-                    thisControl != pastControl
-                else { return }
-                
-                circuitIO.control = thisControl
-                circuitIO.reset()
-            }
         }
         .content.offset(x: controlOffset)
         .frame(width: UIScreen.main.bounds.width, alignment: .leading)
@@ -71,6 +63,13 @@ struct Circuit: View {
                 withAnimation {
                     controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
                 }
+                
+                guard
+                    thisControl != pastControl
+                else { return }
+                
+                circuitIO.control = thisControl
+                circuitIO.reset()
             })
         .gesture(TapGesture(count: 2)
             .onEnded {
