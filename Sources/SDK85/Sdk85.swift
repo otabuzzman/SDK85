@@ -71,8 +71,8 @@ struct Circuit: View {
                 circuitIO.control = thisControl
                 circuitIO.reset()
             })
-        .gesture(TapGesture(count: 2)
-            .onEnded {
+        .gesture(LongPressGesture()
+            .onEnded { _ in
                 loadUserProgram = true
             })
         .onRotate(isPortrait: $isPortrait) { _ in
