@@ -72,7 +72,7 @@ struct Circuit: View {
                 circuitIO.reset()
             })
         .gesture(LongPressGesture()
-            .onEnded { _ in
+            .onEnded { _ in 
                 loadUserProgram = true
             })
         .onRotate(isPortrait: $isPortrait) { _ in

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "sdk85-pcb.jpeg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
