@@ -1,8 +1,6 @@
 import SwiftUI
 import z80
 
-typealias I8085 = Task<(), Never>
-
 enum Control: Int {
     case pcb
     case tty
@@ -82,7 +80,7 @@ struct Circuit: View {
             BinFileLoader() { result in
                 switch result {
                 case .success(let monitor):
-                    circuitIO.monitor = monitor
+                    circuitIO.load(bytes: monitor)
                     circuitIO.reset()
                 default:
                     break
@@ -93,7 +91,7 @@ struct Circuit: View {
             BinFileLoader() { result in
                 switch result {
                 case .success(let program):
-                    circuitIO.program = program
+                    circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
                     circuitIO.reset()
                 default:
                     break
@@ -113,34 +111,50 @@ struct Circuit: View {
 internal var i8155: IntIO!
 internal var i8279: I8279!
 
+typealias I8085 = Z80
+
+internal var mem: Memory!
+internal var i8085: I8085!
+
 @MainActor
 class CircuitIO: ObservableObject {
-    private var i8085: I8085?
-    
-    var monitor = try! Data(fromBinFile: "sdk85-0000")!
-    var program: Data?
-    
+    private var runner: Task<(), Never>?
+
     var control: Control = .pcb
     
     init() {
         i8155 = IntIO(self)
         i8279 = I8279(0x1800...0x19FF, self)
-        
+
+        mem = Memory(count: 65536, firstRamAddress: 0x1000, [i8279])
+        i8085 = I8085(mem, i8155,
+                  traceMemory: UserDefaults.traceMemory,
+                  traceOpcode: UserDefaults.traceOpcode,
+                  traceNmiInt: UserDefaults.traceNmiInt)
+
+        let monitor = try! Data(fromBinFile: "sdk85-0000")!
+        load(bytes: monitor)
+
         reset()
     }
     
     func reset() {
-        i8085?.cancel()
-        
+        runner?.cancel()
+
+        i8085.reset()
         i8155.reset()
         i8279.reset()
         
         self.SOD = ""
         i8155.SID = control == .tty ? 0x80 : 0x00
-        
-        i8085 = Task { await boot(monitor, loadRamWith: program, self) }
+
+        runner = Task { await resume(self) }
     }
     
+    func load(bytes: Data, atMemoryAddress addr: UShort = 0) {
+        mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
+    }
+
     // I8085
     // clock output
     @Published var CLK: Double = 0
@@ -158,41 +172,20 @@ class CircuitIO: ObservableObject {
     @Published var DF2: Byte = ~0x00
 }
 
-internal var mem: Memory!
-internal var cpu: Z80!
-
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
-func boot(_ rom: Data, loadRamWith ram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitIO) async {
-    mem = Memory(count: 65536, firstRamAddress: 0x1000, [i8279])
-    cpu = Z80(mem, i8155,
-              traceMemory: UserDefaults.traceMemory,
-              traceOpcode: UserDefaults.traceOpcode,
-              traceNmiInt: UserDefaults.traceNmiInt)
-    load(bytes: rom)
-    if let ram = ram, addr >= rom.count, ram.count > 0 {
-        load(bytes: ram, atMemoryAddress: addr)
-    }
-    
-    await resume(circuit)
-}
-
-func load(bytes: Data, atMemoryAddress addr: UShort = 0) {
-    mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
-}
-
 func resume(_ circuit: CircuitIO) async {
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
     
-    while (!cpu.Halt) {
+    while (!i8085.Halt) {
 //        let t1 = Date.timeIntervalSinceReferenceDate
         
-        let tStates = cpu.parse()
+        let tStates = i8085.parse()
         tStatesSum += UInt(tStates)
         
         if i8155.TIMER_IN(pulses: UShort(tStates)) {
             i8155.NMI = true
-            if _isDebugAssertConfiguration() { print(cpu.dumpStateCompact()) }
+            if _isDebugAssertConfiguration() { print(i8085.dumpStateCompact()) }
         }
         
         /*
