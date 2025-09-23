@@ -110,8 +110,8 @@ struct Circuit: View {
 }
 
 // must live outside CircuitIO
-var i8155: IntIO!
-var i8279: I8279!
+internal var i8155: IntIO!
+internal var i8279: I8279!
 
 @MainActor
 class CircuitIO: ObservableObject {
@@ -158,34 +158,41 @@ class CircuitIO: ObservableObject {
     @Published var DF2: Byte = ~0x00
 }
 
+internal var mem: Memory!
+internal var cpu: Z80!
+
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
-func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitIO) async {
-    var ram = Array<Byte>(repeating: 0, count: 0x10000)
-    ram.replaceSubrange(0..<rom.count, with: rom)
-    if let uram = uram, addr >= rom.count, uram.count > 0 {
-        let a = Int(addr)
-        let o = a + uram.count
-        ram.replaceSubrange(a..<o, with: uram)
+func boot(_ rom: Data, loadRamWith ram: Data?, at addr: UShort = 0x2000, _ circuit: CircuitIO) async {
+    mem = Memory(count: 65536, firstRamAddress: 0x1000, [i8279])
+    cpu = Z80(mem, i8155,
+              traceMemory: UserDefaults.traceMemory,
+              traceOpcode: UserDefaults.traceOpcode,
+              traceNmiInt: UserDefaults.traceNmiInt)
+    load(bytes: rom)
+    if let ram = ram, addr >= rom.count, ram.count > 0 {
+        load(bytes: ram, atMemoryAddress: addr)
     }
     
-    let mem = Memory(ram, 0x1000, [i8279])
-    let z80 = Z80(mem, i8155,
-                  traceMemory: UserDefaults.traceMemory,
-                  traceOpcode: UserDefaults.traceOpcode,
-                  traceNmiInt: UserDefaults.traceNmiInt)
-    
+    await resume(circuit)
+}
+
+func load(bytes: Data, atMemoryAddress addr: UShort = 0) {
+    mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
+}
+
+func resume(_ circuit: CircuitIO) async {
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
     
-    while (!z80.Halt) {
+    while (!cpu.Halt) {
 //        let t1 = Date.timeIntervalSinceReferenceDate
         
-        let tStates = z80.parse()
+        let tStates = cpu.parse()
         tStatesSum += UInt(tStates)
         
         if i8155.TIMER_IN(pulses: UShort(tStates)) {
             i8155.NMI = true
-            if _isDebugAssertConfiguration() { print(z80.dumpStateCompact()) }
+            if _isDebugAssertConfiguration() { print(cpu.dumpStateCompact()) }
         }
         
         /*
@@ -203,7 +210,7 @@ func boot(_ rom: Data, loadRamWith uram: Data?, at addr: UShort = 0x2000, _ circ
             await MainActor.run { [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
         }
         
-        if Task.isCancelled { break }
+        if Task.isCancelled { return }
     }
     
     await MainActor.run {
@@ -304,5 +311,12 @@ extension Data {
             let binFile = Bundle.main.url(forResource: fromBinFile, withExtension: ".bin")
         else { return nil }
         try self.init(contentsOf: binFile)
+    }
+}
+
+extension Memory {
+    convenience init(count: Int, firstRamAddress: UShort = 0, _ ports: [MPorts]? = nil) {
+        let ram = Array<Byte>(repeating: 0, count: Int(count))
+        self.init(ram, firstRamAddress, ports)
     }
 }
