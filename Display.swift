@@ -13,10 +13,10 @@ struct Display: View {
             HStack {
                 HStack(spacing: 4) {
                     Group {
-                        SevenSegmentDisplay(dcbapgfe: circuitIO.AF1)
-                        SevenSegmentDisplay(dcbapgfe: circuitIO.AF2)
-                        SevenSegmentDisplay(dcbapgfe: circuitIO.AF3)
-                        SevenSegmentDisplay(dcbapgfe: circuitIO.AF4)
+                        SevenSegmentDisplay(pgfedcba: circuitIO.AF1)
+                        SevenSegmentDisplay(pgfedcba: circuitIO.AF2)
+                        SevenSegmentDisplay(pgfedcba: circuitIO.AF3)
+                        SevenSegmentDisplay(pgfedcba: circuitIO.AF4)
                     }
                     .padding(8)
                     .background(.package)
@@ -25,8 +25,8 @@ struct Display: View {
 
                 HStack(spacing: 4) {
                     Group {
-                        SevenSegmentDisplay(dcbapgfe: circuitIO.DF1)
-                        SevenSegmentDisplay(dcbapgfe: circuitIO.DF2)
+                        SevenSegmentDisplay(pgfedcba: circuitIO.DF1)
+                        SevenSegmentDisplay(pgfedcba: circuitIO.DF2)
                     }
                     .padding(8)
                     .background(.package)

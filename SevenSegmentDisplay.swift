@@ -2,7 +2,7 @@ import SwiftUI
 import z80
 
 struct SevenSegmentDisplay: View {
-    var dcbapgfe: Byte
+    var pgfedcba: Byte
     var on: Color
     var off: Color
 
@@ -15,8 +15,8 @@ struct SevenSegmentDisplay: View {
     let thickness: CGFloat = 0.13
     let segmentGap: CGFloat = 0.019
 
-    init(dcbapgfe: Byte, on: Color = .redLedOn, off: Color = .redLedOff) {
-        self.dcbapgfe = dcbapgfe
+    init(pgfedcba: Byte, on: Color = .redLedOn, off: Color = .redLedOff) {
+        self.pgfedcba = pgfedcba
         self.on = on
         self.off = off
     }
@@ -30,61 +30,61 @@ struct SevenSegmentDisplay: View {
                     let h = w*glyphHeight
 
                     Parallelogram(slope: glyphSlope) // a
-                        .fill((~dcbapgfe & 0x10)>0 ? on : off)
+                        .fill((~pgfedcba & 0x01)>0 ? on : off)
                         .frame(width: w*barSize.width, height: w*barSize.height)
                         .position(x: w*aPosition.x, y: w*aPosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x10)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x10)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x01)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x01)>0 ? 3 : 0)
                     Parallelogram(slope: glyphSlope) // b
-                        .fill((~dcbapgfe & 0x20)>0 ? on : off)
+                        .fill((~pgfedcba & 0x02)>0 ? on : off)
                         .frame(width: w*pinSize.width, height: w*pinSize.height)
                         .position(x: w*bPosition.x, y: w*bPosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x20)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x20)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x02)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x02)>0 ? 3 : 0)
                     Parallelogram(slope: glyphSlope) // c
-                        .fill((~dcbapgfe & 0x40)>0 ? on : off)
+                        .fill((~pgfedcba & 0x04)>0 ? on : off)
                         .frame(width: w*pinSize.width, height: w*pinSize.height)
                         .position(x: w*cPosition.x, y: w*cPosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x40)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x40)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x04)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x04)>0 ? 3 : 0)
                     Parallelogram(slope: glyphSlope) // d
-                        .fill((~dcbapgfe & 0x80)>0 ? on : off)
+                        .fill((~pgfedcba & 0x08)>0 ? on : off)
                         .frame(width: w*barSize.width, height: w*barSize.height)
                         .position(x: w*dPosition.x, y: w*dPosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x80)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x80)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x08)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x08)>0 ? 3 : 0)
                     Parallelogram(slope: glyphSlope) // e
-                        .fill((~dcbapgfe & 0x01)>0 ? on : off)
+                        .fill((~pgfedcba & 0x10)>0 ? on : off)
                         .frame(width: w*pinSize.width, height: w*pinSize.height)
                         .position(x: w*ePosition.x, y: w*ePosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x01)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x01)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x10)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x10)>0 ? 3 : 0)
                     Parallelogram(slope: glyphSlope) // f
-                        .fill((~dcbapgfe & 0x02)>0 ? on : off)
+                        .fill((~pgfedcba & 0x20)>0 ? on : off)
                         .frame(width: w*pinSize.width, height: w*pinSize.height)
                         .position(x: w*fPosition.x, y: w*fPosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x02)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x02)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x20)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x20)>0 ? 3 : 0)
                     Parallelogram(slope: glyphSlope) // g
-                        .fill((~dcbapgfe & 0x04)>0 ? on : off)
+                        .fill((~pgfedcba & 0x40)>0 ? on : off)
                         .frame(width: w*barSize.width, height: w*barSize.height)
                         .position(x: w*gPosition.x, y: w*gPosition.y)
                         .glow(
-                            color: (~dcbapgfe & 0x04)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x04)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x40)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x40)>0 ? 3 : 0)
                     Circle() // dp
-                        .fill((~dcbapgfe & 0x08)>0 ? on : off)
+                        .fill((~pgfedcba & 0x80)>0 ? on : off)
                         .frame(width: w*thickness, height: w*thickness)
                         .position(x: w-w*thickness/2, y: h-w*thickness/2)
                         .glow(
-                            color: (~dcbapgfe & 0x08)>0 ? .red : .clear,
-                            radius: (~dcbapgfe & 0x08)>0 ? 3 : 0)
+                            color: (~pgfedcba & 0x80)>0 ? .red : .clear,
+                            radius: (~pgfedcba & 0x80)>0 ? 3 : 0)
                 }
             }
     }

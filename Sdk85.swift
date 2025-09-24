@@ -142,6 +142,7 @@ class CircuitIO: ObservableObject {
         runner?.cancel()
 
         i8085.reset()
+        i8085.Halt = false
         i8155.reset()
         i8279.reset()
         
@@ -162,12 +163,12 @@ class CircuitIO: ObservableObject {
     @Published var SOD = ""
     
     // I8279
-    // address fields 1...4
-    @Published var AF1: Byte = ~0x67 // H
-    @Published var AF2: Byte = ~0x77 // A
-    @Published var AF3: Byte = ~0x83 // L
-    @Published var AF4: Byte = ~0x8F // t.
-    // data fields 1...2
+    // address fields 1...4 (pgfedcba, negative logic)
+    @Published var AF1: Byte = ~SevenSegmentDisplay.pgfedcba(for: "H")
+    @Published var AF2: Byte = ~SevenSegmentDisplay.pgfedcba(for: "A")
+    @Published var AF3: Byte = ~SevenSegmentDisplay.pgfedcba(for: "L")
+    @Published var AF4: Byte = ~(SevenSegmentDisplay.pgfedcba(for: "t") | 0x80) // append '.'
+    // data fields 1...2 (pgfedcba)
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
 }
@@ -207,13 +208,13 @@ func resume(_ circuit: CircuitIO) async {
     }
     
     await MainActor.run {
-        circuit.AF1 = ~0x67 // H
-        circuit.AF2 = ~0x77 // A
-        circuit.AF3 = ~0x83 // L
-        circuit.AF4 = ~0x87 // t
+        circuit.AF1 = ~SevenSegmentDisplay.pgfedcba(for: "H")
+        circuit.AF2 = ~SevenSegmentDisplay.pgfedcba(for: "A")
+        circuit.AF3 = ~SevenSegmentDisplay.pgfedcba(for: "L")
+        circuit.AF4 = ~SevenSegmentDisplay.pgfedcba(for: "t")
         
-        circuit.DF1 = ~0x70 // 7
-        circuit.DF2 = ~0xD7 // 6
+        circuit.DF1 = ~SevenSegmentDisplay.pgfedcba(for: "7")
+        circuit.DF2 = ~SevenSegmentDisplay.pgfedcba(for: "6")
     }
 }
 
@@ -311,5 +312,26 @@ extension Memory {
     convenience init(count: Int, firstRamAddress: UShort = 0, _ ports: [MPorts]? = nil) {
         let ram = Array<Byte>(repeating: 0, count: Int(count))
         self.init(ram, firstRamAddress, ports)
+    }
+}
+
+extension SevenSegmentDisplay {
+    private static let ASCIIpgfedcbaMap: [Byte] = [
+    //         0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
+    /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    /* 1 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    /* 2 */ 0x00, 0x86, 0x22, 0x00, 0x6d, 0x00, 0x6f, 0x02, 0x39, 0x0f, 0x63, 0x70, 0x10, 0x40, 0x80, 0x52,
+    /* 3 */ 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x09, 0x0d, 0x61, 0x48, 0x43, 0x5b,
+    /* 4 */ 0x5b, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, 0x3d, 0x76, 0x06, 0x1e, 0x00, 0x38, 0x00, 0x37, 0x3f,
+    /* 5 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x3e, 0x3e, 0x00, 0x76, 0x6e, 0x5b, 0x39, 0x64, 0x0f, 0x23, 0x08,
+    /* 6 */ 0x02, 0x5f, 0x7c, 0x58, 0x5e, 0x7b, 0x71, 0x6f, 0x74, 0x04, 0x0e, 0x00, 0x30, 0x00, 0x54, 0x5c,
+    /* 7 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x1c, 0x1c, 0x00, 0x76, 0x6e, 0x5b, 0x46, 0x06, 0x70, 0x01, 0x00
+    ]
+    
+    static func pgfedcba(for c: Character) -> Byte {
+        guard
+            let byte = c.asciiValue, byte < 128
+        else { return 0x00 }
+        return ASCIIpgfedcbaMap[Int(byte)]
     }
 }

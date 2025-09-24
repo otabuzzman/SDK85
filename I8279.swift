@@ -9,7 +9,7 @@ final class I8279: MPorts {
 
     var mmap: ClosedRange<UShort>
     private var traceIO: TraceIO?
-    private var circuitIO: CircuitIO!
+    private var circuitIO: CircuitIO
 
     init(_ mmap: ClosedRange<UShort>, traceIO: TraceIO? = UserDefaults.traceIO, _ circuitIO: CircuitIO) {
         self.mmap = mmap
@@ -45,13 +45,13 @@ final class I8279: MPorts {
             if CNTRL == 0x90 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuitIO.AF1 = data }
+                    Task { @MainActor in circuitIO.AF1 = Self.pgfedcba(data) }
                 case 2:
-                    Task { @MainActor in circuitIO.AF2 = data }
+                    Task { @MainActor in circuitIO.AF2 = Self.pgfedcba(data) }
                 case 3:
-                    Task { @MainActor in circuitIO.AF3 = data }
+                    Task { @MainActor in circuitIO.AF3 = Self.pgfedcba(data) }
                 case 4:
-                    Task { @MainActor in circuitIO.AF4 = data }
+                    Task { @MainActor in circuitIO.AF4 = Self.pgfedcba(data) }
                 default:
                     break
                 }
@@ -60,9 +60,9 @@ final class I8279: MPorts {
             if CNTRL == 0x94 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuitIO.DF1 = data }
+                    Task { @MainActor in circuitIO.DF1 = Self.pgfedcba(data) }
                 case 2:
-                    Task { @MainActor in circuitIO.DF2 = data }
+                    Task { @MainActor in circuitIO.DF2 = Self.pgfedcba(data) }
                 default:
                     break
                 }
@@ -76,6 +76,10 @@ final class I8279: MPorts {
         }
 
         traceIO?(false, port, data)
+    }
+    
+    static func pgfedcba(_ dcbapgfe: Byte) -> Byte {
+        (dcbapgfe & 0x0f) << 4 | (dcbapgfe & 0xf0) >> 4
     }
 }
 
