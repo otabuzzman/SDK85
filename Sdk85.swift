@@ -39,7 +39,7 @@ struct Circuit: View {
                     suspend {
                         circuitIO.cancel()
                     } resume: {
-                        circuitIO.resume()) }
+                        circuitIO.resume()
                         watchdogAlarm = false
                         restartWatchdogTimer()
                     }
@@ -223,7 +223,7 @@ class CircuitIO: ObservableObject {
     }
     
     func resume() {
-        runner = Task { await resume(self) }
+        runner = Task { await AppModule.resume(self) }
     }
 
     // I8085

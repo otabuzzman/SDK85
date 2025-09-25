@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>StringsTable</key>
-	<string>Tty</string>
+	<string>Battery</string>
 	<key>PreferenceSpecifiers</key>
 	<array>
 		<dict>
@@ -12,7 +12,7 @@
 			<key>Title</key>
 			<string>Suspend 8085 emulation after...</string>
 			<key>Key</key>
-			<string>batterySavingDelay</string>
+			<string>batterySavingInterval</string>
 			<key>DefaultValue</key>
 			<string>15</string>
 			<key>Titles</key>
