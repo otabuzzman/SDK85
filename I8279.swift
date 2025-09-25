@@ -45,24 +45,25 @@ final class I8279: MPorts {
             if CNTRL == 0x90 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuitIO.AF1 = Self.pgfedcba(data) }
+                    Task { @MainActor in circuitIO.AF1 = ~data.swapHalfBytes() }
                 case 2:
-                    Task { @MainActor in circuitIO.AF2 = Self.pgfedcba(data) }
+                    Task { @MainActor in circuitIO.AF2 = ~data.swapHalfBytes() }
                 case 3:
-                    Task { @MainActor in circuitIO.AF3 = Self.pgfedcba(data) }
+                    Task { @MainActor in circuitIO.AF3 = ~data.swapHalfBytes() }
                 case 4:
-                    Task { @MainActor in circuitIO.AF4 = Self.pgfedcba(data) }
+                    Task { @MainActor in circuitIO.AF4 = ~data.swapHalfBytes() }
                 default:
                     break
                 }
                 fieldCount += 1
             }
+            
             if CNTRL == 0x94 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuitIO.DF1 = Self.pgfedcba(data) }
+                    Task { @MainActor in circuitIO.DF1 = ~data.swapHalfBytes() }
                 case 2:
-                    Task { @MainActor in circuitIO.DF2 = Self.pgfedcba(data) }
+                    Task { @MainActor in circuitIO.DF2 = ~data.swapHalfBytes() }
                 default:
                     break
                 }
@@ -96,5 +97,11 @@ class Fifo: Queue<Byte> {
         state.lock()
         defer { state.unlock() }
         return super.dequeue()
+    }
+}
+
+extension Byte {
+    func swapHalfBytes() -> Self {
+        (self & 0x0f) << 4 | (self & 0xf0) >> 4
     }
 }

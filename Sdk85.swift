@@ -163,11 +163,11 @@ class CircuitIO: ObservableObject {
     @Published var SOD = ""
     
     // I8279
-    // address fields 1...4 (pgfedcba, negative logic)
-    @Published var AF1: Byte = ~SevenSegmentDisplay.pgfedcba(for: "H")
-    @Published var AF2: Byte = ~SevenSegmentDisplay.pgfedcba(for: "A")
-    @Published var AF3: Byte = ~SevenSegmentDisplay.pgfedcba(for: "L")
-    @Published var AF4: Byte = ~(SevenSegmentDisplay.pgfedcba(for: "t") | 0x80) // append '.'
+    // address fields 1...4 (nibbles swapped, positive logic)
+    @Published var AF1: Byte = SevenSegmentDisplay.pgfedcba(for: "H")
+    @Published var AF2: Byte = SevenSegmentDisplay.pgfedcba(for: "A")
+    @Published var AF3: Byte = SevenSegmentDisplay.pgfedcba(for: "L")
+    @Published var AF4: Byte = SevenSegmentDisplay.pgfedcba(for: "t") | 0x80 // append '.'
     // data fields 1...2 (pgfedcba)
     @Published var DF1: Byte = ~0x00
     @Published var DF2: Byte = ~0x00
@@ -208,13 +208,13 @@ func resume(_ circuit: CircuitIO) async {
     }
     
     await MainActor.run {
-        circuit.AF1 = ~SevenSegmentDisplay.pgfedcba(for: "H")
-        circuit.AF2 = ~SevenSegmentDisplay.pgfedcba(for: "A")
+        circuit.AF1 = SevenSegmentDisplay.pgfedcba(for: "H")
+        circuit.AF2 = SevenSegmentDisplay.pgfedcba(for: "A")
         circuit.AF3 = ~SevenSegmentDisplay.pgfedcba(for: "L")
         circuit.AF4 = ~SevenSegmentDisplay.pgfedcba(for: "t")
         
-        circuit.DF1 = ~SevenSegmentDisplay.pgfedcba(for: "7")
-        circuit.DF2 = ~SevenSegmentDisplay.pgfedcba(for: "6")
+        circuit.DF1 = SevenSegmentDisplay.pgfedcba(for: "7")
+        circuit.DF2 = SevenSegmentDisplay.pgfedcba(for: "6")
     }
 }
 
