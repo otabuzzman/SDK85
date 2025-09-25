@@ -8,28 +8,36 @@ enum Control: Int {
 
 struct Circuit: View {
     @ObservedObject private var circuitIO = CircuitIO()
-    
+
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     @State private var loadUserProgram = false
-    
+
     @State private var thisControl: Control = .pcb
     @State private var pastControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
-    
+
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
-    
+
     @State private var rotateToLandscapeShow = false
     @State private var rotateToLandscapeSeen = false
-    
+
+    @State private var watchdogTimer: Timer? = nil
+    @State private var watchdogAlarm = false
+
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 0) {
-                Pcb()
-                    .frame(width: UIScreen.main.bounds.width)
-                Tty()
-                    .frame(width: UIScreen.main.bounds.width)
+            ZStack {
+                HStack(spacing: 0) {
+                    Pcb()
+                        .frame(width: UIScreen.main.bounds.width)
+                    Tty()
+                        .frame(width: UIScreen.main.bounds.width)
+                }
+                if watchdogAlarm {
+                    suspend()
+                }
             }
         }
         .content.offset(x: controlOffset)
@@ -103,7 +111,40 @@ struct Circuit: View {
                 rotateToLandscapeSeen = true
             }
         }
+        .onAppear() {
+            restartWatchdogTimer()
+        }
         .environmentObject(circuitIO)
+    }
+
+    private func restartWatchdogTimer() {
+        watchdogTimer?.invalidate()
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { _ in
+            withAnimation {
+                watchdogAlarm = true
+            }
+    }
+
+    @ViewBuilder private func suspend() -> some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .blur(radius: 10)
+
+            Button(action: {
+                watchdogAlarm = false
+                restartWatchdogTimer()
+            }) {
+                Image(systemName: "pause.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+            }
+        }
+        .transition(.opacity)
+        .animation(.easeInOut, value: showOverlay)
     }
 }
 
