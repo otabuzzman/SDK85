@@ -37,9 +37,11 @@ struct Circuit: View {
                 }
                 if watchdogAlarm {
                     suspend {
-                        circuitIO.runner?.cancel()
+                        circuitIO.cancel()
                     } resume: {
-                        circuitIO.runner = Task { await resume(circuitIO) }
+                        circuitIO.resume()) }
+                        watchdogAlarm = false
+                        restartWatchdogTimer()
                     }
                 }
             }
@@ -80,6 +82,8 @@ struct Circuit: View {
                 
                 circuitIO.control = thisControl
                 circuitIO.reset()
+                watchdogAlarm = false
+                restartWatchdogTimer()
             })
         .gesture(LongPressGesture()
             .onEnded { _ in 
@@ -94,6 +98,8 @@ struct Circuit: View {
                 case .success(let monitor):
                     circuitIO.load(bytes: monitor)
                     circuitIO.reset()
+                    watchdogAlarm = false
+                    restartWatchdogTimer()
                 default:
                     break
                 }
@@ -105,6 +111,8 @@ struct Circuit: View {
                 case .success(let program):
                     circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
                     circuitIO.reset()
+                    watchdogAlarm = false
+                    restartWatchdogTimer()
                 default:
                     break
                 }
@@ -121,15 +129,6 @@ struct Circuit: View {
         .environmentObject(circuitIO)
     }
     
-    private func restartWatchdogTimer() {
-        watchdogTimer?.invalidate()
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
-            withAnimation {
-                watchdogAlarm = true
-            }
-        }
-    }
-    
     @ViewBuilder private func suspend(action: @escaping () -> (), resume: @escaping () -> ()) -> some View {
         ZStack {
             Color.black.opacity(0.3)
@@ -138,8 +137,6 @@ struct Circuit: View {
             
             Button(action: {
                 resume()
-                watchdogAlarm = false
-                restartWatchdogTimer()
             }) {
                 Image(systemName: "playpause.fill")
                     .font(.system(size: 80))
@@ -161,20 +158,29 @@ struct Circuit: View {
             action()
         }
     }
+    
+    private func restartWatchdogTimer() {
+        watchdogTimer?.invalidate()
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
+            withAnimation {
+                watchdogAlarm = true
+            }
+        }
+    }
 }
 
 // must live outside CircuitIO
-internal var i8155: IntIO!
-internal var i8279: I8279!
+var i8155: IntIO!
+var i8279: I8279!
 
 typealias I8085 = Z80
 
-internal var mem: Memory!
-internal var i8085: I8085!
+var mem: Memory!
+var i8085: I8085!
 
 @MainActor
 class CircuitIO: ObservableObject {
-    var runner: Task<(), Never>?
+    private var runner: Task<(), Never>?
     
     var control: Control = .pcb
     
@@ -195,7 +201,7 @@ class CircuitIO: ObservableObject {
     }
     
     func reset() {
-        runner?.cancel()
+        cancel()
         
         i8085.reset()
         i8085.Halt = false
@@ -205,13 +211,21 @@ class CircuitIO: ObservableObject {
         self.SOD = ""
         i8155.SID = control == .tty ? 0x80 : 0x00
         
-        runner = Task { await resume(self) }
+        resume()
     }
     
     func load(bytes: Data, atMemoryAddress addr: UShort = 0) {
         mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
     }
     
+    func cancel() {
+        runner?.cancel()
+    }
+    
+    func resume() {
+        runner = Task { await resume(self) }
+    }
+
     // I8085
     // clock output
     @Published var CLK: Double = 0
@@ -375,13 +389,13 @@ extension SevenSegmentDisplay {
     private static let ASCIIpgfedcbaMap: [Byte] = [
         //         0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
         /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                /* 1 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                /* 2 */ 0x00, 0x86, 0x22, 0x00, 0x6d, 0x00, 0x6f, 0x02, 0x39, 0x0f, 0x63, 0x70, 0x10, 0x40, 0x80, 0x52,
-                /* 3 */ 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x09, 0x0d, 0x61, 0x48, 0x43, 0x5b,
-                /* 4 */ 0x5b, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, 0x3d, 0x76, 0x06, 0x1e, 0x00, 0x38, 0x00, 0x37, 0x3f,
-                /* 5 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x3e, 0x3e, 0x00, 0x76, 0x6e, 0x5b, 0x39, 0x64, 0x0f, 0x23, 0x08,
-                /* 6 */ 0x02, 0x5f, 0x7c, 0x58, 0x5e, 0x7b, 0x71, 0x6f, 0x74, 0x04, 0x0e, 0x00, 0x30, 0x00, 0x54, 0x5c,
-                /* 7 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x1c, 0x1c, 0x00, 0x76, 0x6e, 0x5b, 0x46, 0x06, 0x70, 0x01, 0x00
+        /* 1 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        /* 2 */ 0x00, 0x86, 0x22, 0x00, 0x6d, 0x00, 0x6f, 0x02, 0x39, 0x0f, 0x63, 0x70, 0x10, 0x40, 0x80, 0x52,
+        /* 3 */ 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x09, 0x0d, 0x61, 0x48, 0x43, 0x5b,
+        /* 4 */ 0x5b, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, 0x3d, 0x76, 0x06, 0x1e, 0x00, 0x38, 0x00, 0x37, 0x3f,
+        /* 5 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x3e, 0x3e, 0x00, 0x76, 0x6e, 0x5b, 0x39, 0x64, 0x0f, 0x23, 0x08,
+        /* 6 */ 0x02, 0x5f, 0x7c, 0x58, 0x5e, 0x7b, 0x71, 0x6f, 0x74, 0x04, 0x0e, 0x00, 0x30, 0x00, 0x54, 0x5c,
+        /* 7 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x1c, 0x1c, 0x00, 0x76, 0x6e, 0x5b, 0x46, 0x06, 0x70, 0x01, 0x00
     ]
     
     static func pgfedcba(for c: Character) -> Byte {

@@ -1,10 +1,10 @@
-"About" = "About" ;
 "Version (Build)" = "Version (Build)" ;
 "Acknowledgements" = "Acknowledgements" ;
 
 "General" = "General" ;
 "Load custom MONITOR" = "Load custom MONITOR¹" ;
 "TTY" = "TTY" ;
+"Battery saving mode" = "Battery saving mode" ;
 "App restart required" = "¹ App restart required." ;
 
 "Trace" = "Trace" ;

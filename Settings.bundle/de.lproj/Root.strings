@@ -1,10 +1,10 @@
-"About" = "Über" ;
 "Version (Build)" = "Version (Build)" ;
 "Acknowledgements" = "Anmerkungen" ;
 
 "General" = "Allgemein" ;
 "Load custom MONITOR" = "Eigenen MONITOR laden¹" ;
 "TTY" = "Terminal (TTY)" ;
+"Battery saving mode" = "Batterieschonung" ;
 "App restart required" = "¹ Neustart der App erforderlich." ;
 
 "Trace" = "Ablaufverfolgung" ;

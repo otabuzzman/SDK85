@@ -9,8 +9,6 @@
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>About</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -55,6 +53,14 @@
 			<string>TTY</string>
             <key>File</key>
 			<string>Tty</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSChildPaneSpecifier</string>
+            <key>Title</key>
+			<string>Battery saving mode</string>
+            <key>File</key>
+			<string>Battery</string>
 		</dict>
 		<dict>
 			<key>Type</key>
