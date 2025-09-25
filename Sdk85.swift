@@ -119,10 +119,11 @@ struct Circuit: View {
 
     private func restartWatchdogTimer() {
         watchdogTimer?.invalidate()
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { _ in
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
             withAnimation {
                 watchdogAlarm = true
             }
+        }
     }
 
     @ViewBuilder private func suspend() -> some View {
@@ -144,7 +145,7 @@ struct Circuit: View {
             }
         }
         .transition(.opacity)
-        .animation(.easeInOut, value: showOverlay)
+        .animation(.easeInOut, value: watchdogAlarm)
     }
 }
 

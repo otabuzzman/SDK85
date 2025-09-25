@@ -1,44 +1,6 @@
 import SwiftUI
 import z80
 
-struct Timer {
-    enum State {
-        case started
-        case pending
-        case stopped
-        case abort
-    }
-
-    var state: State { didSet { if state == .started { count = value } } }
-    var value: UShort
-    var count: UShort
-
-    mutating func state(_ state: State) { self.state = state }
-    mutating func value(LOB: Byte) { value = (value & 0xFF00) + LOB }
-    mutating func value(HOB: Byte) { value = (value & 0x00FF) + (UShort(HOB & 0x3F) << 8) }
-    mutating func count(minus: UShort) -> Bool {
-        var elapsed = false
-        if state == .started || state == .pending {
-            for _ in 1...minus {
-                count -= 1
-                if count == 0 {
-                    switch state {
-                    case .started:
-                        count = value
-                    case .pending:
-                        state = .stopped
-                    default:
-                        break
-                    }
-                    elapsed = true
-                    break
-                }
-            }
-        }
-        return elapsed
-    }
-}
-
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
 final class IntIO: IPorts {
@@ -208,6 +170,46 @@ final class IntIO: IPorts {
             state.lock()
             defer { state.unlock() }
             _data = value
+        }
+    }
+}
+
+extension IntIO {
+    struct Timer {
+        enum State {
+            case started
+            case pending
+            case stopped
+            case abort
+        }
+        
+        var state: State { didSet { if state == .started { count = value } } }
+        var value: UShort
+        var count: UShort
+        
+        mutating func state(_ state: State) { self.state = state }
+        mutating func value(LOB: Byte) { value = (value & 0xFF00) + LOB }
+        mutating func value(HOB: Byte) { value = (value & 0x00FF) + (UShort(HOB & 0x3F) << 8) }
+        mutating func count(minus: UShort) -> Bool {
+            var elapsed = false
+            if state == .started || state == .pending {
+                for _ in 1...minus {
+                    count -= 1
+                    if count == 0 {
+                        switch state {
+                        case .started:
+                            count = value
+                        case .pending:
+                            state = .stopped
+                        default:
+                            break
+                        }
+                        elapsed = true
+                        break
+                    }
+                }
+            }
+            return elapsed
         }
     }
 }
