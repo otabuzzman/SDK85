@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct Pcb: View {
+    @EnvironmentObject var watchdog: Watchdog
+    @EnvironmentObject var circuitIO: CircuitIO
+    
     var body: some View {
         let isPortrait = UIScreen.main.bounds.isPortrait
         
@@ -21,6 +24,16 @@ struct Pcb: View {
             .padding(8)
             .background(Color.pcbLabel.opacity(0.8)) // https://stackoverflow.com/a/71935851
             .cornerRadius(16)
+            
+            if watchdog.alarm {
+                BatterySaver {
+                    circuitIO.cancel()
+                } resume: {
+                    circuitIO.resume()
+                    watchdog.alarm = false
+                    watchdog.restart()
+                }
+            }
         }
     }
 }

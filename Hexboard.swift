@@ -2,6 +2,7 @@ import SwiftUI
 import z80
 
 struct Hexboard: View {
+    @EnvironmentObject var watchdog: Watchdog
     @EnvironmentObject var circuitIO: CircuitIO
 
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -20,6 +21,7 @@ struct Hexboard: View {
                         let keyConfiguration = Hexboard.layout[row * 6 + col]
 
                         Button(keyConfiguration.title) { // closure on button release
+                            watchdog.restart()
                             switch keyConfiguration.code {
                             case 0xFF: // RESET
                                 circuitIO.reset()

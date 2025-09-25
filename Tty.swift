@@ -1,13 +1,28 @@
 import SwiftUI
 
 struct Tty: View {
+    @EnvironmentObject var watchdog: Watchdog
+    @EnvironmentObject var circuitIO: CircuitIO
+    
     var body: some View {
-        VStack {
-            Monitor()
-                .padding(16)
-            Keyboard()
+        ZStack {
+            VStack {
+                Monitor()
+                    .padding(16)
+                Keyboard()
+            }
+            .padding(.bottom, 16)
+            .background(Color.black) // https://stackoverflow.com/a/71935851
+            
+            if watchdog.alarm {
+                BatterySaver {
+                    circuitIO.cancel()
+                } resume: {
+                    circuitIO.resume()
+                    watchdog.alarm = false
+                    watchdog.restart()
+                }
+            }
         }
-        .padding(.bottom, 16)
-        .background(Color.black) // https://stackoverflow.com/a/71935851
     }
 }

@@ -7,7 +7,8 @@ enum Control: Int {
 }
 
 struct Circuit: View {
-    @ObservedObject private var circuitIO = CircuitIO()
+    @StateObject private var watchdog = Watchdog()
+    @StateObject private var circuitIO = CircuitIO()
     
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     @State private var loadUserProgram = false
@@ -22,9 +23,6 @@ struct Circuit: View {
     @State private var rotateToLandscapeShow = false
     @State private var rotateToLandscapeSeen = false
     
-    @State private var watchdogTimer: Timer? = nil
-    @State private var watchdogAlarm = false
-    
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
@@ -34,15 +32,6 @@ struct Circuit: View {
                         .frame(width: UIScreen.main.bounds.width)
                     Tty()
                         .frame(width: UIScreen.main.bounds.width)
-                }
-                if watchdogAlarm {
-                    suspend {
-                        circuitIO.cancel()
-                    } resume: {
-                        circuitIO.resume()
-                        watchdogAlarm = false
-                        restartWatchdogTimer()
-                    }
                 }
             }
         }
@@ -82,8 +71,8 @@ struct Circuit: View {
                 
                 circuitIO.control = thisControl
                 circuitIO.reset()
-                watchdogAlarm = false
-                restartWatchdogTimer()
+                watchdog.alarm = false
+                watchdog.restart()
             })
         .gesture(LongPressGesture()
             .onEnded { _ in 
@@ -98,8 +87,8 @@ struct Circuit: View {
                 case .success(let monitor):
                     circuitIO.load(bytes: monitor)
                     circuitIO.reset()
-                    watchdogAlarm = false
-                    restartWatchdogTimer()
+                    watchdog.alarm = false
+                    watchdog.restart()
                 default:
                     break
                 }
@@ -111,8 +100,8 @@ struct Circuit: View {
                 case .success(let program):
                     circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
                     circuitIO.reset()
-                    watchdogAlarm = false
-                    restartWatchdogTimer()
+                    watchdog.alarm = false
+                    watchdog.restart()
                 default:
                     break
                 }
@@ -124,46 +113,22 @@ struct Circuit: View {
             }
         }
         .onAppear() {
-            restartWatchdogTimer()
+            watchdog.restart()
         }
+        .environmentObject(watchdog)
         .environmentObject(circuitIO)
     }
+}
+
+class Watchdog: ObservableObject {
+    @Published var alarm = false
+    private var timer: Timer?
     
-    @ViewBuilder private func suspend(action: @escaping () -> (), resume: @escaping () -> ()) -> some View {
-        ZStack {
-            Color.black.opacity(0.3)
-                .ignoresSafeArea()
-                .blur(radius: 10)
-            
-            Button(action: {
-                resume()
-            }) {
-                Image(systemName: "playpause.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.gray)
-                    .padding(20)
-                    .background(
-                        GeometryReader { geometry in
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .frame(width: geometry.size.width * 2, height: geometry.size.height * 2)
-                                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                        })
-            }
-            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
-        }
-        .transition(.opacity)
-        .animation(.easeInOut, value: watchdogAlarm)
-        .onAppear {
-            action()
-        }
-    }
-    
-    private func restartWatchdogTimer() {
-        watchdogTimer?.invalidate()
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
+    func restart() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { _ in
             withAnimation {
-                watchdogAlarm = true
+                self.alarm = true
             }
         }
     }

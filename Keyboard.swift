@@ -30,6 +30,8 @@ typealias KeyConfig = (
 )
 
 struct Keyboard: View {
+    @EnvironmentObject var watchdog: Watchdog
+    
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
@@ -56,6 +58,7 @@ struct Keyboard: View {
                             Button(config.title) {}
                                 .buttonStyle(Key(size: keySize, angle: angle, config: config))
                                 .buttonActions { // onPress
+                                    watchdog.restart()
                                     if shift || control { return }
                                     shift.toggle()
                                 } onRelease: {
@@ -65,6 +68,7 @@ struct Keyboard: View {
                             Button(config.title) {}
                                 .buttonStyle(Key(size: keySize, angle: angle, config: config))
                                 .buttonActions { // onPress
+                                    watchdog.restart()
                                     if shift || control { return }
                                     control.toggle()
                                 } onRelease: {
@@ -72,6 +76,7 @@ struct Keyboard: View {
                                 }
                         case .common:
                             Button(config.title) {
+                                watchdog.restart()
                                 i8155.SID = encode(config.code).uppercased()
                             }
                             .buttonStyle(Key(size: keySize, angle: angle, config: config))
