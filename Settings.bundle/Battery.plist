@@ -12,7 +12,7 @@
 			<key>Title</key>
 			<string>Suspend 8085 emulation after...</string>
 			<key>Key</key>
-			<string>batterySavingInterval</string>
+			<string>watchdogInterval</string>
 			<key>DefaultValue</key>
 			<string>15</string>
 			<key>Titles</key>

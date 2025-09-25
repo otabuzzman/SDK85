@@ -124,9 +124,11 @@ class Watchdog: ObservableObject {
     @Published var alarm = false
     private var timer: Timer?
     
+    private var interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    
     func restart() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             withAnimation {
                 self.alarm = true
             }
