@@ -8,23 +8,23 @@ enum Control: Int {
 
 struct Circuit: View {
     @ObservedObject private var circuitIO = CircuitIO()
-
+    
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     @State private var loadUserProgram = false
-
+    
     @State private var thisControl: Control = .pcb
     @State private var pastControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
-
+    
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
-
+    
     @State private var rotateToLandscapeShow = false
     @State private var rotateToLandscapeSeen = false
-
+    
     @State private var watchdogTimer: Timer? = nil
     @State private var watchdogAlarm = false
-
+    
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
@@ -36,7 +36,11 @@ struct Circuit: View {
                         .frame(width: UIScreen.main.bounds.width)
                 }
                 if watchdogAlarm {
-                    suspend()
+                    suspend {
+                        circuitIO.runner?.cancel()
+                    } resume: {
+                        circuitIO.runner = Task { await resume(circuitIO) }
+                    }
                 }
             }
         }
@@ -116,7 +120,7 @@ struct Circuit: View {
         }
         .environmentObject(circuitIO)
     }
-
+    
     private func restartWatchdogTimer() {
         watchdogTimer?.invalidate()
         watchdogTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
@@ -125,27 +129,37 @@ struct Circuit: View {
             }
         }
     }
-
-    @ViewBuilder private func suspend() -> some View {
+    
+    @ViewBuilder private func suspend(action: @escaping () -> (), resume: @escaping () -> ()) -> some View {
         ZStack {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
                 .blur(radius: 10)
-
+            
             Button(action: {
+                resume()
                 watchdogAlarm = false
                 restartWatchdogTimer()
             }) {
-                Image(systemName: "pause.fill")
+                Image(systemName: "playpause.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
+                    .foregroundColor(.gray)
+                    .padding(20)
+                    .background(
+                        GeometryReader { geometry in
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .frame(width: geometry.size.width * 2, height: geometry.size.height * 2)
+                                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                        })
             }
+            .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
         }
         .transition(.opacity)
         .animation(.easeInOut, value: watchdogAlarm)
+        .onAppear {
+            action()
+        }
     }
 }
 
@@ -160,29 +174,29 @@ internal var i8085: I8085!
 
 @MainActor
 class CircuitIO: ObservableObject {
-    private var runner: Task<(), Never>?
-
+    var runner: Task<(), Never>?
+    
     var control: Control = .pcb
     
     init() {
         i8155 = IntIO(self)
         i8279 = I8279(0x1800...0x19FF, self)
-
+        
         mem = Memory(count: 65536, firstRamAddress: 0x1000, [i8279])
         i8085 = I8085(mem, i8155,
-                  traceMemory: UserDefaults.traceMemory,
-                  traceOpcode: UserDefaults.traceOpcode,
-                  traceNmiInt: UserDefaults.traceNmiInt)
-
+                      traceMemory: UserDefaults.traceMemory,
+                      traceOpcode: UserDefaults.traceOpcode,
+                      traceNmiInt: UserDefaults.traceNmiInt)
+        
         let monitor = try! Data(fromBinFile: "sdk85-0000")!
         load(bytes: monitor)
-
+        
         reset()
     }
     
     func reset() {
         runner?.cancel()
-
+        
         i8085.reset()
         i8085.Halt = false
         i8155.reset()
@@ -190,14 +204,14 @@ class CircuitIO: ObservableObject {
         
         self.SOD = ""
         i8155.SID = control == .tty ? 0x80 : 0x00
-
+        
         runner = Task { await resume(self) }
     }
     
     func load(bytes: Data, atMemoryAddress addr: UShort = 0) {
         mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
     }
-
+    
     // I8085
     // clock output
     @Published var CLK: Double = 0
@@ -205,23 +219,23 @@ class CircuitIO: ObservableObject {
     @Published var SOD = ""
     
     // I8279
-    // address fields 1...4 (nibbles swapped, positive logic)
+    // address fields 1...4 (half-bytes swapped, positive logic)
     @Published var AF1: Byte = SevenSegmentDisplay.pgfedcba(for: "H")
     @Published var AF2: Byte = SevenSegmentDisplay.pgfedcba(for: "A")
     @Published var AF3: Byte = SevenSegmentDisplay.pgfedcba(for: "L")
     @Published var AF4: Byte = SevenSegmentDisplay.pgfedcba(for: "t") | 0x80 // append '.'
     // data fields 1...2 (pgfedcba)
-    @Published var DF1: Byte = ~0x00
-    @Published var DF2: Byte = ~0x00
+    @Published var DF1: Byte = 0x00
+    @Published var DF2: Byte = 0x00
 }
 
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
 func resume(_ circuit: CircuitIO) async {
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
-    
+    print("resumed")
     while (!i8085.Halt) {
-//        let t1 = Date.timeIntervalSinceReferenceDate
+        //        let t1 = Date.timeIntervalSinceReferenceDate
         
         let tStates = i8085.parse()
         tStatesSum += UInt(tStates)
@@ -235,25 +249,25 @@ func resume(_ circuit: CircuitIO) async {
          with clock adjustment, the cpu is faster in debug than in release configuration: the reason for this is that no adjustment is required in debug configuration because the CPU is already too slow, but at least it runs at about 1.4 MHz. in release configuration, the adaptation is active, but the sleep nanosecond lasts up to 500ms, at least about 50ms, even if only say 300ms is requested, which causes the CPU to effectively run much slower than requested, also as in the debug configuration.
          */
         
-//        let t2 = Date.timeIntervalSinceReferenceDate - t1
-//        let t3 = Double(tStates) / 3_072_000 - t2
-//        if t3 > 0 {
-//            try? await Task.sleep(nanoseconds: UInt64(t3 * 1_000_000_000))
-//        }
+        //        let t2 = Date.timeIntervalSinceReferenceDate - t1
+        //        let t3 = Double(tStates) / 3_072_000 - t2
+        //        if t3 > 0 {
+        //            try? await Task.sleep(nanoseconds: UInt64(t3 * 1_000_000_000))
+        //        }
         
         let t4 = Date.timeIntervalSinceReferenceDate - t0
         if tStatesSum % 10000 == 0 {
             await MainActor.run { [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
         }
         
-        if Task.isCancelled { return }
+        if Task.isCancelled { print("suspended") ; return }
     }
     
     await MainActor.run {
         circuit.AF1 = SevenSegmentDisplay.pgfedcba(for: "H")
         circuit.AF2 = SevenSegmentDisplay.pgfedcba(for: "A")
-        circuit.AF3 = ~SevenSegmentDisplay.pgfedcba(for: "L")
-        circuit.AF4 = ~SevenSegmentDisplay.pgfedcba(for: "t")
+        circuit.AF3 = SevenSegmentDisplay.pgfedcba(for: "L")
+        circuit.AF4 = SevenSegmentDisplay.pgfedcba(for: "t")
         
         circuit.DF1 = SevenSegmentDisplay.pgfedcba(for: "7")
         circuit.DF2 = SevenSegmentDisplay.pgfedcba(for: "6")
@@ -359,15 +373,15 @@ extension Memory {
 
 extension SevenSegmentDisplay {
     private static let ASCIIpgfedcbaMap: [Byte] = [
-    //         0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
-    /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    /* 1 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    /* 2 */ 0x00, 0x86, 0x22, 0x00, 0x6d, 0x00, 0x6f, 0x02, 0x39, 0x0f, 0x63, 0x70, 0x10, 0x40, 0x80, 0x52,
-    /* 3 */ 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x09, 0x0d, 0x61, 0x48, 0x43, 0x5b,
-    /* 4 */ 0x5b, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, 0x3d, 0x76, 0x06, 0x1e, 0x00, 0x38, 0x00, 0x37, 0x3f,
-    /* 5 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x3e, 0x3e, 0x00, 0x76, 0x6e, 0x5b, 0x39, 0x64, 0x0f, 0x23, 0x08,
-    /* 6 */ 0x02, 0x5f, 0x7c, 0x58, 0x5e, 0x7b, 0x71, 0x6f, 0x74, 0x04, 0x0e, 0x00, 0x30, 0x00, 0x54, 0x5c,
-    /* 7 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x1c, 0x1c, 0x00, 0x76, 0x6e, 0x5b, 0x46, 0x06, 0x70, 0x01, 0x00
+        //         0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
+        /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                /* 1 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                /* 2 */ 0x00, 0x86, 0x22, 0x00, 0x6d, 0x00, 0x6f, 0x02, 0x39, 0x0f, 0x63, 0x70, 0x10, 0x40, 0x80, 0x52,
+                /* 3 */ 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x09, 0x0d, 0x61, 0x48, 0x43, 0x5b,
+                /* 4 */ 0x5b, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71, 0x3d, 0x76, 0x06, 0x1e, 0x00, 0x38, 0x00, 0x37, 0x3f,
+                /* 5 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x3e, 0x3e, 0x00, 0x76, 0x6e, 0x5b, 0x39, 0x64, 0x0f, 0x23, 0x08,
+                /* 6 */ 0x02, 0x5f, 0x7c, 0x58, 0x5e, 0x7b, 0x71, 0x6f, 0x74, 0x04, 0x0e, 0x00, 0x30, 0x00, 0x54, 0x5c,
+                /* 7 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x1c, 0x1c, 0x00, 0x76, 0x6e, 0x5b, 0x46, 0x06, 0x70, 0x01, 0x00
     ]
     
     static func pgfedcba(for c: Character) -> Byte {
