@@ -2,56 +2,51 @@ import SwiftUI
 import z80
 
 extension UserDefaults {
-    static func registerSettingsBundle() {
-        if !UserDefaults.appLaunchedBefore {
-            UserDefaults.registerUserDefaults(fromPlistFiles: ["Root", "Tty"])
-
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
-            let build = Bundle.main.infoDictionary?["CFBundleVersion"]
-            let versionInfo = "\(version!) (\(build!))"
-            UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
-        }
-    }
-
-    private static var appLaunchedBefore: Bool {
-        if UserDefaults.standard.bool(forKey: "launchedBefore") {
-            return true
-        } else {
-            UserDefaults.standard.set(true, forKey: "launchedBefore")
-            return false
-        }
-    }
-
-    private static func registerUserDefaults(fromPlistFiles files: [String] = ["Root"]) {
+    static func registerSettingsBundle(fromPlistNamed plist: String = "Root") {
         guard
-            let settingsBundle = Bundle.main.url(forResource: "Settings.bundle", withExtension: nil)
+            let settingsBundleURL = Bundle.main.url(forResource: "Settings", withExtension: "bundle")
         else { return }
-
-        for plist in files {
-            let sbUrl = settingsBundle
+        
+        func registerDefaults(fromPlistNamed plist: String) {
+            let bundle = settingsBundleURL.appendingPathComponent("\(plist).plist")
+            
             guard
-                let settingsBundleData =
-                    NSDictionary(contentsOf: sbUrl
-                        .appendingPathComponent(plist)
-                        .appendingPathExtension("plist")),
-                let preferenceSpecifiers =
-                    settingsBundleData.object(forKey: "PreferenceSpecifiers") as? [[String: AnyObject]]
+                let preferenceDictionary = NSDictionary(contentsOf: bundle),
+                let preferenceSpecifiers = preferenceDictionary["PreferenceSpecifiers"] as? [[String: Any]]
             else { return }
-
-            var userDefaults = [String : AnyObject]()
-            for preferenceSpecifier in preferenceSpecifiers {
-                if
-                    let key = preferenceSpecifier["Key"] as? String,
-                    let value = preferenceSpecifier["DefaultValue"]
-                {
-                    userDefaults[key] = value
+            
+            var defaults = [String: Any]()
+            
+            for pspec in preferenceSpecifiers {
+                // only keys with default values
+                if let key = pspec["Key"] as? String,
+                   let defaultValue = pspec["DefaultValue"] {
+                    defaults[key] = defaultValue
+                }
+                // recurse child panes
+                if let type = pspec["Type"] as? String,
+                   type == "PSChildPaneSpecifier",
+                   let file = pspec["File"] as? String {
+                    registerDefaults(fromPlistNamed: file)
                 }
             }
-
-            UserDefaults.standard.register(defaults: userDefaults)
+            
+            if !defaults.isEmpty {
+                UserDefaults.standard.register(defaults: defaults)
+            }
         }
-    }
+        
+        registerDefaults(fromPlistNamed: plist)
 
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"]
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"]
+        let versionInfo = "\(version!) (\(build!))"
+        UserDefaults.standard.set(versionInfo, forKey: "versionInfo")
+    }
+}
+
+// app specific
+extension UserDefaults {
     static let traceMemory: Z80.TraceMemory = { addr, data in
         let debug = _isDebugAssertConfiguration()
         let prefs = UserDefaults.standard.bool(forKey: "traceMemory")
