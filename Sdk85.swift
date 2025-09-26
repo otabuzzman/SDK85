@@ -214,7 +214,7 @@ class CircuitIO: ObservableObject {
 func resume(_ circuit: CircuitIO) async {
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
-    print("resumed")
+    
     while (!i8085.Halt) {
         //        let t1 = Date.timeIntervalSinceReferenceDate
         
@@ -241,7 +241,7 @@ func resume(_ circuit: CircuitIO) async {
             await MainActor.run { [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
         }
         
-        if Task.isCancelled { print("suspended") ; return }
+        if Task.isCancelled { return }
     }
     
     await MainActor.run {
