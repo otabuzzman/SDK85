@@ -4,7 +4,12 @@ struct BatterySaver: View {
     var action: () -> ()
     var resume: () -> ()
     
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.verticalSizeClass) private var vSizeClass
+    
     var body: some View {
+        let isCompact = hSizeClass == .compact || vSizeClass == .compact
+        
         ZStack {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
@@ -13,9 +18,9 @@ struct BatterySaver: View {
                 resume()
             }) {
                 Image(systemName: "playpause.fill")
-                    .font(.system(size: 80))
+                    .font(.system(size: isCompact ? 40 : 80))
                     .foregroundColor(.gray)
-                    .padding(20)
+                    .padding(isCompact ? 10 : 20)
                     .background(
                         GeometryReader { geometry in
                             Circle()

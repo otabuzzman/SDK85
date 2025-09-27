@@ -4,6 +4,8 @@ struct Pcb: View {
     @EnvironmentObject var watchdog: Watchdog
     @EnvironmentObject var circuitIO: CircuitIO
     
+    private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    
     var body: some View {
         let isPortrait = UIScreen.main.bounds.isPortrait
         
@@ -31,7 +33,7 @@ struct Pcb: View {
                 } resume: {
                     circuitIO.resume()
                     watchdog.alarm = false
-                    watchdog.restart()
+                    watchdog.restart(interval)
                 }
             }
         }

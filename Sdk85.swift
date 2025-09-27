@@ -8,6 +8,8 @@ enum Control: Int {
 
 struct Circuit: View {
     @StateObject private var watchdog = Watchdog()
+    private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    
     @StateObject private var circuitIO = CircuitIO()
     
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
@@ -72,14 +74,16 @@ struct Circuit: View {
                 circuitIO.control = thisControl
                 circuitIO.reset()
                 watchdog.alarm = false
-                watchdog.restart()
+                watchdog.restart(interval)
             })
         .gesture(LongPressGesture()
             .onEnded { _ in 
                 loadUserProgram = true
             })
         .onRotate(isPortrait: $isPortrait) { _ in
-            controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
+            withAnimation {
+                controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
+            }
         }
         .sheet(isPresented: $loadCustomMonitor) {
             BinFileLoader() { result in
@@ -88,7 +92,7 @@ struct Circuit: View {
                     circuitIO.load(bytes: monitor)
                     circuitIO.reset()
                     watchdog.alarm = false
-                    watchdog.restart()
+                    watchdog.restart(interval)
                 default:
                     break
                 }
@@ -101,10 +105,11 @@ struct Circuit: View {
                     circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
                     circuitIO.reset()
                     watchdog.alarm = false
-                    watchdog.restart()
+                    watchdog.restart(interval)
                 default:
                     break
                 }
+                loadUserProgram = false
             }
         }
         .alert("Rotate to landscape", isPresented: $rotateToLandscapeShow) {
@@ -113,7 +118,7 @@ struct Circuit: View {
             }
         }
         .onAppear() {
-            watchdog.restart()
+            watchdog.restart(interval)
         }
         .environmentObject(watchdog)
         .environmentObject(circuitIO)
@@ -124,15 +129,15 @@ class Watchdog: ObservableObject {
     @Published var alarm = false
     private var timer: Timer?
     
-    private var interval = UserDefaults.standard.double(forKey: "watchdogInterval")
-    
-    func restart() {
+    func restart(_ interval: TimeInterval) {
+        guard interval > 0 else { return }
+        
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
-            withAnimation {
-                self.alarm = true
+                withAnimation {
+                    self.alarm = true
+                }
             }
-        }
     }
 }
 

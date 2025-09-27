@@ -10,6 +10,8 @@ struct Hexboard: View {
 
     private static let spacing: CGFloat = 2
 
+    private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
         let keySize: CGFloat = isCompact ? 56 : 96
@@ -21,7 +23,7 @@ struct Hexboard: View {
                         let keyConfiguration = Hexboard.layout[row * 6 + col]
 
                         Button(keyConfiguration.title) { // closure on button release
-                            watchdog.restart()
+                            watchdog.restart(interval)
                             switch keyConfiguration.code {
                             case 0xFF: // RESET
                                 circuitIO.reset()

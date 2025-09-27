@@ -38,6 +38,8 @@ struct Keyboard: View {
     @State private var shift = false
     @State private var control = false
     
+    private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
         let keySize: CGFloat = isCompact ? 35.05 : 56
@@ -58,7 +60,7 @@ struct Keyboard: View {
                             Button(config.title) {}
                                 .buttonStyle(Key(size: keySize, angle: angle, config: config))
                                 .buttonActions { // onPress
-                                    watchdog.restart()
+                                    watchdog.restart(interval)
                                     if shift || control { return }
                                     shift.toggle()
                                 } onRelease: {
@@ -68,7 +70,7 @@ struct Keyboard: View {
                             Button(config.title) {}
                                 .buttonStyle(Key(size: keySize, angle: angle, config: config))
                                 .buttonActions { // onPress
-                                    watchdog.restart()
+                                    watchdog.restart(interval)
                                     if shift || control { return }
                                     control.toggle()
                                 } onRelease: {
@@ -76,7 +78,7 @@ struct Keyboard: View {
                                 }
                         case .common:
                             Button(config.title) {
-                                watchdog.restart()
+                                watchdog.restart(interval)
                                 i8155.SID = encode(config.code).uppercased()
                             }
                             .buttonStyle(Key(size: keySize, angle: angle, config: config))

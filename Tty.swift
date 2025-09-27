@@ -4,6 +4,8 @@ struct Tty: View {
     @EnvironmentObject var watchdog: Watchdog
     @EnvironmentObject var circuitIO: CircuitIO
     
+    private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    
     var body: some View {
         ZStack {
             VStack {
@@ -20,7 +22,7 @@ struct Tty: View {
                 } resume: {
                     circuitIO.resume()
                     watchdog.alarm = false
-                    watchdog.restart()
+                    watchdog.restart(interval)
                 }
             }
         }
