@@ -84,7 +84,7 @@ Apps used on Winos or Linos
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|
 |sdk85-keyrelease.mp3|Original SDK-85 key release sound.|
 |sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
-|FontInfo.plist|Additional property file for custum fonts.|
+|FontInfo.plist|Additional property file for custom fonts.|
 |Glass_TTY_VT220.ttf|Glass TTY VT220 font file.|
 |DECTerminalModerm.ttf|DEC Terminal Modern font file.
 |Sources/SDK85|Swift sources folder.|
@@ -103,6 +103,7 @@ Apps used on Winos or Linos
 |SevenSegmentDisplay.swift|A single seven segment digit.|
 |Sound.swift|A simple sound file player.|
 |Queue.swift|A queue (FIFO) implementation.|
+|BatterySaver.swift|An overlay view to resume execution.|
 |UserDefaults.swift|Settings and app-wide default values.|
 
 ### License
