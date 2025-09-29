@@ -1,24 +1,25 @@
 import SwiftUI
 
 struct Pcb: View {
+    var isPortrait: Bool
+    
     @EnvironmentObject var watchdog: Watchdog
     @EnvironmentObject var circuitIO: CircuitIO
     
     private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
     
     var body: some View {
-        let isPortrait = UIScreen.main.bounds.isPortrait
-        
         ZStack(alignment: .bottomTrailing) {
             Image("sdk85-pcb")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(
-                    maxWidth: isPortrait ? UIScreen.main.bounds.width : nil,
-                    maxHeight: isPortrait ? nil : UIScreen.main.bounds.height,
-                    alignment: .bottomTrailing)
-                .overlay(Headline(), alignment: .topLeading)
-
+                    width: UIScreen.main.bounds.width,
+                    height: UIScreen.main.bounds.height, alignment: .bottomTrailing)
+                .clipped()
+                .overlay(alignment: .topLeading) {
+                    Headline()
+                }
             VStack {
                 Display()
                 Hexboard()

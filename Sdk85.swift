@@ -25,14 +25,15 @@ struct Circuit: View {
     @State private var rotateToLandscapeShow = false
     @State private var rotateToLandscapeSeen = false
     
+    
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
             ZStack {
                 HStack(spacing: 0) {
-                    Pcb()
+                    Pcb(isPortrait: isPortrait)
                         .frame(width: UIScreen.main.bounds.width)
-                    Tty()
+                    Tty(isPortrait: isPortrait)
                         .frame(width: UIScreen.main.bounds.width)
                 }
             }
@@ -119,6 +120,7 @@ struct Circuit: View {
         }
         .onAppear() {
             watchdog.restart(interval)
+            circuitIO.reset()
         }
         .environmentObject(watchdog)
         .environmentObject(circuitIO)
@@ -168,8 +170,6 @@ class CircuitIO: ObservableObject {
         
         let monitor = try! Data(fromBinFile: "sdk85-0000")!
         load(bytes: monitor)
-        
-        reset()
     }
     
     func reset() {
@@ -221,7 +221,7 @@ func resume(_ circuit: CircuitIO) async {
     let t0 = Date.timeIntervalSinceReferenceDate
     
     while (!i8085.Halt) {
-        //        let t1 = Date.timeIntervalSinceReferenceDate
+        // let t1 = Date.timeIntervalSinceReferenceDate
         
         let tStates = i8085.parse()
         tStatesSum += UInt(tStates)
@@ -235,14 +235,14 @@ func resume(_ circuit: CircuitIO) async {
          with clock adjustment, the cpu is faster in debug than in release configuration: the reason for this is that no adjustment is required in debug configuration because the CPU is already too slow, but at least it runs at about 1.4 MHz. in release configuration, the adaptation is active, but the sleep nanosecond lasts up to 500ms, at least about 50ms, even if only say 300ms is requested, which causes the CPU to effectively run much slower than requested, also as in the debug configuration.
          */
         
-        //        let t2 = Date.timeIntervalSinceReferenceDate - t1
-        //        let t3 = Double(tStates) / 3_072_000 - t2
-        //        if t3 > 0 {
-        //            try? await Task.sleep(nanoseconds: UInt64(t3 * 1_000_000_000))
-        //        }
+        // let t2 = Date.timeIntervalSinceReferenceDate - t1
+        // let t3 = Double(tStates) / 3_072_000 - t2
+        // if t3 > 0 {
+        //     try? await Task.sleep(nanoseconds: UInt64(t3 * 1_000_000_000))
+        // }
         
         let t4 = Date.timeIntervalSinceReferenceDate - t0
-        if tStatesSum % 10000 == 0 {
+        if 0...3 ~= tStatesSum % 10000 {
             await MainActor.run { [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
         }
         

@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct Tty: View {
+    var isPortrait: Bool
+    
     @EnvironmentObject var watchdog: Watchdog
     @EnvironmentObject var circuitIO: CircuitIO
     
