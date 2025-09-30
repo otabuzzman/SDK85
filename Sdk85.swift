@@ -58,19 +58,19 @@ struct Circuit: View {
                 {
                     thisControl = nextDevice
                 }
+                withAnimation {
+                    controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
+                }
+                guard
+                    thisControl != pastControl
+                else { return }
+                
                 if
                     !rotateToLandscapeSeen,
                     sizeClass == .compact && isPortrait
                 {
                     rotateToLandscapeShow = true
                 }
-                withAnimation {
-                    controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
-                }
-                
-                guard
-                    thisControl != pastControl
-                else { return }
                 
                 circuitIO.control = thisControl
                 circuitIO.reset()
@@ -119,8 +119,8 @@ struct Circuit: View {
             }
         }
         .onAppear() {
-            watchdog.restart(interval)
             circuitIO.reset()
+            watchdog.restart(interval)
         }
         .environmentObject(watchdog)
         .environmentObject(circuitIO)
@@ -261,7 +261,7 @@ func resume(_ circuit: CircuitIO) async {
 }
 
 // https://www.avanderlee.com/swiftui/withanimation-completion-callback/
-struct OnAnimatedModifier<Value>: ViewModifier, Animatable where Value: VectorArithmetic {
+struct OnAnimated<Value>: ViewModifier, Animatable where Value: VectorArithmetic {
     var animatableData: Value {
         didSet {
             notifyCompletionFinished()
@@ -319,8 +319,8 @@ struct OnRotate: ViewModifier {
 }
 
 extension View {
-    func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, OnAnimatedModifier<Value>> {
-        return modifier(OnAnimatedModifier(value: value, completion: completion))
+    func onAnimated<Value: VectorArithmetic>(for value: Value, completion: @escaping () -> Void) ->  ModifiedContent<Self, OnAnimated<Value>> {
+        self.modifier(OnAnimated(value: value, completion: completion))
     }
     
     func onRotate(isPortrait: Binding<Bool>, action: @escaping (UIDeviceOrientation) -> Void) -> some View {

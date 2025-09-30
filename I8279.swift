@@ -2,7 +2,16 @@ import SwiftUI
 import z80
 
 final class I8279: MPorts {
-    var RL07 = Fifo()
+    private var state = NSLock()
+   
+    private var rl07 = Fifo()
+    var RL07: Fifo {
+        get {
+            state.lock()
+            defer { state.unlock() }
+            return rl07
+        }
+    }
     
     private var CNTRL: Byte = 0x08
     private var fieldCount = 1
