@@ -13,6 +13,8 @@ struct Monitor: View {
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
+    @Namespace private var monitor
+    
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
@@ -20,10 +22,19 @@ struct Monitor: View {
             let characterUnitWidth = " ".width(withFont: UIFont(name: ttyFont, size: 1)!)
             let derivedFontSize = width / (characterUnitWidth * (sizeClass == .regular ? 80 : 54))
 
-            ScrollView {
-                Text(circuitIO.SOD)
-                    .foregroundColor(ttyColor)
-                    .font(Font.custom(ttyFont, size: derivedFontSize))
+            ScrollViewReader { proxy in
+                ScrollView {
+                    Text(circuitIO.SOD)
+                        .foregroundColor(ttyColor)
+                        .font(Font.custom(ttyFont, size: derivedFontSize))
+                        .id(monitor)
+                }
+                .onChange(of: circuitIO.SOD) { _ in
+                    guard
+                        circuitIO.SOD.last == "\r\n" // https://forums.swift.org/t/unexpected-length-of-r-n/37652
+                    else { return }
+                    proxy.scrollTo(monitor, anchor: .bottom)
+                }
             }
         }
     }
