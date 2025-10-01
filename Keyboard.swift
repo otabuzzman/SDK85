@@ -79,7 +79,7 @@ struct Keyboard: View {
                         case .common:
                             Button(config.title) {
                                 watchdog.restart(interval)
-                                i8155.SID = encode(config.code).uppercased()
+                                Task { await i8155.SID(encode(config.code).uppercased()) }
                             }
                             .buttonStyle(Key(size: keySize, angle: angle, config: config))
                         }

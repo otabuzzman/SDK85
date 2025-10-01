@@ -3,9 +3,7 @@ import z80
 
 typealias TraceIO = (_ rdPort: Bool, _ addr: UShort, _ data: Byte) -> ()
 
-final class IntIO: IPorts {
-    private var state = NSLock()
-    
+actor IntIO: @preconcurrency IPorts {
     private var _NMI = false
     private var _INT = false
     private var _data: Byte = 0x00
@@ -19,19 +17,14 @@ final class IntIO: IPorts {
 
     private var bits: UInt = 0
     private var sid: Byte = 0
+    
     var SID: Byte {
-        get {
-            state.lock()
-            defer { state.unlock() }
-            return sid
-        }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            sid = value
-        }
+        get { sid }
     }
-
+    func SID(_ value: Byte) {
+        sid = value
+    }
+    
     private var traceIO: TraceIO?
     private var circuitIO: CircuitIO!
 
@@ -79,7 +72,7 @@ final class IntIO: IPorts {
                     data = Byte(((UShort(SID) * 256) >> bits) & 0x80)
                     bits += 1
                 } else {
-                    SID |= 0x80
+                    sid |= 0x80
                     bits = 0
                 }
             }
@@ -120,7 +113,7 @@ final class IntIO: IPorts {
                 sod = (sod | (~data & 0x80)) >> 1
                 bots += 1
             } else {
-                Task { @MainActor in circuitIO.SOD.append(Character(UnicodeScalar(sod))) }
+                Task { @MainActor in await circuitIO.SOD.append(Character(UnicodeScalar(sod))) }
                 bots = 0
             }
         default:
@@ -132,45 +125,33 @@ final class IntIO: IPorts {
 
     var NMI: Bool {
         get {
-            state.lock()
-            defer { state.unlock() }
             let tmp = _NMI
             _NMI = false
             return tmp
         }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _NMI = value
-        }
+    }
+    func NMI( _ value: Bool) {
+        _NMI = value
     }
     var INT: Bool {
         get {
-            state.lock()
-            defer { state.unlock() }
             let tmp = _INT
             _INT = false
             return tmp
         }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _INT = value
-        }
+    }
+    func INT( _ value: Bool) {
+        _INT = value
     }
     var data: Byte {
         get {
-            state.lock()
-            defer { state.unlock() }
             let tmp = _data
             _data = 0x00
             return tmp
         }
-        set(value) {
-            state.lock()
-            defer { state.unlock() }
-            _data = value
-        }
+    }
+    func data( _ value: Byte) {
+        _data = value
     }
 }
 

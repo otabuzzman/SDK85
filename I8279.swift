@@ -1,16 +1,10 @@
 import SwiftUI
 import z80
 
-final class I8279: MPorts {
-    private var state = NSLock()
-   
-    private var rl07 = Fifo()
-    var RL07: Fifo {
-        get {
-            state.lock()
-            defer { state.unlock() }
-            return rl07
-        }
+actor I8279: @preconcurrency MPorts {
+    private var rl07 = Queue<Byte>()
+    var RL07: Queue<Byte> {
+        get { rl07 }
     }
     
     private var CNTRL: Byte = 0x08
@@ -54,13 +48,13 @@ final class I8279: MPorts {
             if CNTRL == 0x90 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuitIO.AF1 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await circuitIO.AF1 = ~data.swapHalfBytes() }
                 case 2:
-                    Task { @MainActor in circuitIO.AF2 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await circuitIO.AF2 = ~data.swapHalfBytes() }
                 case 3:
-                    Task { @MainActor in circuitIO.AF3 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await circuitIO.AF3 = ~data.swapHalfBytes() }
                 case 4:
-                    Task { @MainActor in circuitIO.AF4 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await  circuitIO.AF4 = ~data.swapHalfBytes() }
                 default:
                     break
                 }
@@ -70,9 +64,9 @@ final class I8279: MPorts {
             if CNTRL == 0x94 {
                 switch fieldCount {
                 case 1:
-                    Task { @MainActor in circuitIO.DF1 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await circuitIO.DF1 = ~data.swapHalfBytes() }
                 case 2:
-                    Task { @MainActor in circuitIO.DF2 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await circuitIO.DF2 = ~data.swapHalfBytes() }
                 default:
                     break
                 }
@@ -86,26 +80,6 @@ final class I8279: MPorts {
         }
 
         traceIO?(false, port, data)
-    }
-    
-    static func pgfedcba(_ dcbapgfe: Byte) -> Byte {
-        (dcbapgfe & 0x0f) << 4 | (dcbapgfe & 0xf0) >> 4
-    }
-}
-
-class Fifo: Queue<Byte> {
-    private var state = NSLock()
-
-    override func enqueue(_ element: Byte) {
-        state.lock()
-        defer { state.unlock() }
-        super.enqueue(element)
-    }
-
-    override func dequeue() -> Byte? {
-        state.lock()
-        defer { state.unlock() }
-        return super.dequeue()
     }
 }
 

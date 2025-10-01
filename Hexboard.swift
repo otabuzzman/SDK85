@@ -26,14 +26,18 @@ struct Hexboard: View {
                             watchdog.restart(interval)
                             switch keyConfiguration.code {
                             case 0xFF: // RESET
-                                circuitIO.reset()
+                                Task { await circuitIO.reset() }
                             case 0xFE: // VECT INTR
-                                i8155.data = 0xFF
-                                i8155.INT = true // RST 7
+                                Task {
+                                    await i8155.data(0xFF)
+                                    await i8155.INT(true) // RST 7
+                                }
                             default:
-                                i8279.RL07.enqueue(keyConfiguration.code)
-                                i8155.data = 0xEF
-                                i8155.INT = true // RST 5
+                                Task {
+                                    await i8279.RL07.enqueue(keyConfiguration.code)
+                                    await i8155.data(0xEF)
+                                    await i8155.INT(true) // RST 5
+                                }
                             }
                             Sound.play(soundfile: "sdk85-keyprease.mp3")
                         }

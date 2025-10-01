@@ -6,6 +6,8 @@ struct Pcb: View {
     @EnvironmentObject var watchdog: Watchdog
     @EnvironmentObject var circuitIO: CircuitIO
     
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
     private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
     
     var body: some View {
@@ -25,6 +27,7 @@ struct Pcb: View {
                 Hexboard()
             }
             .padding(8)
+            .padding(.bottom, horizontalSizeClass == .regular ? 16 : 42)
             .background(Color.pcbLabel.opacity(0.8)) // https://stackoverflow.com/a/71935851
             .cornerRadius(16)
             

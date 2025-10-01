@@ -61,6 +61,7 @@ struct Circuit: View {
                 withAnimation {
                     controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
                 }
+                
                 guard
                     thisControl != pastControl
                 else { return }
@@ -72,8 +73,10 @@ struct Circuit: View {
                     rotateToLandscapeShow = true
                 }
                 
-                circuitIO.control = thisControl
-                circuitIO.reset()
+                Task {
+                    circuitIO.control = thisControl
+                    await circuitIO.reset()
+                }
                 watchdog.alarm = false
                 watchdog.restart(interval)
             })
@@ -90,8 +93,10 @@ struct Circuit: View {
             BinFileLoader() { result in
                 switch result {
                 case .success(let monitor):
-                    circuitIO.load(bytes: monitor)
-                    circuitIO.reset()
+                    Task {
+                        circuitIO.load(bytes: monitor)
+                        await circuitIO.reset()
+                    }
                     watchdog.alarm = false
                     watchdog.restart(interval)
                 default:
@@ -103,8 +108,10 @@ struct Circuit: View {
             BinFileLoader() { result in
                 switch result {
                 case .success(let program):
-                    circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
-                    circuitIO.reset()
+                    Task {
+                        circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
+                        await circuitIO.reset()
+                    }
                     watchdog.alarm = false
                     watchdog.restart(interval)
                 default:
@@ -119,8 +126,10 @@ struct Circuit: View {
             }
         }
         .onAppear() {
-            circuitIO.reset()
-            watchdog.restart(interval)
+            Task {
+                await circuitIO.reset()
+                watchdog.restart(interval)
+            }
         }
         .environmentObject(watchdog)
         .environmentObject(circuitIO)
@@ -172,16 +181,16 @@ class CircuitIO: ObservableObject {
         load(bytes: monitor)
     }
     
-    func reset() {
+    func reset() async {
         cancel()
         
         i8085.reset()
         i8085.Halt = false
-        i8155.reset()
-        i8279.reset()
+        await i8155.reset()
+        await i8279.reset()
         
         self.SOD = ""
-        i8155.SID = control == .tty ? 0x80 : 0x00
+        await i8155.SID(control == .tty ? 0x80 : 0x00)
         
         resume()
     }
@@ -226,8 +235,8 @@ func resume(_ circuit: CircuitIO) async {
         let tStates = i8085.parse()
         tStatesSum += UInt(tStates)
         
-        if i8155.TIMER_IN(pulses: UShort(tStates)) {
-            i8155.NMI = true
+        if await i8155.TIMER_IN(pulses: UShort(tStates)) {
+            await i8155.NMI(true)
             if _isDebugAssertConfiguration() { print(i8085.dumpStateCompact()) }
         }
         
