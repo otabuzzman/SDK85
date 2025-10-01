@@ -22,10 +22,6 @@ struct Circuit: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
     
-    @State private var rotateToLandscapeShow = false
-    @State private var rotateToLandscapeSeen = false
-    
-    
     var body: some View {
         // https://habr.com/en/post/476494/
         ScrollView(.horizontal, showsIndicators: false) {
@@ -65,13 +61,6 @@ struct Circuit: View {
                 guard
                     thisControl != pastControl
                 else { return }
-                
-                if
-                    !rotateToLandscapeSeen,
-                    sizeClass == .compact && isPortrait
-                {
-                    rotateToLandscapeShow = true
-                }
                 
                 Task {
                     circuitIO.control = thisControl
@@ -118,11 +107,6 @@ struct Circuit: View {
                     break
                 }
                 loadUserProgram = false
-            }
-        }
-        .alert("Rotate to landscape", isPresented: $rotateToLandscapeShow) {
-            Button("Good to know") {
-                rotateToLandscapeSeen = true
             }
         }
         .onAppear() {
