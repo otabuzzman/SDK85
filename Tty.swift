@@ -13,6 +13,10 @@ struct Tty: View {
             VStack {
                 Monitor()
                     .padding(16)
+                Divider()
+                    .frame(height: 2)
+                    .overlay(.gray)
+                    .padding(2)
                 Keyboard()
             }
             .padding(.bottom, 16)
