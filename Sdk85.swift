@@ -16,7 +16,6 @@ struct Circuit: View {
     @State private var loadUserProgram = false
     
     @State private var thisControl: Control = .pcb
-    @State private var pastControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
     
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -41,33 +40,21 @@ struct Circuit: View {
                 controlOffset = value.translation.width - UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
             }
             .onEnded() { value in
-                pastControl = thisControl
                 if
                     -value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
-                     let nextDevice = Control(rawValue: thisControl.rawValue + 1)
+                     let nextControl = Control(rawValue: thisControl.rawValue + 1)
                 {
-                    thisControl = nextDevice
+                    thisControl = nextControl
                 }
                 if
                     value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
-                    let nextDevice = Control(rawValue: thisControl.rawValue - 1)
+                    let nextControl = Control(rawValue: thisControl.rawValue - 1)
                 {
-                    thisControl = nextDevice
+                    thisControl = nextControl
                 }
                 withAnimation {
                     controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
                 }
-                
-                guard
-                    thisControl != pastControl
-                else { return }
-                
-                Task {
-                    circuitIO.control = thisControl
-                    await circuitIO.reset()
-                }
-                watchdog.alarm = false
-                watchdog.restart(interval)
             })
         .gesture(LongPressGesture()
             .onEnded { _ in 
@@ -109,11 +96,13 @@ struct Circuit: View {
                 loadUserProgram = false
             }
         }
-        .onAppear() {
+        .onChange(of: thisControl, initial: true) {
             Task {
+                circuitIO.control = thisControl
                 await circuitIO.reset()
-                watchdog.restart(interval)
             }
+            watchdog.alarm = false
+            watchdog.restart(interval)
         }
         .environmentObject(watchdog)
         .environmentObject(circuitIO)

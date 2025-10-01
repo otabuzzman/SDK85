@@ -11,7 +11,7 @@ let package = Package(
     name: "SDK85",
     defaultLocalization: "en",
     platforms: [
-        .iOS("15.2")
+        .iOS("17")
     ],
     products: [
         .iOSApplication(
@@ -19,8 +19,8 @@ let package = Package(
             targets: ["AppModule"],
             bundleIdentifier: "com.otabuzzman.sdk85.ios",
             teamIdentifier: "28FV44657B",
-            displayVersion: "1.6.2",
-            bundleVersion: "56",
+            displayVersion: "1.6.3",
+            bundleVersion: "57",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.teal),
             supportedDeviceFamilies: [

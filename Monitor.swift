@@ -29,7 +29,7 @@ struct Monitor: View {
                         .font(Font.custom(ttyFont, size: derivedFontSize))
                         .id(monitor)
                 }
-                .onChange(of: circuitIO.SOD) { _ in
+                .onChange(of: circuitIO.SOD) {
                     guard
                         circuitIO.SOD.last == "\r\n" // https://forums.swift.org/t/unexpected-length-of-r-n/37652
                     else { return }
