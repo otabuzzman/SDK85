@@ -24,7 +24,7 @@ struct Tty: View {
             
             if watchdog.alarm {
                 BatterySaver {
-                    circuitIO.cancel()
+                    Task { await circuitIO.cancel() }
                 } resume: {
                     circuitIO.resume()
                     watchdog.alarm = false

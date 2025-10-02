@@ -155,7 +155,7 @@ class CircuitIO: ObservableObject {
     }
     
     func reset() async {
-        cancel()
+        await cancel()
         
         i8085.reset()
         i8085.Halt = false
@@ -172,8 +172,9 @@ class CircuitIO: ObservableObject {
         mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
     }
     
-    func cancel() {
+    func cancel() async {
         runner?.cancel()
+        _ = await runner?.value
     }
     
     func resume() {
@@ -225,7 +226,7 @@ func resume(_ circuit: CircuitIO) async {
         
         let t4 = Date.timeIntervalSinceReferenceDate - t0
         if 0...3 ~= tStatesSum % 10000 {
-            await MainActor.run { [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
+            Task { @MainActor [tStatesSum] in circuit.CLK = Double(tStatesSum) / t4 }
         }
         
         if Task.isCancelled { return }
