@@ -232,7 +232,10 @@ func resume(_ circuit: CircuitIO) async {
         if Task.isCancelled { return }
     }
     
-    await MainActor.run {
+    Task { @MainActor [circuit] in
+        // https://forums.swift.org/t/do-update-to-observable-properties-have-to-be-done-on-the-main-thread/74954
+        try await Task.sleep(nanoseconds: UInt64(2.0 / 60 * 1_000_000_000)) // wait ~2 frames for another render-loop
+        
         circuit.AF1 = SevenSegmentDisplay.pgfedcba(for: "H")
         circuit.AF2 = SevenSegmentDisplay.pgfedcba(for: "A")
         circuit.AF3 = SevenSegmentDisplay.pgfedcba(for: "L")
