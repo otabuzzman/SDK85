@@ -101,7 +101,6 @@ private struct Key: ButtonStyle {
             VStack {
                 configuration.label
                     .font(.system(size: keySize * 0.5))
-                    .foregroundColor(Color(white: 0.24))
                 
                 if let subtitle = subtitle1st {
                     Text(subtitle)
@@ -115,6 +114,7 @@ private struct Key: ButtonStyle {
                         .offset(y: -keySize * 0.08)
                 }
             }
+            .foregroundColor(Color(white: 0.24))
         }
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .scaleEffect(configuration.isPressed ? 0.94 : 1)
