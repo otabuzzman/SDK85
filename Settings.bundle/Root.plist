@@ -48,6 +48,16 @@
 		</dict>
 		<dict>
 			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Key click</string>
+			<key>Key</key>
+			<string>keyClick</string>
+			<key>DefaultValue</key>
+			<string>true</string>
+		</dict>
+		<dict>
+			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
             <key>Title</key>
 			<string>TTY</string>

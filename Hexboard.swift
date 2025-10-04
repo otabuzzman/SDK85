@@ -11,6 +11,7 @@ struct Hexboard: View {
     private static let spacing: CGFloat = 2
 
     private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    private let keyClick = UserDefaults.standard.bool(forKey: "keyClick")
     
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
@@ -39,7 +40,7 @@ struct Hexboard: View {
                                     await i8155.INT(true) // RST 5
                                 }
                             }
-                            Sound.play(soundfile: "sdk85-keyprease.mp3")
+                            if keyClick { Sound.play(soundfile: "sdk85-keyprease.mp3") }
                         }
                         .buttonStyle(Key(
                             keySize: keySize,

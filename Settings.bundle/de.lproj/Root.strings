@@ -4,6 +4,7 @@
 "General" = "Allgemein" ;
 "Load custom MONITOR" = "Eigenen MONITOR laden¹" ;
 "TTY" = "Terminal (TTY)" ;
+"Key click" = "Tastenklicken" ;
 "Battery saving mode" = "Batterieschonung" ;
 "App restart required" = "¹ Neustart der App erforderlich." ;
 

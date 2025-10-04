@@ -39,6 +39,7 @@ struct Keyboard: View {
     @State private var control = false
     
     private let interval = UserDefaults.standard.double(forKey: "watchdogInterval")
+    private let keyClick = UserDefaults.standard.bool(forKey: "keyClick")
     
     var body: some View {
         let isCompact = horizontalSizeClass == .compact || verticalSizeClass == .compact
@@ -80,6 +81,7 @@ struct Keyboard: View {
                             Button(config.title) {
                                 watchdog.restart(interval)
                                 Task { await i8155.SID(encode(config.code).uppercased()) }
+                                if keyClick { Sound.play(soundfile: "vt100-keyprease.mp3") }
                             }
                             .buttonStyle(Key(size: keySize, angle: angle, config: config))
                         }
