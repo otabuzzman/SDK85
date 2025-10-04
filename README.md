@@ -13,6 +13,7 @@ Swipe the main view left to enter the TTY monitor, and right to return to the ke
 - SUBST MEM command (enter a program)
 - EXAM REG command (examine/ set registers)
 - SINGLE STEP command (debug a program)
+- VECT INTR command (immediate RST 7.5)
 - TTY monitor (rather simple implementation)
 
 **Wanted**
