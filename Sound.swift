@@ -1,15 +1,13 @@
 import AVFoundation
 
 class Sound {
-    private static var audioPlayer: AVAudioPlayer?
-
-    static func play(soundfile: String) {
+    static func play(soundfile: String, volume: Float = 1) {
         guard
-            let path = Bundle.main.path(forResource: soundfile, ofType: nil)
-        else {
-            return
-        }
-        audioPlayer = try? AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
-        audioPlayer?.play()
+            let path = Bundle.main.path(forResource: soundfile, ofType: nil),
+            let player = try? AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
+        else { return }
+
+        player.volume = volume
+        player.play()
     }
 }
