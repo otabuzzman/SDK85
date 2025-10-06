@@ -50,7 +50,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Key click</string>
+			<string>Key clicks</string>
 			<key>Key</key>
 			<string>keyClick</string>
 			<key>DefaultValue</key>

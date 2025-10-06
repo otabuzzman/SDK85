@@ -415,12 +415,12 @@ extension Keyboard {
 extension Keyboard {
     private static let defaultKeySound = KeySound(file: "vt100-keyprease-alpha.mp3", volume: 0.4)
 
-    private static let keySound: Dictionary<Byte, KeySound> = [
-        0x1E: KeySound(file: "vt100-keypress-shift.mp3", volume: 0.2), // modifier: control
-        0x2E: KeySound(file: "vt100-keypress-shift.mp3", volume: 0.2), // modifier: shift (left)
-        0x39: KeySound(file: "vt100-keypress-shift.mp3", volume: 0.2), // modifier: shift (right)
-        0x3B: KeySound(file: "vt100-keyprease-space.mp3", volume: 0.2), // common: space
-        0x2B: KeySound(file: "vt100-keyprease-enter.mp3", volume: 0.2), // common: enter
+    private static let keySound: Dictionary<Byte /* KeyConfig.code */, KeySound> = [
+        0x1E: KeySound(file: "vt100-keypress-shift.mp3", volume: 0.3), // modifier: control
+        0x2E: KeySound(file: "vt100-keypress-shift.mp3", volume: 0.3), // modifier: shift (left)
+        0x39: KeySound(file: "vt100-keypress-shift.mp3", volume: 0.3), // modifier: shift (right)
+        0x3B: KeySound(file: "vt100-keyprease-space.mp3", volume: 0.25), // common: space
+        0x2B: KeySound(file: "vt100-keyprease-enter.mp3", volume: 0.35), // common: enter
     ]
 }
 
@@ -428,6 +428,7 @@ let asciiList: [String] = ["NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL
 
 extension Sound {
     static func play(_ keySound: KeySound) {
-        Self.play(soundfile: keySound.file, volume: keySound.volume)
+        let volume = pow(keySound.volume, 2) // pseudo-logarithmic
+        Self.play(soundfile: keySound.file, volume: volume)
     }
 }
