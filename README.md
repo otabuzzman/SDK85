@@ -1,8 +1,8 @@
 # SDK85
 
-A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: the `RIM` and `SIM` instructions of the 8085 were replaced by `IN 0xFF` and `OUT 0xFF`. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT. There is no support for RST 6.5. The changes increased the monitor size by a few bytes to just over the original 2 kB, which is not a problem because the monitor in the SDK85 is not a fixed-size ROM and the kit's memory layout offers enough space for a larger monitor.
+A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: The RIM and SIM instructions for reading and writing serial data on the SID and SOD pins of the 8085 have been replaced by IN 0xFF and OUT 0xFF, respectively. Masking interrupts with RIM and SIM have been replaced by NOP instructions. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT. There is no support for RST 6.5.
 
-**Note:** The call addresses of the monitor routines have changed due to modifications to the original monitor (e.g., replacing RIM/SIM with IN/OUT 0xFF). The program examples on page 6-4 ff. of the printed manual use these routines and must be adapted accordingly. The values can be found in the file [sdk86.lst](sdk86.lst).
+**Note:** The call addresses of the monitor routines have changed due to modifications to the original monitor. The program examples on page 6-4 ff. of the printed manual use these routines and must be adapted accordingly. The values can be found in the file [sdk85.lst](sdk85.lst).
 
 The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.hansotten.nl/uploads/sdk85/9800451B.pdf)). A transcript of the relevant pages (67 - 93) had been done with [AWS Textract](https://aws.amazon.com/textract/), followed by numerous AWK scripts, and eventually manually edited. Though the assembler is happy, overseen errors might still hide in the code.
 
@@ -11,10 +11,10 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 Swipe the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See _User's Manual_ for the usage of either. Switching between monitors yields CPU restart without preserving RAM. Long-tap PCB to load a user program file with 8085 machine code at 0x2000.
 
 **Working**
-- GO command (run a program)
+- GO command (run a program) **set SP before (!)**
 - SUBST MEM command (enter a program)
 - EXAM REG command (examine/ set registers)
-- SINGLE STEP command (debug a program)
+- SINGLE STEP command (debug a program) **set SP before (!)**
 - VECT INTR command (immediate RST 7.5)
 - TTY monitor (rather simple implementation)
 
