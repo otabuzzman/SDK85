@@ -1,6 +1,6 @@
 # SDK85
 
-A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: The RIM and SIM instructions for reading and writing serial data on the SID and SOD pins of the 8085 have been replaced by IN 0xFF and OUT 0xFF, respectively. Masking interrupts with RIM and SIM have been replaced by NOP instructions. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT. There is no support for RST 6.5.
+A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: The RIM and SIM instructions for reading and writing serial data on the SID and SOD pins of the 8085 have been replaced by IN 0xFF and OUT 0xFF, respectively. Masking interrupts with RIM and SIM have been replaced by NOP instructions. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT. There is no support for RST 6.5. The changes make the new monitor a few bytes larger than the old one's 2 kB and is burned into a 4 kB ROM.
 
 **Note:** The call addresses of the monitor routines have changed due to modifications to the original monitor. The program examples on page 6-4 ff. of the printed manual use these routines and must be adapted accordingly. The values can be found in the file [sdk85.lst](sdk85.lst).
 
@@ -11,10 +11,10 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 Swipe the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See _User's Manual_ for the usage of either. Switching between monitors yields CPU restart without preserving RAM. Long-tap PCB to load a user program file with 8085 machine code at 0x2000.
 
 **Working**
-- GO command (run a program) **set SP before (!)**
+- GO command (run a program, set SP before (!))
 - SUBST MEM command (enter a program)
 - EXAM REG command (examine/ set registers)
-- SINGLE STEP command (debug a program) **set SP before (!)**
+- SINGLE STEP command (debug a program, set SP before (!))
 - VECT INTR command (immediate RST 7.5)
 - TTY monitor (rather simple implementation)
 

@@ -232,11 +232,11 @@ CLDBK:                   ; THEN JUMP BACK HERE
         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
 ;
 RES10:                   ; CONTINUE SAVING USER STATUS
-        IN      RIM      ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
+        NOP              ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
         ANI     0FH      ; KEEP STATUS & MASK BITS
         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-        OUT     SIM      ; WAS SIM
+        NOP              ; WAS SIM
         DI               ; INTERRUPTS DISABLED WHILE MONITOR IS RUNNING
                          ; (EXCEPT WHEN WAITING FOR INPUT)
         IN      RIM      ; TTY OR KEYBOARD MONITOR ? (WAS RIM)
@@ -454,13 +454,13 @@ STP25:                   ; BRANCH HERE WHEN TIMER INTERRUPTS AFTER
         SPHL             ; /SAVING REMAINING USER REGISTERS
         PUSH    B        ; SAVE B & C
         PUSH    D        ; SAVE D & E
-        IN      RIM      ; GET USER INTERRUPT MASK (WAS RIM)
+        NOP              ; GET USER INTERRUPT MASK (WAS RIM)
         ANI     07H      ; KEEP MASK BITS
         LXI     H,TEMP   ; GET USER INTERRUPT STATUS
         ORA     M        ; OR IT INTO MASK
         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-        OUT     SIM      ; WAS SIM
+        NOP              ; WAS SIM
         JMP     SSTEP    ; GO GET READY FOR ANOTHER INSTRUCTION
 ;
 ;
@@ -999,7 +999,7 @@ RSTOR:
         LDA     ISAV     ; GET USER INTERRUPT MASK
         ORI     18H      ; ENABLE SETTING OF INTERRUPT MASK AND
                          ; /RESET RST7.5 FLIP FLOP
-        OUT     SIM      ; RESTORE USER INTERRUPT MASK (WAS SIM)
+        NOP              ; RESTORE USER INTERRUPT MASK (WAS SIM)
                          ; RESTORE USER INTERRUPT STATUS
         LDA     ISAV     ; GET USER INTERRUPT MASK
         ANI     08H      ; SHOULD USER INTERRUPTS BE ENABLED ?

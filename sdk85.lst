@@ -171,7 +171,7 @@ asm85 8085 Assembler v1.5 by nib
                    169: ;
 0000 3e 00         170:         MVI     A,KMODE  ; GET CONTROL CHARACTER
 0002 32 00 19      171:         STA     CNTRL    ; SET KEYBOARD/DISPLAY MODE
-0005 c3 20 02      172:         JMP     CLDST    ; GO FINISH COLD START
+0005 c3 1c 02      172:         JMP     CLDST    ; GO FINISH COLD START
                    173: CLDBK:                   ; THEN JUMP BACK HERE
                    174: ;
                    175: ; RST 1 ENTRY POINT - WARM START
@@ -196,17 +196,17 @@ asm85 8085 Assembler v1.5 by nib
                    194: ; TIMER INTERRUPT (TRAP) ENTRY POINT (RST 4.5)
                    195: ;
 (0024)             196:         ORG     24H
-0024 c3 84 01      197:         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
+0024 c3 82 01      197:         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
                    198: ;
                    199: ; RST 5 ENTRY POINT
                    200: ;
 (0028)             201:         ORG     28H
-0028 c3 bd 02      202:         JMP     ININT    ; RST 5.5 SUBSTITUTE. WAS JMP RSET5
+0028 c3 b9 02      202:         JMP     ININT    ; RST 5.5 SUBSTITUTE. WAS JMP RSET5
                    203: ;
                    204: ; INPUT INTERRUPT ENTRY POINT (RST 5.5)
                    205: ;
 (002c)             206:         ORG     2CH
-002c c3 bd 02      207:         JMP     ININT    ; BRANCH TO INPUT INTERRUPT ROUTINE
+002c c3 b9 02      207:         JMP     ININT    ; BRANCH TO INPUT INTERRUPT ROUTINE
                    208: ;
                    209: ; RST 6 ENTRY POINT
                    210: ;
@@ -231,19 +231,19 @@ asm85 8085 Assembler v1.5 by nib
                    229: ; TIMER INTERRUPT (NMI) ENTRY POINT
                    230: ;
 (0066)             231:         ORG     66H
-0066 c3 84 01      232:         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
+0066 c3 82 01      232:         JMP     STP25    ; BACK TO SINGLE STEP ROUTINE
                    233: ;
                    234: RES10:                   ; CONTINUE SAVING USER STATUS
-0069 db ff         235:         IN      RIM      ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
-006b e6 0f         236:         ANI     0FH      ; KEEP STATUS & MASK BITS
-006d 32 f1 20      237:         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
-0070 3e 0e         238:         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-0072 d3 ff         239:         OUT     SIM      ; WAS SIM
-0074 f3            240:         DI               ; INTERRUPTS DISABLED WHILE MONITOR IS RUNNING
+0069 00            235:         NOP              ; GET USER INTERRUPT STATUS AND INTERRUPT MASK (WAS RIM)
+006a e6 0f         236:         ANI     0FH      ; KEEP STATUS & MASK BITS
+006c 32 f1 20      237:         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
+006f 3e 0e         238:         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
+0071 00            239:         NOP              ; WAS SIM
+0072 f3            240:         DI               ; INTERRUPTS DISABLED WHILE MONITOR IS RUNNING
                    241:                          ; (EXCEPT WHEN WAITING FOR INPUT)
-0075 db ff         242:         IN      RIM      ; TTY OR KEYBOARD MONITOR ? (WAS RIM)
-0077 07            243:         RLC              ; IS TTY CONNECTED ?
-0078 da 2a 04      244:         JC      GO       ; YES - BRANCH TO TTY MONITOR
+0073 db ff         242:         IN      RIM      ; TTY OR KEYBOARD MONITOR ? (WAS RIM)
+0075 07            243:         RLC              ; IS TTY CONNECTED ?
+0076 da 25 04      244:         JC      GO       ; YES - BRANCH TO TTY MONITOR
                    245:                          ; NO - ENTER KEYBOARD MONITOR
                    246: ;
                    247: ;
@@ -253,18 +253,18 @@ asm85 8085 Assembler v1.5 by nib
                    251: ;
                    252: ;
                    253: ; OUTPUT SIGN-ON MESSAGE
-007b af            254:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
-007c 06 00         255:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
-007e 21 d6 03      256:         LXI     H,SGNAD  ; ARG - GET ADDRESS OF ADDRESS FIELD PORTION OF
+0079 af            254:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
+007a 06 00         255:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
+007c 21 d1 03      256:         LXI     H,SGNAD  ; ARG - GET ADDRESS OF ADDRESS FIELD PORTION OF
                    257:                          ; /SIGN-ON MESSAGE
-0081 cd e6 02      258:         CALL    OUTPT    ; OUTPUT SIGN-ON MESSAGE TO ADDRESS FIELD
-0084 3e 01         259:         MVI     A,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
-0086 06 00         260:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
-0088 21 da 03      261:         LXI     H,SGNDT  ; ARG - GET ADDRESS OF DATA FIELD PORTION OF
+007f cd e2 02      258:         CALL    OUTPT    ; OUTPUT SIGN-ON MESSAGE TO ADDRESS FIELD
+0082 3e 01         259:         MVI     A,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
+0084 06 00         260:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
+0086 21 d5 03      261:         LXI     H,SGNDT  ; ARG - GET ADDRESS OF DATA FIELD PORTION OF
                    262:                          ; /SIGN-ON MESSAGE
-008b cd e6 02      263:         CALL    OUTPT    ; OUTPUT SIGN-ON MESSAGE TO DATA FIELD
-008e 3e 80         264:         MVI     A,EMPTY
-0090 32 fe 20      265:         STA     IBUFF    ; SET INPUT BUFFER EMPTY FLAG
+0089 cd e2 02      263:         CALL    OUTPT    ; OUTPUT SIGN-ON MESSAGE TO DATA FIELD
+008c 3e 80         264:         MVI     A,EMPTY
+008e 32 fe 20      265:         STA     IBUFF    ; SET INPUT BUFFER EMPTY FLAG
                    266: ;
                    267: ;
                    268: ;
@@ -275,36 +275,36 @@ asm85 8085 Assembler v1.5 by nib
                    273: ; DESTROYS:
                    274: ;
                    275: CMMND:
-0093 21 e9 20      276:         LXI     H,MNSTK  ; INITIALIZE MONITOR STACK POINTER
-0096 f9            277:         SPHL
+0091 21 e9 20      276:         LXI     H,MNSTK  ; INITIALIZE MONITOR STACK POINTER
+0094 f9            277:         SPHL
                    278:                          ; OUTPUT PROMPT CHARACTER TO DISPLAY
-0097 21 00 19      279:         LXI     H,CNTRL  ; GET ADDRESS FOR CONTROL CHARACTER
-009a 36 90         280:         MVI     M,ADISP  ; OUTPUT CONTROL CHARACTER TO USE ADDRESS FIELD
-009c 25            281:         DCR     H        ; ADDRESS FOR OUTPUT CHARACTER
-009d 36 fb         282:         MVI     M,PRMPT  ; OUTPUT PROMPT CHARACTER
-009f cd 16 03      283:         CALL    RDKBD    ; READ KEYBOARD
-00a2 01 04 00      284:         LXI     B,NUMC   ; COUNTER FOR NUMBER OF COMMANDS IN C
-00a5 21 a8 03      285:         LXI     H,CMDTB  ; GET ADDRESS OF COMMAND TABLE
+0095 21 00 19      279:         LXI     H,CNTRL  ; GET ADDRESS FOR CONTROL CHARACTER
+0098 36 90         280:         MVI     M,ADISP  ; OUTPUT CONTROL CHARACTER TO USE ADDRESS FIELD
+009a 25            281:         DCR     H        ; ADDRESS FOR OUTPUT CHARACTER
+009b 36 fb         282:         MVI     M,PRMPT  ; OUTPUT PROMPT CHARACTER
+009d cd 12 03      283:         CALL    RDKBD    ; READ KEYBOARD
+00a0 01 04 00      284:         LXI     B,NUMC   ; COUNTER FOR NUMBER OF COMMANDS IN C
+00a3 21 a3 03      285:         LXI     H,CMDTB  ; GET ADDRESS OF COMMAND TABLE
                    286: CMD10:
-00a8 be            287:         CMP     M        ; RECOGNIZE THE COMMAND ?
-00a9 ca b4 00      288:         JZ      CMD15    ; YES - GO PROCESS IT
-00ac 23            289:         INX     H        ; NO - NEXT COMMAND TABLE ENTRY
-00ad 0d            290:         DCR     C        ; END OF TABLE ?
-00ae c2 a8 00      291:         JNZ     CMD10    ; NO - GO CHECK NEXT ENTRY
+00a6 be            287:         CMP     M        ; RECOGNIZE THE COMMAND ?
+00a7 ca b2 00      288:         JZ      CMD15    ; YES - GO PROCESS IT
+00aa 23            289:         INX     H        ; NO - NEXT COMMAND TABLE ENTRY
+00ab 0d            290:         DCR     C        ; END OF TABLE ?
+00ac c2 a6 00      291:         JNZ     CMD10    ; NO - GO CHECK NEXT ENTRY
                    292:                          ; YES - COMMAND UNKNOWN
-00b1 c3 44 02      293:         JMP     ERR      ; DISPLAY ERROR MESSAGE AND GET ANOTHER COMMAND
+00af c3 40 02      293:         JMP     ERR      ; DISPLAY ERROR MESSAGE AND GET ANOTHER COMMAND
                    294: CMD15:
-00b4 21 ac 03      295:         LXI     H,CMDAD  ; GET ADDRESS OF COMMAND ADDRESS TABLE
-00b7 0d            296:         DCR     C        ; ADJUST COMMAND COUNTER
+00b2 21 a7 03      295:         LXI     H,CMDAD  ; GET ADDRESS OF COMMAND ADDRESS TABLE
+00b5 0d            296:         DCR     C        ; ADJUST COMMAND COUNTER
                    297:                          ; COUNTER ACTS AS POINTER TO COMMAND ADDRESS TABLE
-00b8 09            298:         DAD     B        ; ADD POINTER TO TABLE ADDRESS TWICE BECAUSE
-00b9 09            299:         DAD     B        ; TABLE HAS 2 BYTE ENTRIES
-00ba 7e            300:         MOV     A,M      ; GET LOW ORDER BYTE OF COMMAND ADDRESS
-00bb 23            301:         INX     H
-00bc 66            302:         MOV     H,M      ; GET HIGH ORDER BYTE OF COMMAND ADDRESS IN H
-00bd 6f            303:         MOV     L,A      ; PUT LOW ORDER BYTE IN L
+00b6 09            298:         DAD     B        ; ADD POINTER TO TABLE ADDRESS TWICE BECAUSE
+00b7 09            299:         DAD     B        ; TABLE HAS 2 BYTE ENTRIES
+00b8 7e            300:         MOV     A,M      ; GET LOW ORDER BYTE OF COMMAND ADDRESS
+00b9 23            301:         INX     H
+00ba 66            302:         MOV     H,M      ; GET HIGH ORDER BYTE OF COMMAND ADDRESS IN H
+00bb 6f            303:         MOV     L,A      ; PUT LOW ORDER BYTE IN L
                    304:                          ; COMMAND ROUTINE ADDRESS IS NOW IN H & L
-00be e9            305:         PCHL             ; BRANCH TO ADDRESS IN H & L
+00bc e9            305:         PCHL             ; BRANCH TO ADDRESS IN H & L
                    306: ;
                    307: ;
                    308: ;
@@ -319,34 +319,34 @@ asm85 8085 Assembler v1.5 by nib
                    317: ; DESTROYS: A,B,C,D,E,H,L,F/F'S
                    318: ;
                    319: EXAM:
-00bf 06 01         320:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD OF DISPLAY
-00c1 cd 06 02      321:         CALL    CLEAR    ; CLEAR DISPLAY
-00c4 cd 74 03      322:         CALL    SETRG    ; GET REGISTER DESIGNATOR FROM KEYBOARD AND
+00bd 06 01         320:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD OF DISPLAY
+00bf cd 02 02      321:         CALL    CLEAR    ; CLEAR DISPLAY
+00c2 cd 6f 03      322:         CALL    SETRG    ; GET REGISTER DESIGNATOR FROM KEYBOARD AND
                    323:                          ; /SET REGISTER POINTER ACCORDINGLY
                    324:                          ; WAS CHARACTER A REGISTER DESIGNATOR?
-00c7 d2 44 02      325:         JNC     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+00c5 d2 40 02      325:         JNC     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
                    326: EXM05:
-00ca cd 38 03      327:         CALL    RGNAM    ; OUTPUT REGISTER NAME TO ADDRESS FIELD
-00cd cd 2b 03      328:         CALL    RGLOC    ; GET REGISTER SAVE LOCATION IN H & L
-00d0 7e            329:         MOV     A,M      ; GET REGISTER CONTENTS
-00d1 32 f8 20      330:         STA     CURDT    ; STORE REGISTER CONTENTS AT CURRENT DATA
-00d4 06 01         331:         MVI     B,DOT    ; ARG - DOT IN DATA FIELD
-00d6 cd 9b 03      332:         CALL    UPDDT    ; UPDATE DATA FIELD OF DISPLAY
-00d9 06 01         333:         MVI     B,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
-00db cd 5a 02      334:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY DIGITS RECEIVED?
-00de d2 e5 00      335:         JNC     EXM10    ; NO - DO NOT UPDATE REGISTER CONTENTS
-00e1 cd 2b 03      336:         CALL    RGLOC    ; YES - GET REGISTER SAVE LOCATION IN H & L
-00e4 73            337:         MOV     M,E      ; UPDATE REGISTER CONTENTS
+00c8 cd 34 03      327:         CALL    RGNAM    ; OUTPUT REGISTER NAME TO ADDRESS FIELD
+00cb cd 27 03      328:         CALL    RGLOC    ; GET REGISTER SAVE LOCATION IN H & L
+00ce 7e            329:         MOV     A,M      ; GET REGISTER CONTENTS
+00cf 32 f8 20      330:         STA     CURDT    ; STORE REGISTER CONTENTS AT CURRENT DATA
+00d2 06 01         331:         MVI     B,DOT    ; ARG - DOT IN DATA FIELD
+00d4 cd 96 03      332:         CALL    UPDDT    ; UPDATE DATA FIELD OF DISPLAY
+00d7 06 01         333:         MVI     B,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
+00d9 cd 56 02      334:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY DIGITS RECEIVED?
+00dc d2 e3 00      335:         JNC     EXM10    ; NO - DO NOT UPDATE REGISTER CONTENTS
+00df cd 27 03      336:         CALL    RGLOC    ; YES - GET REGISTER SAVE LOCATION IN H & L
+00e2 73            337:         MOV     M,E      ; UPDATE REGISTER CONTENTS
                    338: EXM10:
-00e5 fe 10         339:         CPI     PERIO    ; WAS LAST CHARACTER A PERIOD ?
-00e7 ca 18 02      340:         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
-00ea fe 11         341:         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
-00ec c2 44 02      342:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
-00ef cd d7 02      343:         CALL    NXTRG    ; YES - ADVANCE REGISTER POINTER TO
+00e3 fe 10         339:         CPI     PERIO    ; WAS LAST CHARACTER A PERIOD ?
+00e5 ca 14 02      340:         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
+00e8 fe 11         341:         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
+00ea c2 40 02      342:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+00ed cd d3 02      343:         CALL    NXTRG    ; YES - ADVANCE REGISTER POINTER TO
                    344:                          ; /NEXT REGISTER
                    345:                          ; ANY MORE REGISTERS ?
-00f2 da ca 00      346:         JC      EXM05    ; YES - CONTINUE PROCESSING WITH NEXT REGISTER
-00f5 c3 18 02      347:         JMP     CLDIS    ; NO - CLEAR DISPLAY AND TERMINATE COMMAND
+00f0 da c8 00      346:         JC      EXM05    ; YES - CONTINUE PROCESSING WITH NEXT REGISTER
+00f3 c3 14 02      347:         JMP     CLDIS    ; NO - CLEAR DISPLAY AND TERMINATE COMMAND
                    348: ;
                    349: ;
                    350: ;
@@ -357,28 +357,28 @@ asm85 8085 Assembler v1.5 by nib
                    355: ; DESTROYS:
                    356: ;
                    357: GOCMD:
-00f8 cd 2f 02      358:         CALL    DISPC    ; DISPLAY USER PROGRAM COUNTER
-00fb cd 16 03      359:         CALL    RDKBD    ; READ FROM KEYBOARD
-00fe fe 10         360:         CPI     PERIO    ; IS CHARACTER A PERIOD ?
-0100 ca 19 01      361:         JZ      G10      ; YES - GO EXECUTE THE COMMAND
+00f6 cd 2b 02      358:         CALL    DISPC    ; DISPLAY USER PROGRAM COUNTER
+00f9 cd 12 03      359:         CALL    RDKBD    ; READ FROM KEYBOARD
+00fc fe 10         360:         CPI     PERIO    ; IS CHARACTER A PERIOD ?
+00fe ca 17 01      361:         JZ      G10      ; YES - GO EXECUTE THE COMMAND
                    362:                          ; NO - ARG - CHARACTER IS STILL IN A
-0103 32 fe 20      363:         STA     IBUFF    ; REPLACE CHARACTER IN INPUT BUFFER
-0106 06 01         364:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
-0108 cd 06 02      365:         CALL    CLEAR    ; CLEAR DISPLAY
-010b 06 00         366:         MVI     B,ADFLD  ; ARG - USE ADDRESS FIELD
-010d cd 5a 02      367:         CALL    GTHEX    ; GET HEX DIGITS
-0110 fe 10         368:         CPI     PERIO    ; WAS LAST CHARACTER A PERIOD ?
-0112 c2 44 02      369:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
-0115 eb            370:         XCHG             ; PUT HEX VALUE FROM GTHEX TO H & L
-0116 22 f2 20      371:         SHLD    PSAV     ; HEX VALUE IS NEW USER PC
+0101 32 fe 20      363:         STA     IBUFF    ; REPLACE CHARACTER IN INPUT BUFFER
+0104 06 01         364:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
+0106 cd 02 02      365:         CALL    CLEAR    ; CLEAR DISPLAY
+0109 06 00         366:         MVI     B,ADFLD  ; ARG - USE ADDRESS FIELD
+010b cd 56 02      367:         CALL    GTHEX    ; GET HEX DIGITS
+010e fe 10         368:         CPI     PERIO    ; WAS LAST CHARACTER A PERIOD ?
+0110 c2 40 02      369:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+0113 eb            370:         XCHG             ; PUT HEX VALUE FROM GTHEX TO H & L
+0114 22 f2 20      371:         SHLD    PSAV     ; HEX VALUE IS NEW USER PC
                    372: G10:
-0119 06 00         373:         MVI     B,NODOT  ; YES - ARG - NO DOT IN ADDRESS FIELD
-011b cd 06 02      374:         CALL    CLEAR    ; CLEAR DISPLAY
-011e af            375:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
-011f 06 00         376:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
-0121 21 d2 03      377:         LXI     H,EXMSG  ; GET ADDRESS OF EXECUTION MESSAGE IN H & L
-0124 cd e6 02      378:         CALL    OUTPT    ; DISPLAY EXECUTION MESSAGE
-0127 c3 4a 03      379:         JMP     RSTOR    ; RESTORE USER REGISTERS INCL. PROGRAM COUNTER
+0117 06 00         373:         MVI     B,NODOT  ; YES - ARG - NO DOT IN ADDRESS FIELD
+0119 cd 02 02      374:         CALL    CLEAR    ; CLEAR DISPLAY
+011c af            375:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
+011d 06 00         376:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
+011f 21 cd 03      377:         LXI     H,EXMSG  ; GET ADDRESS OF EXECUTION MESSAGE IN H & L
+0122 cd e2 02      378:         CALL    OUTPT    ; DISPLAY EXECUTION MESSAGE
+0125 c3 46 03      379:         JMP     RSTOR    ; RESTORE USER REGISTERS INCL. PROGRAM COUNTER
                    380:                          ; /I.E. BEGIN EXECUTION OF USER PROGRAM
                    381: ;
                    382: ;
@@ -390,80 +390,80 @@ asm85 8085 Assembler v1.5 by nib
                    388: ; DESTROYS:
                    389: ;
                    390: SSTEP:
-012a cd 2f 02      391:         CALL    DISPC    ; DISPLAY USER PROGRAM COUNTER
-012d cd 16 03      392:         CALL    RDKBD    ; READ FROM KEYBOARD
-0130 fe 10         393:         CPI     PERIO    ; WAS CHARACTER A PERIOD ?
-0132 ca 18 02      394:         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
-0135 fe 11         395:         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
-0137 ca 53 01      396:         JZ      STP20    ; YES - GO SET TIMER
+0128 cd 2b 02      391:         CALL    DISPC    ; DISPLAY USER PROGRAM COUNTER
+012b cd 12 03      392:         CALL    RDKBD    ; READ FROM KEYBOARD
+012e fe 10         393:         CPI     PERIO    ; WAS CHARACTER A PERIOD ?
+0130 ca 14 02      394:         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
+0133 fe 11         395:         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
+0135 ca 51 01      396:         JZ      STP20    ; YES - GO SET TIMER
                    397:                          ; NO - CHARACTER FROM KEYBOARD WAS NEITHER PERIOD NOR COMMA
-013a 32 fe 20      398:         STA     IBUFF    ; REPLACE THE CHARACTER IN THE INPUT BUFFER
-013d 06 01         399:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
-013f cd 06 02      400:         CALL    CLEAR    ; CLEAR DISPLAY
-0142 06 00         401:         MVI     B,ADFLD  ; ARG - USE ADDRESS FIELD OF DISPLAY
-0144 cd 5a 02      402:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY DIGITS RECEIVED ?
-0147 d2 44 02      403:         JNC     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
-014a eb            404:         XCHG             ; HEX VALUE FROM GTHEX TO H & L
-014b 22 f2 20      405:         SHLD    PSAV     ; HEX VALUE IS NEW USER PC
-014e fe 10         406:         CPI     PERIO    ; WAS LAST CHARACTER FROM GTHEX A PERIOD ?
-0150 ca 18 02      407:         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
+0138 32 fe 20      398:         STA     IBUFF    ; REPLACE THE CHARACTER IN THE INPUT BUFFER
+013b 06 01         399:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
+013d cd 02 02      400:         CALL    CLEAR    ; CLEAR DISPLAY
+0140 06 00         401:         MVI     B,ADFLD  ; ARG - USE ADDRESS FIELD OF DISPLAY
+0142 cd 56 02      402:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY DIGITS RECEIVED ?
+0145 d2 40 02      403:         JNC     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+0148 eb            404:         XCHG             ; HEX VALUE FROM GTHEX TO H & L
+0149 22 f2 20      405:         SHLD    PSAV     ; HEX VALUE IS NEW USER PC
+014c fe 10         406:         CPI     PERIO    ; WAS LAST CHARACTER FROM GTHEX A PERIOD ?
+014e ca 14 02      407:         JZ      CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
                    408:                          ; NO - MUST HAVE BEEN A COMMA
                    409: STP20:
-0153 3a f1 20      410:         LDA     ISAV     ; GET USER INTERRUPT MASK
-0156 e6 08         411:         ANI     08H      ; KEEP INTERRUPT STATUS
-0158 32 fd 20      412:         STA     TEMP     ; SAVE USER INTERRUPT STATUS
-015b 2a f2 20      413:         LHLD    PSAV     ; GET USER PC
-015e 7e            414:         MOV     A,M      ; GET USER INSTRUCTION
-015f fe f3         415:         CPI     0F3H     ; DI INSTRUCTION ?
-0161 c2 68 01      416:         JNZ     STP21    ; NO
-0164 af            417:         XRA     A        ; YES - RESET USER INTERRUPT STATUS
-0165 c3 6f 01      418:         JMP     STP22
+0151 3a f1 20      410:         LDA     ISAV     ; GET USER INTERRUPT MASK
+0154 e6 08         411:         ANI     08H      ; KEEP INTERRUPT STATUS
+0156 32 fd 20      412:         STA     TEMP     ; SAVE USER INTERRUPT STATUS
+0159 2a f2 20      413:         LHLD    PSAV     ; GET USER PC
+015c 7e            414:         MOV     A,M      ; GET USER INSTRUCTION
+015d fe f3         415:         CPI     0F3H     ; DI INSTRUCTION ?
+015f c2 66 01      416:         JNZ     STP21    ; NO
+0162 af            417:         XRA     A        ; YES - RESET USER INTERRUPT STATUS
+0163 c3 6d 01      418:         JMP     STP22
                    419: STP21:
-0168 fe fb         420:         CPI     0FBH     ; EI INSTRUCTION ?
-016a c2 72 01      421:         JNZ     STP23    ; NO
-016d 3e 08         422:         MVI     A,08H    ; YES - SET USER INTERRUPT STATUS
+0166 fe fb         420:         CPI     0FBH     ; EI INSTRUCTION ?
+0168 c2 70 01      421:         JNZ     STP23    ; NO
+016b 3e 08         422:         MVI     A,08H    ; YES - SET USER INTERRUPT STATUS
                    423: STP22:
-016f 32 fd 20      424:         STA     TEMP     ; SAVE NEW USER INTERRUPT STATUS
+016d 32 fd 20      424:         STA     TEMP     ; SAVE NEW USER INTERRUPT STATUS
                    425: STP23:
-0172 3e 40         426:         MVI     A,((TIMER & 0FF00H) / 256) | TMODE ; HIGH ORDER BITS OF TIMER VALUE
+0170 3e 40         426:         MVI     A,((TIMER & 0FF00H) / 256) | TMODE ; HIGH ORDER BITS OF TIMER VALUE
                    427:                          ; /OR'ED WITH TIMER MODE
-0174 d3 25         428:         OUT     TIMHI
-0176 3e d4         429:         MVI     A,TIMER & 0FFH ; LOW ORDER BITS OF TIMER VALUE
-0178 d3 24         430:         OUT     TIMLO
-017a 3a ff 20      431:         LDA     USCSR    ; GET USER IMAGE OF WHAT'S IN CSR
-017d f6 c0         432:         ORI     TSTRT    ; SET TIMER COMMAND BITS TO START TIMER
-017f d3 20         433:         OUT     CSR      ; START TIMER
-0181 c3 4a 03      434:         JMP     RSTOR    ; RESTORE USER REGISTERS
+0172 d3 25         428:         OUT     TIMHI
+0174 3e d4         429:         MVI     A,TIMER & 0FFH ; LOW ORDER BITS OF TIMER VALUE
+0176 d3 24         430:         OUT     TIMLO
+0178 3a ff 20      431:         LDA     USCSR    ; GET USER IMAGE OF WHAT'S IN CSR
+017b f6 c0         432:         ORI     TSTRT    ; SET TIMER COMMAND BITS TO START TIMER
+017d d3 20         433:         OUT     CSR      ; START TIMER
+017f c3 46 03      434:         JMP     RSTOR    ; RESTORE USER REGISTERS
                    435: ;
                    436: STP25:                   ; BRANCH HERE WHEN TIMER INTERRUPTS AFTER
                    437:                          ; /ONE USER INSTRUCTION
-0184 f5            438:         PUSH    PSW      ; SAVE PSW
-0185 3a ff 20      439:         LDA     USCSR    ; GET USER IMAGE OF WHAT'S IN CSR
-0188 e6 3f         440:         ANI     3FH      ; CLEAR 2 HIGH ORDER BITS
-018a f6 40         441:         ORI     40H      ; SET TIMER STOP BIT
-018c d3 20         442:         OUT     CSR      ; STOP TIMER
-018e f1            443:         POP     PSW      ; RETRIEVE PSW
-018f 22 ef 20      444:         SHLD    LSAV     ; SAVE H & L
-0192 e1            445:         POP     H        ; GET USER PROGRAM COUNTER FROM TOP OF STACK
-0193 22 f2 20      446:         SHLD    PSAV     ; SAVE USER PC
-0196 f5            447:         PUSH    PSW
-0197 e1            448:         POP     H
-0198 22 ed 20      449:         SHLD    FSAV     ; SAVE FLIP/FLOPS AND A REGISTER
-019b 21 00 00      450:         LXI     H,0      ; CLEAR H & L
-019e 39            451:         DAD     SP       ; GET USER STACK POINTER
-019f 22 f4 20      452:         SHLD    SSAV     ; SAVE USER STACK POINTER
-01a2 21 ed 20      453:         LXI     H,BSAV+1 ; SET MONITOR STACK POINTER FOR
-01a5 f9            454:         SPHL             ; /SAVING REMAINING USER REGISTERS
-01a6 c5            455:         PUSH    B        ; SAVE B & C
-01a7 d5            456:         PUSH    D        ; SAVE D & E
-01a8 db ff         457:         IN      RIM      ; GET USER INTERRUPT MASK (WAS RIM)
-01aa e6 07         458:         ANI     07H      ; KEEP MASK BITS
-01ac 21 fd 20      459:         LXI     H,TEMP   ; GET USER INTERRUPT STATUS
-01af b6            460:         ORA     M        ; OR IT INTO MASK
-01b0 32 f1 20      461:         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
-01b3 3e 0e         462:         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
-01b5 d3 ff         463:         OUT     SIM      ; WAS SIM
-01b7 c3 2a 01      464:         JMP     SSTEP    ; GO GET READY FOR ANOTHER INSTRUCTION
+0182 f5            438:         PUSH    PSW      ; SAVE PSW
+0183 3a ff 20      439:         LDA     USCSR    ; GET USER IMAGE OF WHAT'S IN CSR
+0186 e6 3f         440:         ANI     3FH      ; CLEAR 2 HIGH ORDER BITS
+0188 f6 40         441:         ORI     40H      ; SET TIMER STOP BIT
+018a d3 20         442:         OUT     CSR      ; STOP TIMER
+018c f1            443:         POP     PSW      ; RETRIEVE PSW
+018d 22 ef 20      444:         SHLD    LSAV     ; SAVE H & L
+0190 e1            445:         POP     H        ; GET USER PROGRAM COUNTER FROM TOP OF STACK
+0191 22 f2 20      446:         SHLD    PSAV     ; SAVE USER PC
+0194 f5            447:         PUSH    PSW
+0195 e1            448:         POP     H
+0196 22 ed 20      449:         SHLD    FSAV     ; SAVE FLIP/FLOPS AND A REGISTER
+0199 21 00 00      450:         LXI     H,0      ; CLEAR H & L
+019c 39            451:         DAD     SP       ; GET USER STACK POINTER
+019d 22 f4 20      452:         SHLD    SSAV     ; SAVE USER STACK POINTER
+01a0 21 ed 20      453:         LXI     H,BSAV+1 ; SET MONITOR STACK POINTER FOR
+01a3 f9            454:         SPHL             ; /SAVING REMAINING USER REGISTERS
+01a4 c5            455:         PUSH    B        ; SAVE B & C
+01a5 d5            456:         PUSH    D        ; SAVE D & E
+01a6 00            457:         NOP              ; GET USER INTERRUPT MASK (WAS RIM)
+01a7 e6 07         458:         ANI     07H      ; KEEP MASK BITS
+01a9 21 fd 20      459:         LXI     H,TEMP   ; GET USER INTERRUPT STATUS
+01ac b6            460:         ORA     M        ; OR IT INTO MASK
+01ad 32 f1 20      461:         STA     ISAV     ; SAVE INTERRUPT STATUS & MASK
+01b0 3e 0e         462:         MVI     A,UNMSK  ; UNMASK INTERRUPTS FOR MONITOR USE
+01b2 00            463:         NOP              ; WAS SIM
+01b3 c3 28 01      464:         JMP     SSTEP    ; GO GET READY FOR ANOTHER INSTRUCTION
                    465: ;
                    466: ;
                    467: ;
@@ -474,44 +474,44 @@ asm85 8085 Assembler v1.5 by nib
                    472: ; DESTROYS:
                    473: ;
                    474: SUBST:
-01ba 06 01         475:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
-01bc cd 06 02      476:         CALL    CLEAR    ; CLEAR THE DISPLAY
-01bf 06 00         477:         MVI     B,ADFLD  ; ARG - USE ADDRESS FIELD OF DISPLAY
-01c1 cd 5a 02      478:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY DIGITS RECEIVED?
-01c4 d2 44 02      479:         JNC     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
-01c7 eb            480:         XCHG             ; ASSIGN HEX VALUE RETURNED BY GTHEX TO
-01c8 22 f6 20      481:         SHLD    CURAD    ; /CURRENT ADDRESS
+01b6 06 01         475:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
+01b8 cd 02 02      476:         CALL    CLEAR    ; CLEAR THE DISPLAY
+01bb 06 00         477:         MVI     B,ADFLD  ; ARG - USE ADDRESS FIELD OF DISPLAY
+01bd cd 56 02      478:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY DIGITS RECEIVED?
+01c0 d2 40 02      479:         JNC     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+01c3 eb            480:         XCHG             ; ASSIGN HEX VALUE RETURNED BY GTHEX TO
+01c4 22 f6 20      481:         SHLD    CURAD    ; /CURRENT ADDRESS
                    482: SUB05:
-01cb fe 11         483:         CPI     COMMA    ; WAS ',' THE LAST CHARACTER FROM KEYBOARD?
-01cd c2 fe 01      484:         JNZ     SUB15    ; NO - GO TERMINATE THE COMMAND
-01d0 06 00         485:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
-01d2 cd 8f 03      486:         CALL    UPDAD    ; UPDATE ADDRESS FIELD OF DISPLAY
-01d5 2a f6 20      487:         LHLD    CURAD    ; GET CURRENT ADDRESS IN H & L
-01d8 7e            488:         MOV     A,M      ; GET DATA BYTE POINTED TO BY CURRENT ADDRESS
-01d9 32 f8 20      489:         STA     CURDT    ; STORE DATA BYTE AT CURRENT DATA
-01dc 06 01         490:         MVI     B,DOT    ; ARG - DOT IN DATA FIELD
-01de cd 9b 03      491:         CALL    UPDDT    ; UPDATE DATA FIELD OF DISPLAY
-01e1 06 01         492:         MVI     B,DTFLD  ; ARG - USE DATA FIELD
-01e3 cd 5a 02      493:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY HEX DIGITS RECEIVED?
-01e6 f5            494:         PUSH    PSW      ; (SAVE LAST CHARACTER)
-01e7 d2 f3 01      495:         JNC     SUB10    ; NO - LEAVE DATA UNCHANGED AT CURRENT ADDRESS
-01ea 2a f6 20      496:         LHLD    CURAD    ; YES - GET CURRENT ADDRESS IN H & L
-01ed 73            497:         MOV     M,E      ; STORE NEW DATA AT CURRENT ADDRESS
+01c7 fe 11         483:         CPI     COMMA    ; WAS ',' THE LAST CHARACTER FROM KEYBOARD?
+01c9 c2 fa 01      484:         JNZ     SUB15    ; NO - GO TERMINATE THE COMMAND
+01cc 06 00         485:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
+01ce cd 8a 03      486:         CALL    UPDAD    ; UPDATE ADDRESS FIELD OF DISPLAY
+01d1 2a f6 20      487:         LHLD    CURAD    ; GET CURRENT ADDRESS IN H & L
+01d4 7e            488:         MOV     A,M      ; GET DATA BYTE POINTED TO BY CURRENT ADDRESS
+01d5 32 f8 20      489:         STA     CURDT    ; STORE DATA BYTE AT CURRENT DATA
+01d8 06 01         490:         MVI     B,DOT    ; ARG - DOT IN DATA FIELD
+01da cd 96 03      491:         CALL    UPDDT    ; UPDATE DATA FIELD OF DISPLAY
+01dd 06 01         492:         MVI     B,DTFLD  ; ARG - USE DATA FIELD
+01df cd 56 02      493:         CALL    GTHEX    ; GET HEX DIGITS - WERE ANY HEX DIGITS RECEIVED?
+01e2 f5            494:         PUSH    PSW      ; (SAVE LAST CHARACTER)
+01e3 d2 ef 01      495:         JNC     SUB10    ; NO - LEAVE DATA UNCHANGED AT CURRENT ADDRESS
+01e6 2a f6 20      496:         LHLD    CURAD    ; YES - GET CURRENT ADDRESS IN H & L
+01e9 73            497:         MOV     M,E      ; STORE NEW DATA AT CURRENT ADDRESS
                    498:                          ; MAKE SURE DATA WAS ACTUALLY STORED IN CASE
                    499:                          ; /CURRENT ADDRESS IS IN ROM OR IS NON-EXISTANT
-01ee 7b            500:         MOV     A,E      ; DATA TO A FOR COMPARISON
-01ef be            501:         CMP     M        ; WAS DATA STORED CORRECTLY?
-01f0 c2 44 02      502:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+01ea 7b            500:         MOV     A,E      ; DATA TO A FOR COMPARISON
+01eb be            501:         CMP     M        ; WAS DATA STORED CORRECTLY?
+01ec c2 40 02      502:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
                    503: SUB10:
-01f3 2a f6 20      504:         LHLD    CURAD    ; INCREMENT CURRENT ADDRESS
-01f6 23            505:         INX     H
-01f7 22 f6 20      506:         SHLD    CURAD
-01fa f1            507:         POP     PSW      ; RETRIEVE LAST CHARACTER
-01fb c3 cb 01      508:         JMP     SUB05    ;
+01ef 2a f6 20      504:         LHLD    CURAD    ; INCREMENT CURRENT ADDRESS
+01f2 23            505:         INX     H
+01f3 22 f6 20      506:         SHLD    CURAD
+01f6 f1            507:         POP     PSW      ; RETRIEVE LAST CHARACTER
+01f7 c3 c7 01      508:         JMP     SUB05    ;
                    509: SUB15:
-01fe fe 10         510:         CPI     PERIO    ; WAS LAST CHARACTER '.' ?
-0200 c2 44 02      511:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
-0203 c3 18 02      512:         JMP     CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
+01fa fe 10         510:         CPI     PERIO    ; WAS LAST CHARACTER '.' ?
+01fc c2 40 02      511:         JNZ     ERR      ; NO - DISPLAY ERROR MSG. AND TERMINATE COMMAND
+01ff c3 14 02      512:         JMP     CLDIS    ; YES - CLEAR DISPLAY AND TERMINATE COMMAND
                    513: ;
                    514: ;
                    515: ;
@@ -532,15 +532,15 @@ asm85 8085 Assembler v1.5 by nib
                    530: ;              ADDRESS FIELD.
                    531: ;
                    532: CLEAR:
-0206 af            533:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
+0202 af            533:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
                    534:                          ; ARG - FLAG FOR DOT IN ADDR. FIELD IS IN B
-0207 21 ca 03      535:         LXI     H,BLNKS  ; ARG - ADDRESS OF BLANKS FOR DISPLAY
-020a cd e6 02      536:         CALL    OUTPT    ; OUTPUT BLANKS TO ADDRESS FIELD
-020d 3e 01         537:         MVI     A,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
-020f 06 00         538:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
-0211 21 ca 03      539:         LXI     H,BLNKS  ; ARG - ADDRESS OF BLANKS FOR DISPLAY
-0214 cd e6 02      540:         CALL    OUTPT    ; OUTPUT BLANKS TO DATA FIELD
-0217 c9            541:         RET              ; RETURN
+0203 21 c5 03      535:         LXI     H,BLNKS  ; ARG - ADDRESS OF BLANKS FOR DISPLAY
+0206 cd e2 02      536:         CALL    OUTPT    ; OUTPUT BLANKS TO ADDRESS FIELD
+0209 3e 01         537:         MVI     A,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
+020b 06 00         538:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
+020d 21 c5 03      539:         LXI     H,BLNKS  ; ARG - ADDRESS OF BLANKS FOR DISPLAY
+0210 cd e2 02      540:         CALL    OUTPT    ; OUTPUT BLANKS TO DATA FIELD
+0213 c9            541:         RET              ; RETURN
                    542: ;
                    543: ;
                    544: ;
@@ -554,9 +554,9 @@ asm85 8085 Assembler v1.5 by nib
                    552: ;              BRANCHES TO THE COMMAND RECOGNIZER.
                    553: ;
                    554: CLDIS:
-0218 06 00         555:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
-021a cd 06 02      556:         CALL    CLEAR    ; CLEAR THE DISPLAY
-021d c3 93 00      557:         JMP     CMMND    ; GO GET ANOTHER COMMAND
+0214 06 00         555:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
+0216 cd 02 02      556:         CALL    CLEAR    ; CLEAR THE DISPLAY
+0219 c3 91 00      557:         JMP     CMMND    ; GO GET ANOTHER COMMAND
                    558: ;
                    559: ;
                    560: ;
@@ -570,12 +570,12 @@ asm85 8085 Assembler v1.5 by nib
                    568: ;              TO THE MAIN COLD START PROCEDURE.
                    569: ;
                    570: CLDST:
-0220 3e cc         571:         MVI     A,KBNIT  ; GET CONTROL CHARACTER
-0222 32 00 19      572:         STA     CNTRL    ; INITIALIZE KEYBOARD/DISPLAY BLANKING
-0225 3e 00         573:         MVI     A,CSNIT  ; INITIAL VALUE OF COMMAND STATUS REGISTER
-0227 d3 20         574:         OUT     CSR      ; INITIALIZE CSR
-0229 32 ff 20      575:         STA     USCSR    ; INITIALIZE USER CSR VALUE
-022c c3 08 00      576:         JMP     CLDBK    ; BACK TO MAIN PROCEDURE
+021c 3e cc         571:         MVI     A,KBNIT  ; GET CONTROL CHARACTER
+021e 32 00 19      572:         STA     CNTRL    ; INITIALIZE KEYBOARD/DISPLAY BLANKING
+0221 3e 00         573:         MVI     A,CSNIT  ; INITIAL VALUE OF COMMAND STATUS REGISTER
+0223 d3 20         574:         OUT     CSR      ; INITIALIZE CSR
+0225 32 ff 20      575:         STA     USCSR    ; INITIALIZE USER CSR VALUE
+0228 c3 08 00      576:         JMP     CLDBK    ; BACK TO MAIN PROCEDURE
                    577: ;
                    578: ;
                    579: ;
@@ -590,15 +590,15 @@ asm85 8085 Assembler v1.5 by nib
                    588: ;              COUNTER IS DISPLAYED IN THE DATA FIELD OF THE DISPLAY.
                    589: ;
                    590: DISPC:
-022f 2a f2 20      591:         LHLD    PSAV     ; GET USER PROGRAM COUNTER
-0232 22 f6 20      592:         SHLD    CURAD    ; MAKE IT THE CURRENT ADDRESS
-0235 7e            593:         MOV     A,M      ; GET THE INSTRUCTION AT THAT ADDRESS
-0236 32 f8 20      594:         STA     CURDT    ; MAKE IT THE CURRENT DATA
-0239 06 01         595:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
-023b cd 8f 03      596:         CALL    UPDAD    ; UPDATE ADDRESS FIELD OF DISPLAY
-023e 06 00         597:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
-0240 cd 9b 03      598:         CALL    UPDDT    ; UPDATE DATA FIELD OF DISPLAY
-0243 c9            599:         RET
+022b 2a f2 20      591:         LHLD    PSAV     ; GET USER PROGRAM COUNTER
+022e 22 f6 20      592:         SHLD    CURAD    ; MAKE IT THE CURRENT ADDRESS
+0231 7e            593:         MOV     A,M      ; GET THE INSTRUCTION AT THAT ADDRESS
+0232 32 f8 20      594:         STA     CURDT    ; MAKE IT THE CURRENT DATA
+0235 06 01         595:         MVI     B,DOT    ; ARG - DOT IN ADDRESS FIELD
+0237 cd 8a 03      596:         CALL    UPDAD    ; UPDATE ADDRESS FIELD OF DISPLAY
+023a 06 00         597:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
+023c cd 96 03      598:         CALL    UPDDT    ; UPDATE DATA FIELD OF DISPLAY
+023f c9            599:         RET
                    600: ;
                    601: ;
                    602: ;
@@ -613,15 +613,15 @@ asm85 8085 Assembler v1.5 by nib
                    611: ;              BRANCHES TO THE COMMAND RECOGNIZER.
                    612: ;
                    613: ERR:
-0244 af            614:         XRA     A        ; ARG - USE ADDRESS FIELD
-0245 06 00         615:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
-0247 21 ce 03      616:         LXI     H,ERMSG  ; ARG - ADDRESS OF ERROR MESSAGE
-024a cd e6 02      617:         CALL    OUTPT    ; OUTPUT ERROR MESSAGE TO ADDRESS FIELD
-024d 3e 01         618:         MVI     A,DTFLD  ; ARG - USE DATA FIELD
-024f 06 00         619:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
-0251 21 ca 03      620:         LXI     H,BLNKS  ; ARG - ADDRESS OF BLANKS FOR DISPLAY
-0254 cd e6 02      621:         CALL    OUTPT    ; OUTPUT BLANKS TO DATA FIELD
-0257 c3 93 00      622:         JMP     CMMND    ; GO GET A NEW COMMAND
+0240 af            614:         XRA     A        ; ARG - USE ADDRESS FIELD
+0241 06 00         615:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
+0243 21 c9 03      616:         LXI     H,ERMSG  ; ARG - ADDRESS OF ERROR MESSAGE
+0246 cd e2 02      617:         CALL    OUTPT    ; OUTPUT ERROR MESSAGE TO ADDRESS FIELD
+0249 3e 01         618:         MVI     A,DTFLD  ; ARG - USE DATA FIELD
+024b 06 00         619:         MVI     B,NODOT  ; ARG - NO DOT IN DATA FIELD
+024d 21 c5 03      620:         LXI     H,BLNKS  ; ARG - ADDRESS OF BLANKS FOR DISPLAY
+0250 cd e2 02      621:         CALL    OUTPT    ; OUTPUT BLANKS TO DATA FIELD
+0253 c3 91 00      622:         JMP     CMMND    ; GO GET A NEW COMMAND
                    623: ;
                    624: ;
                    625: ;
@@ -651,52 +651,52 @@ asm85 8085 Assembler v1.5 by nib
                    649: ;              VALID HEX DIGITS WERE RECEIVED.
                    650: ;
                    651: GTHEX:
-025a 0e 00         652:         MVI     C,0      ; RESET HEX DIGIT FLAG
-025c c5            653:         PUSH    B        ; SAVE DISPLAY AND HEX DIGIT FLAGS
-025d 11 00 00      654:         LXI     D,0      ; SET HEX VALUE TO ZERO
-0260 d5            655:         PUSH    D        ; SAVE HEX VALUE
+0256 0e 00         652:         MVI     C,0      ; RESET HEX DIGIT FLAG
+0258 c5            653:         PUSH    B        ; SAVE DISPLAY AND HEX DIGIT FLAGS
+0259 11 00 00      654:         LXI     D,0      ; SET HEX VALUE TO ZERO
+025c d5            655:         PUSH    D        ; SAVE HEX VALUE
                    656: GTH05:
-0261 cd 16 03      657:         CALL    RDKBD    ; READ KEYBOARD
-0264 fe 10         658:         CPI     10H      ; IS CHARACTER A HEX DIGIT?
-0266 d2 84 02      659:         JNC     GTH20    ; NO - GO CHECK FOR TERMINATOR
+025d cd 12 03      657:         CALL    RDKBD    ; READ KEYBOARD
+0260 fe 10         658:         CPI     10H      ; IS CHARACTER A HEX DIGIT?
+0262 d2 80 02      659:         JNC     GTH20    ; NO - GO CHECK FOR TERMINATOR
                    660:                          ; YES - ARG - NEW HEX DIGIT IS IN A
-0269 d1            661:         POP     D        ; ARG - RETRIEVE HEX VALUE
-026a cd ce 02      662:         CALL    INSDG    ; INSERT NEW DIGIT IN HEX VALUE
-026d c1            663:         POP     B        ; RETRIEVE DISPLAY FLAG
-026e 0e 01         664:         MVI     C,1      ; SET HEX DIGIT FLAG
+0265 d1            661:         POP     D        ; ARG - RETRIEVE HEX VALUE
+0266 cd ca 02      662:         CALL    INSDG    ; INSERT NEW DIGIT IN HEX VALUE
+0269 c1            663:         POP     B        ; RETRIEVE DISPLAY FLAG
+026a 0e 01         664:         MVI     C,1      ; SET HEX DIGIT FLAG
                    665:                          ; /(I.E. A HEX DIGIT HAS BEEN READ)
-0270 c5            666:         PUSH    B        ; SAVE DISPLAY AND HEX DIGIT FLAGS
-0271 d5            667:         PUSH    D        ; SAVE HEX VALUE
-0272 78            668:         MOV     A,B      ; TEST DISPLAY FLAG
-0273 0f            669:         RRC              ; SHOULD ADDRESS FIELD OF DISPLAY BE USED ?
-0274 d2 78 02      670:         JNC     GTH10    ; YES - USE HEX VALUE AS IS
+026c c5            666:         PUSH    B        ; SAVE DISPLAY AND HEX DIGIT FLAGS
+026d d5            667:         PUSH    D        ; SAVE HEX VALUE
+026e 78            668:         MOV     A,B      ; TEST DISPLAY FLAG
+026f 0f            669:         RRC              ; SHOULD ADDRESS FIELD OF DISPLAY BE USED ?
+0270 d2 74 02      670:         JNC     GTH10    ; YES - USE HEX VALUE AS IS
                    671:                          ; NO - ONLY LOW ORDER BYTE OF HEX VALUE SHOULD
                    672:                          ; /BE USED FOR DATA FIELD OF DISPLAY
-0277 53            673:         MOV     D,E      ; PUT LOW ORDER BYTE OF HEX VALUE IN D
+0273 53            673:         MOV     D,E      ; PUT LOW ORDER BYTE OF HEX VALUE IN D
                    674: GTH10:
                    675:                          ; ARG - HEX VALUE TO BE EXPANDED IS IN D & E
-0278 cd 9b 02      676:         CALL    HXDSP    ; EXPAND HEX VALUE FOR DISPLAY
+0274 cd 97 02      676:         CALL    HXDSP    ; EXPAND HEX VALUE FOR DISPLAY
                    677:                          ; ARG - ADDRESS OF EXPANDED HEX VALUE IN H & L
-027b 78            678:         MOV     A,B      ; ARG - PUT DISPLAY FLAG IN A
-027c 06 01         679:         MVI     B,DOT    ; ARG - DOT IN APPROPRIATE FIELD
-027e cd e6 02      680:         CALL    OUTPT    ; OUTPUT HEX VALUE TO DISPLAY
-0281 c3 61 02      681:         JMP     GTH05    ; GO GET NEXT CHARACTER
+0277 78            678:         MOV     A,B      ; ARG - PUT DISPLAY FLAG IN A
+0278 06 01         679:         MVI     B,DOT    ; ARG - DOT IN APPROPRIATE FIELD
+027a cd e2 02      680:         CALL    OUTPT    ; OUTPUT HEX VALUE TO DISPLAY
+027d c3 5d 02      681:         JMP     GTH05    ; GO GET NEXT CHARACTER
                    682: GTH20:                   ; LAST CHARACTER WAS NOT A HEX DIGIT
-0284 d1            683:         POP     D        ; RETRIEVE HEX VALUE
-0285 c1            684:         POP     B        ; RETRIEVE HEX DIGIT FLAG IN C
-0286 fe 11         685:         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
-0288 ca 96 02      686:         JZ      GTH25    ; YES - READY TO RETURN
-028b fe 10         687:         CPI     PERIO    ; NO - WAS LAST CHARACTER '.' ?
-028d ca 96 02      688:         JZ      GTH25    ; YES - READY TO RETURN
+0280 d1            683:         POP     D        ; RETRIEVE HEX VALUE
+0281 c1            684:         POP     B        ; RETRIEVE HEX DIGIT FLAG IN C
+0282 fe 11         685:         CPI     COMMA    ; WAS LAST CHARACTER ',' ?
+0284 ca 92 02      686:         JZ      GTH25    ; YES - READY TO RETURN
+0287 fe 10         687:         CPI     PERIO    ; NO - WAS LAST CHARACTER '.' ?
+0289 ca 92 02      688:         JZ      GTH25    ; YES - READY TO RETURN
                    689:                          ; NO - INVALID TERMINATOR - IGNORE ANY HEX DIGITS READ
-0290 11 00 00      690:         LXI     D,0      ; SET HEX VALUE TO ZERO
-0293 c3 26 03      691:         JMP     RETF     ; RETURN FALSE
+028c 11 00 00      690:         LXI     D,0      ; SET HEX VALUE TO ZERO
+028f c3 22 03      691:         JMP     RETF     ; RETURN FALSE
                    692: GTH25:
-0296 47            693:         MOV     B,A      ; SAVE LAST CHARACTER
-0297 79            694:         MOV     A,C      ; SHIFT HEX DIGIT FLAG TO
-0298 0f            695:         RRC              ; /CARRY BIT
-0299 78            696:         MOV     A,B      ; RESTORE LAST CHARACTER
-029a c9            697:         RET              ; RETURN
+0292 47            693:         MOV     B,A      ; SAVE LAST CHARACTER
+0293 79            694:         MOV     A,C      ; SHIFT HEX DIGIT FLAG TO
+0294 0f            695:         RRC              ; /CARRY BIT
+0295 78            696:         MOV     A,B      ; RESTORE LAST CHARACTER
+0296 c9            697:         RET              ; RETURN
                    698: ;
                    699: ;
                    700: ;
@@ -714,32 +714,32 @@ asm85 8085 Assembler v1.5 by nib
                    712: ;              ADDRESS OF THE OUTPUT BUFFER.
                    713: ;
                    714: HXDSP:
-029b 7a            715:         MOV     A,D      ; GET FIRST DATA BYTE
-029c 0f            716:         RRC              ; CONVERT 4 HIGH ORDER BITS
-029d 0f            717:         RRC              ; /TO A SINGLE CHARACTER
-029e 0f            718:         RRC
-029f 0f            719:         RRC
-02a0 e6 0f         720:         ANI     0FH
-02a2 21 f9 20      721:         LXI     H,OBUFF  ; GET ADDRESS OF OUTPUT BUFFER
-02a5 77            722:         MOV     M,A      ; STORE CHARACTER IN OUTPUT BUFFER
-02a6 7a            723:         MOV     A,D      ; GET FIRST DATA BYTE AND CONVERT 4 LOW ORDER
-02a7 e6 0f         724:         ANI     0FH      ; /BITS TO A SINGLE CHARACTER
-02a9 23            725:         INX     H        ; NEXT BUFFER POSITION
-02aa 77            726:         MOV     M,A      ; STORE CHARACTER IN BUFFER
-02ab 7b            727:         MOV     A,E      ; GET SECOND DATA BYTE
-02ac 0f            728:         RRC              ; CONVERT 4 HIGH ORDER BITS
-02ad 0f            729:         RRC              ; /TO A SINGLE CHARACTER
-02ae 0f            730:         RRC
-02af 0f            731:         RRC
-02b0 e6 0f         732:         ANI     0FH
-02b2 23            733:         INX     H        ; NEXT BUFFER POSITION
-02b3 77            734:         MOV     M,A      ; STORE CHARACTER IN BUFFER
-02b4 7b            735:         MOV     A,E      ; GET SECOND DATA BYTE AND CONVERT LOW ORDER
-02b5 e6 0f         736:         ANI     0FH      ; /4 BITS TO A SINGLE CHARACTER
-02b7 23            737:         INX     H        ; NEXT BUFFER POSITION
-02b8 77            738:         MOV     M,A      ; STORE CHARACTER IN BUFFER
-02b9 21 f9 20      739:         LXI     H,OBUFF  ; RETURN ADDRESS OF OUTPUT BUFFER IN H & L
-02bc c9            740:         RET
+0297 7a            715:         MOV     A,D      ; GET FIRST DATA BYTE
+0298 0f            716:         RRC              ; CONVERT 4 HIGH ORDER BITS
+0299 0f            717:         RRC              ; /TO A SINGLE CHARACTER
+029a 0f            718:         RRC
+029b 0f            719:         RRC
+029c e6 0f         720:         ANI     0FH
+029e 21 f9 20      721:         LXI     H,OBUFF  ; GET ADDRESS OF OUTPUT BUFFER
+02a1 77            722:         MOV     M,A      ; STORE CHARACTER IN OUTPUT BUFFER
+02a2 7a            723:         MOV     A,D      ; GET FIRST DATA BYTE AND CONVERT 4 LOW ORDER
+02a3 e6 0f         724:         ANI     0FH      ; /BITS TO A SINGLE CHARACTER
+02a5 23            725:         INX     H        ; NEXT BUFFER POSITION
+02a6 77            726:         MOV     M,A      ; STORE CHARACTER IN BUFFER
+02a7 7b            727:         MOV     A,E      ; GET SECOND DATA BYTE
+02a8 0f            728:         RRC              ; CONVERT 4 HIGH ORDER BITS
+02a9 0f            729:         RRC              ; /TO A SINGLE CHARACTER
+02aa 0f            730:         RRC
+02ab 0f            731:         RRC
+02ac e6 0f         732:         ANI     0FH
+02ae 23            733:         INX     H        ; NEXT BUFFER POSITION
+02af 77            734:         MOV     M,A      ; STORE CHARACTER IN BUFFER
+02b0 7b            735:         MOV     A,E      ; GET SECOND DATA BYTE AND CONVERT LOW ORDER
+02b1 e6 0f         736:         ANI     0FH      ; /4 BITS TO A SINGLE CHARACTER
+02b3 23            737:         INX     H        ; NEXT BUFFER POSITION
+02b4 77            738:         MOV     M,A      ; STORE CHARACTER IN BUFFER
+02b5 21 f9 20      739:         LXI     H,OBUFF  ; RETURN ADDRESS OF OUTPUT BUFFER IN H & L
+02b8 c9            740:         RET
                    741: ;
                    742: ;
                    743: ;
@@ -756,18 +756,18 @@ asm85 8085 Assembler v1.5 by nib
                    754: ;              RETURNS CONTROL TO THE READ KEYBOARD ROUTINE.
                    755: ;
                    756: ININT:
-02bd e5            757:         PUSH    H        ; SAVE H & L
-02be f5            758:         PUSH    PSW      ; SAVE F/F'S & REGISTER A
-02bf 21 00 19      759:         LXI     H,CNTRL  ; ADDRESS FOR CONTROL CHARACTER OUTPUT
-02c2 36 40         760:         MVI     M,READ   ; OUTPUT CONTROL CHARACTER FOR READING
+02b9 e5            757:         PUSH    H        ; SAVE H & L
+02ba f5            758:         PUSH    PSW      ; SAVE F/F'S & REGISTER A
+02bb 21 00 19      759:         LXI     H,CNTRL  ; ADDRESS FOR CONTROL CHARACTER OUTPUT
+02be 36 40         760:         MVI     M,READ   ; OUTPUT CONTROL CHARACTER FOR READING
                    761:                          ; /FROM KEYBOARD
-02c4 25            762:         DCR     H        ; ADDRESS FOR CHARACTER INPUT
-02c5 7e            763:         MOV     A,M      ; READ A CHARACTER
-02c6 e6 3f         764:         ANI     3FH      ; ZERO 2 HIGH ORDER BITS
-02c8 32 fe 20      765:         STA     IBUFF    ; STORE CHARACTER IN INPUT BUFFER
-02cb f1            766:         POP     PSW      ; RESTORE F/F'S & REGISTER A
-02cc e1            767:         POP     H        ; RESTORE H & L
-02cd c9            768:         RET
+02c0 25            762:         DCR     H        ; ADDRESS FOR CHARACTER INPUT
+02c1 7e            763:         MOV     A,M      ; READ A CHARACTER
+02c2 e6 3f         764:         ANI     3FH      ; ZERO 2 HIGH ORDER BITS
+02c4 32 fe 20      765:         STA     IBUFF    ; STORE CHARACTER IN INPUT BUFFER
+02c7 f1            766:         POP     PSW      ; RESTORE F/F'S & REGISTER A
+02c8 e1            767:         POP     H        ; RESTORE H & L
+02c9 c9            768:         RET
                    769: ;
                    770: ;
                    771: ;
@@ -784,15 +784,15 @@ asm85 8085 Assembler v1.5 by nib
                    782: ;              ZEROS IN THE HIGH ORDER 4 BITS.
                    783: ;
                    784: INSDG:
-02ce eb            785:         XCHG             ; PUT D & E IN H & L
-02cf 29            786:         DAD     H        ; SHIFT H & L LEFT 4 BITS
-02d0 29            787:         DAD     H
-02d1 29            788:         DAD     H
-02d2 29            789:         DAD     H
-02d3 85            790:         ADD     L        ; INSERT LOW ORDER DIGIT
-02d4 6f            791:         MOV     L,A
-02d5 eb            792:         XCHG             ; PUT H & L BACK IN D & E
-02d6 c9            793:         RET
+02ca eb            785:         XCHG             ; PUT D & E IN H & L
+02cb 29            786:         DAD     H        ; SHIFT H & L LEFT 4 BITS
+02cc 29            787:         DAD     H
+02cd 29            788:         DAD     H
+02ce 29            789:         DAD     H
+02cf 85            790:         ADD     L        ; INSERT LOW ORDER DIGIT
+02d0 6f            791:         MOV     L,A
+02d1 eb            792:         XCHG             ; PUT H & L BACK IN D & E
+02d2 c9            793:         RET
                    794: ;
                    795: ;
                    796: ;
@@ -810,12 +810,12 @@ asm85 8085 Assembler v1.5 by nib
                    808: ;              AND THE FUNCTION RETURNS TRUE.
                    809: ;
                    810: NXTRG:
-02d7 3a fd 20      811:         LDA     RGPTR    ; GET REGISTER POINTER
-02da fe 0c         812:         CPI     NUMRG-1  ; DOES POINTER POINT TO LAST REGISTER?
-02dc d2 26 03      813:         JNC     RETF     ; YES - UNABLE TO ADVANCE POINTER - RETURN FALSE
-02df 3c            814:         INR     A        ; NO - ADVANCE REGISTER POINTER
-02e0 32 fd 20      815:         STA     RGPTR    ; SAVE REGISTER POINTER
-02e3 c3 29 03      816:         JMP     RETT     ; RETURN TRUE
+02d3 3a fd 20      811:         LDA     RGPTR    ; GET REGISTER POINTER
+02d6 fe 0c         812:         CPI     NUMRG-1  ; DOES POINTER POINT TO LAST REGISTER?
+02d8 d2 22 03      813:         JNC     RETF     ; YES - UNABLE TO ADVANCE POINTER - RETURN FALSE
+02db 3c            814:         INR     A        ; NO - ADVANCE REGISTER POINTER
+02dc 32 fd 20      815:         STA     RGPTR    ; SAVE REGISTER POINTER
+02df c3 25 03      816:         JMP     RETT     ; RETURN TRUE
                    817: ;
                    818: ;
                    819: ;
@@ -836,40 +836,40 @@ asm85 8085 Assembler v1.5 by nib
                    834: ;              ALONG WITH THE LAST OUTPUT CHARACTER.
                    835: ;
                    836: OUTPT:
-02e6 0f            837:         RRC              ; USE DATA FIELD ?
-02e7 da f1 02      838:         JC      OUT05    ; YES - GO SET UP TO USE DATA FIELD
-02ea 0e 04         839:         MVI     C,4      ; NO - COUNT FOR ADDRESS FIELD
-02ec 3e 90         840:         MVI     A,ADISP  ; CONTROL CHARACTER FOR OUTPUT TO ADDRESS
+02e2 0f            837:         RRC              ; USE DATA FIELD ?
+02e3 da ed 02      838:         JC      OUT05    ; YES - GO SET UP TO USE DATA FIELD
+02e6 0e 04         839:         MVI     C,4      ; NO - COUNT FOR ADDRESS FIELD
+02e8 3e 90         840:         MVI     A,ADISP  ; CONTROL CHARACTER FOR OUTPUT TO ADDRESS
                    841:                          ; /FIELD OF DISPLAY
-02ee c3 f5 02      842:         JMP     OUT10
+02ea c3 f1 02      842:         JMP     OUT10
                    843: OUT05:
-02f1 0e 02         844:         MVI     C,2      ; COUNT FOR DATA FIELD
-02f3 3e 94         845:         MVI     A,DDISP  ; CONTROL CHARACTER FOR OUTPUT TO DATA FIELD
+02ed 0e 02         844:         MVI     C,2      ; COUNT FOR DATA FIELD
+02ef 3e 94         845:         MVI     A,DDISP  ; CONTROL CHARACTER FOR OUTPUT TO DATA FIELD
                    846:                          ; /OF DISPLAY
                    847: OUT10:
-02f5 32 00 19      848:         STA     CNTRL
+02f1 32 00 19      848:         STA     CNTRL
                    849: OUT15:
-02f8 7e            850:         MOV     A,M      ; GET OUTPUT CHARACTER
-02f9 eb            851:         XCHG             ; SAVE OUTPUT CHARACTER ADDRESS IN D & E
-02fa 21 b4 03      852:         LXI     H,DSPTB  ; GET DISPLAY FORMAT TABLE ADDRESS
-02fd 85            853:         ADD     L        ; USE OUTPUT CHARACTER AS A POINTER TO
-02fe 6f            854:         MOV     L,A      ; /DISPLAY FORMAT TABLE
-02ff 7e            855:         MOV     A,M      ; GET DISPLAY FORMAT CHARACTER FROM TABLE
-0300 61            856:         MOV     H,C      ; TEST COUNTER WITHOUT CHANGING IT
-0301 25            857:         DCR     H        ; IS THIS THE LAST CHARACTER ?
-0302 c2 0b 03      858:         JNZ     OUT20    ; NO - GO OUTPUT CHARACTER AS IS
-0305 05            859:         DCR     B        ; YES - IS DOT FLAG SET ?
-0306 c2 0b 03      860:         JNZ     OUT20    ; NO - GO OUTPUT CHARACTER AS IS
-0309 f6 08         861:         ORI     DTMSK    ; YES - OR IN MASK TO DISPLAY DOT WITH
+02f4 7e            850:         MOV     A,M      ; GET OUTPUT CHARACTER
+02f5 eb            851:         XCHG             ; SAVE OUTPUT CHARACTER ADDRESS IN D & E
+02f6 21 af 03      852:         LXI     H,DSPTB  ; GET DISPLAY FORMAT TABLE ADDRESS
+02f9 85            853:         ADD     L        ; USE OUTPUT CHARACTER AS A POINTER TO
+02fa 6f            854:         MOV     L,A      ; /DISPLAY FORMAT TABLE
+02fb 7e            855:         MOV     A,M      ; GET DISPLAY FORMAT CHARACTER FROM TABLE
+02fc 61            856:         MOV     H,C      ; TEST COUNTER WITHOUT CHANGING IT
+02fd 25            857:         DCR     H        ; IS THIS THE LAST CHARACTER ?
+02fe c2 07 03      858:         JNZ     OUT20    ; NO - GO OUTPUT CHARACTER AS IS
+0301 05            859:         DCR     B        ; YES - IS DOT FLAG SET ?
+0302 c2 07 03      860:         JNZ     OUT20    ; NO - GO OUTPUT CHARACTER AS IS
+0305 f6 08         861:         ORI     DTMSK    ; YES - OR IN MASK TO DISPLAY DOT WITH
                    862:                          ; /LAST CHARACTER
                    863: OUT20:
-030b 2f            864:         CMA              ; COMPLEMENT OUTPUT CHARACTER
-030c 32 00 18      865:         STA     DSPLY    ; SEND CHARACTER TO DISPLAY
-030f eb            866:         XCHG             ; RETRIEVE OUTPUT CHARACTER ADDRESS
-0310 23            867:         INX     H        ; NEXT OUTPUT CHARACTER
-0311 0d            868:         DCR     C        ; ANY MORE OUTPUT CHARACTERS ?
-0312 c2 f8 02      869:         JNZ     OUT15    ; YES - GO PROCESS ANOTHER CHARACTER
-0315 c9            870:         RET              ; NO - RETURN
+0307 2f            864:         CMA              ; COMPLEMENT OUTPUT CHARACTER
+0308 32 00 18      865:         STA     DSPLY    ; SEND CHARACTER TO DISPLAY
+030b eb            866:         XCHG             ; RETRIEVE OUTPUT CHARACTER ADDRESS
+030c 23            867:         INX     H        ; NEXT OUTPUT CHARACTER
+030d 0d            868:         DCR     C        ; ANY MORE OUTPUT CHARACTERS ?
+030e c2 f4 02      869:         JNZ     OUT15    ; YES - GO PROCESS ANOTHER CHARACTER
+0311 c9            870:         RET              ; NO - RETURN
                    871: ;
                    872: ;
                    873: ;
@@ -887,17 +887,17 @@ asm85 8085 Assembler v1.5 by nib
                    885: ;              AS OUTPUT.
                    886: ;
                    887: RDKBD:
-0316 21 fe 20      888:         LXI     H,IBUFF  ; GET INPUT BUFFER ADDRESS
-0319 7e            889:         MOV     A,M      ; GET BUFFER CONTENTS
+0312 21 fe 20      888:         LXI     H,IBUFF  ; GET INPUT BUFFER ADDRESS
+0315 7e            889:         MOV     A,M      ; GET BUFFER CONTENTS
                    890:                          ; HIGH ORDER BIT = 1 MEANS BUFFER IS EMPTY
-031a b7            891:         ORA     A        ; IS A CHARACTER AVAILABLE ?
-031b f2 22 03      892:         JP      RDK10    ; YES - EXIT FROM LOOP
-031e fb            893:         EI               ; NO - READY FOR CHARACTER FROM KEYBOARD
-031f c3 16 03      894:         JMP     RDKBD
+0316 b7            891:         ORA     A        ; IS A CHARACTER AVAILABLE ?
+0317 f2 1e 03      892:         JP      RDK10    ; YES - EXIT FROM LOOP
+031a fb            893:         EI               ; NO - READY FOR CHARACTER FROM KEYBOARD
+031b c3 12 03      894:         JMP     RDKBD
                    895: RDK10:
-0322 36 80         896:         MVI     M,EMPTY  ; SET BUFFER EMPTY FLAG
-0324 f3            897:         DI               ; RETURN WITH INTERRUPTS DISABLED
-0325 c9            898:         RET
+031e 36 80         896:         MVI     M,EMPTY  ; SET BUFFER EMPTY FLAG
+0320 f3            897:         DI               ; RETURN WITH INTERRUPTS DISABLED
+0321 c9            898:         RET
                    899: ;
                    900: ;
                    901: ;
@@ -911,9 +911,9 @@ asm85 8085 Assembler v1.5 by nib
                    909: ;              THE ROUTINE INVOKING RETF.
                    910: ;
                    911: RETF:
-0326 37            912:         STC              ; SET CARRY TRUE
-0327 3f            913:         CMC              ; COMPLEMENT CARRY TO MAKE IT FALSE
-0328 c9            914:         RET
+0322 37            912:         STC              ; SET CARRY TRUE
+0323 3f            913:         CMC              ; COMPLEMENT CARRY TO MAKE IT FALSE
+0324 c9            914:         RET
                    915: ;
                    916: ;
                    917: ;
@@ -927,8 +927,8 @@ asm85 8085 Assembler v1.5 by nib
                    925: ;              THE ROUTINE INVOKING RETT.
                    926: ;
                    927: RETT:
-0329 37            928:         STC              ; SET CARRY TRUE
-032a c9            929:         RET
+0325 37            928:         STC              ; SET CARRY TRUE
+0326 c9            929:         RET
                    930: ;
                    931: ;
                    932: ;
@@ -941,14 +941,14 @@ asm85 8085 Assembler v1.5 by nib
                    939: ;              INDICATED BY THE CURRENT REGISTER POINTER VALUE.
                    940: ;
                    941: RGLOC:
-032b 2a fd 20      942:         LHLD    RGPTR    ; GET REGISTER POINTER
-032e 26 00         943:         MVI     H,0      ; /IN H & L
-0330 01 1d 04      944:         LXI     B,RGTBL  ; GET REGISTER SAVE LOCATION TABLE ADDRESS
-0333 09            945:         DAD     B        ; POINTER INDEXES TABLE
-0334 6e            946:         MOV     L,M      ; GET LOW ORDER BYTE OF REGISTER SAVE LOC.
-0335 26 20         947:         MVI     H,(RAMST & 0FF00H) / 256 ; GET HIGH ORDER BYTE OF
+0327 2a fd 20      942:         LHLD    RGPTR    ; GET REGISTER POINTER
+032a 26 00         943:         MVI     H,0      ; /IN H & L
+032c 01 18 04      944:         LXI     B,RGTBL  ; GET REGISTER SAVE LOCATION TABLE ADDRESS
+032f 09            945:         DAD     B        ; POINTER INDEXES TABLE
+0330 6e            946:         MOV     L,M      ; GET LOW ORDER BYTE OF REGISTER SAVE LOC.
+0331 26 20         947:         MVI     H,(RAMST & 0FF00H) / 256 ; GET HIGH ORDER BYTE OF
                    948:                          ; /REGISTER SAVE LOCATION
-0337 c9            949:         RET
+0333 c9            949:         RET
                    950: ;
                    951: ;
                    952: ;
@@ -962,17 +962,17 @@ asm85 8085 Assembler v1.5 by nib
                    960: ;              REGISTER POINTER VALUE.
                    961: ;
                    962: RGNAM:
-0338 2a fd 20      963:         LHLD    RGPTR    ; GET REGISTER POINTER
-033b 26 00         964:         MVI     H,0
-033d 29            965:         DAD     H        ; MULTIPLY POINTER VALUE BY 4
-033e 29            966:         DAD     H        ; /(REGISTER NAME TABLE HAS 4 BYTE ENTRIES)
-033f 01 e9 03      967:         LXI     B,NMTBL  ; GET ADDRESS OF START OF REGISTER NAME TABLE
-0342 09            968:         DAD     B        ; ARG - ADD TABLE ADDRESS TO POINTER - RESULT IS
+0334 2a fd 20      963:         LHLD    RGPTR    ; GET REGISTER POINTER
+0337 26 00         964:         MVI     H,0
+0339 29            965:         DAD     H        ; MULTIPLY POINTER VALUE BY 4
+033a 29            966:         DAD     H        ; /(REGISTER NAME TABLE HAS 4 BYTE ENTRIES)
+033b 01 e4 03      967:         LXI     B,NMTBL  ; GET ADDRESS OF START OF REGISTER NAME TABLE
+033e 09            968:         DAD     B        ; ARG - ADD TABLE ADDRESS TO POINTER - RESULT IS
                    969:                          ; /ADDRESS OF APPROPRIATE REGISTER NAME IN H & L
-0343 af            970:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
-0344 06 00         971:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
-0346 cd e6 02      972:         CALL    OUTPT    ; OUTPUT REGISTER NAME TO ADDRESS FIELD
-0349 c9            973:         RET
+033f af            970:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
+0340 06 00         971:         MVI     B,NODOT  ; ARG - NO DOT IN ADDRESS FIELD
+0342 cd e2 02      972:         CALL    OUTPT    ; OUTPUT REGISTER NAME TO ADDRESS FIELD
+0345 c9            973:         RET
                    974: ;
                    975: ;
                    976: ;
@@ -998,33 +998,33 @@ asm85 8085 Assembler v1.5 by nib
                    996: ;              TO RESTORE REGISTERS.
                    997: ;
                    998: RSTOR:
-034a 3a f1 20      999:         LDA     ISAV     ; GET USER INTERRUPT MASK
-034d f6 18        1000:         ORI     18H      ; ENABLE SETTING OF INTERRUPT MASK AND
+0346 3a f1 20      999:         LDA     ISAV     ; GET USER INTERRUPT MASK
+0349 f6 18        1000:         ORI     18H      ; ENABLE SETTING OF INTERRUPT MASK AND
                   1001:                          ; /RESET RST7.5 FLIP FLOP
-034f d3 ff        1002:         OUT     SIM      ; RESTORE USER INTERRUPT MASK (WAS SIM)
+034b 00           1002:         NOP              ; RESTORE USER INTERRUPT MASK (WAS SIM)
                   1003:                          ; RESTORE USER INTERRUPT STATUS
-0351 3a f1 20     1004:         LDA     ISAV     ; GET USER INTERRUPT MASK
-0354 e6 08        1005:         ANI     08H      ; SHOULD USER INTERRUPTS BE ENABLED ?
-0356 ca 5d 03     1006:         JZ      RSR05    ; NO - LEAVE INTERRUPTS DISABLED
-0359 fb           1007:         EI               ; YES - ENABLE INTERRUPTS FOR USER PROGRAM
-035a c3 61 03     1008:         JMP     RSR10
+034c 3a f1 20     1004:         LDA     ISAV     ; GET USER INTERRUPT MASK
+034f e6 08        1005:         ANI     08H      ; SHOULD USER INTERRUPTS BE ENABLED ?
+0351 ca 58 03     1006:         JZ      RSR05    ; NO - LEAVE INTERRUPTS DISABLED
+0354 fb           1007:         EI               ; YES - ENABLE INTERRUPTS FOR USER PROGRAM
+0355 c3 5c 03     1008:         JMP     RSR10
                   1009: RSR05:
-035d 37           1010:         STC              ; DUMMY INSTRUCTIONS - WHEN SINGLE STEP ROUTINE
-035e d2 61 03     1011:         JNC     RSR10    ; /IS BEING USED, THE TIMER IS RUNNING AND
+0358 37           1010:         STC              ; DUMMY INSTRUCTIONS - WHEN SINGLE STEP ROUTINE
+0359 d2 5c 03     1011:         JNC     RSR10    ; /IS BEING USED, THE TIMER IS RUNNING AND
                   1012:                          ; /EXECUTE TIME FOR THIS ROUTINE MUST NOT
                   1013:                          ; /VARY.
                   1014: RSR10:
-0361 21 e9 20     1015:         LXI     H,MNSTK  ; SET MONITOR STACK POINTER TO START OF STACK
-0364 f9           1016:         SPHL             ; /WHICH IS ALSO END OF REGISTER SAVE AREA
-0365 d1           1017:         POP     D        ; RESTORE REGISTERS
-0366 c1           1018:         POP     B
-0367 f1           1019:         POP     PSW
-0368 2a f4 20     1020:         LHLD    SSAV     ; RESTORE USER STACK POINTER
-036b f9           1021:         SPHL
-036c 2a f2 20     1022:         LHLD    PSAV
-036f e5           1023:         PUSH    H        ; PUT USER PROGRAM COUNTER ON STACK
-0370 2a ef 20     1024:         LHLD    LSAV     ; RESTORE H & L REGISTERS
-0373 c9           1025:         RET              ; JUMP TO USER PROGRAM COUNTER
+035c 21 e9 20     1015:         LXI     H,MNSTK  ; SET MONITOR STACK POINTER TO START OF STACK
+035f f9           1016:         SPHL             ; /WHICH IS ALSO END OF REGISTER SAVE AREA
+0360 d1           1017:         POP     D        ; RESTORE REGISTERS
+0361 c1           1018:         POP     B
+0362 f1           1019:         POP     PSW
+0363 2a f4 20     1020:         LHLD    SSAV     ; RESTORE USER STACK POINTER
+0366 f9           1021:         SPHL
+0367 2a f2 20     1022:         LHLD    PSAV
+036a e5           1023:         PUSH    H        ; PUT USER PROGRAM COUNTER ON STACK
+036b 2a ef 20     1024:         LHLD    LSAV     ; RESTORE H & L REGISTERS
+036e c9           1025:         RET              ; JUMP TO USER PROGRAM COUNTER
                   1026: ;
                   1027: ;
                   1028: ;
@@ -1041,21 +1041,21 @@ asm85 8085 Assembler v1.5 by nib
                   1039: ;              FUNCTION RETURNS FALSE'
                   1040: ;
                   1041: SETRG:
-0374 cd 16 03     1042:         CALL    RDKBD    ; READ FROM KEYBOARD
-0377 fe 10        1043:         CPI     10H      ; IS CHARACTER A DIGIT?
-0379 d2 26 03     1044:         JNC     RETF     ; NO - RETURN FALSE - CHARACTER IS NOT A
+036f cd 12 03     1042:         CALL    RDKBD    ; READ FROM KEYBOARD
+0372 fe 10        1043:         CPI     10H      ; IS CHARACTER A DIGIT?
+0374 d2 22 03     1044:         JNC     RETF     ; NO - RETURN FALSE - CHARACTER IS NOT A
                   1045:                          ; /REGISTER DESIGNATOR
-037c d6 03        1046:         SUI     3        ; YES - TRY TO CONVERT REGISTER DESIGNATOR TO
+0377 d6 03        1046:         SUI     3        ; YES - TRY TO CONVERT REGISTER DESIGNATOR TO
                   1047:                          ; / INDEX INTO REGISTER POINTER TABLE
                   1048:                          ; WAS CONVERSION SUCCESSFUL?
-037e da 26 03     1049:         JC      RETF     ; NO - RETURN FALSE
-0381 4f           1050:         MOV     C,A      ; INDEX TO B & C
-0382 06 00        1051:         MVI     B,0      ;
-0384 21 dc 03     1052:         LXI     H,RGPTB  ; GET ADDRESS OF REGISTER POINTER TABLE
-0387 09           1053:         DAD     B        ; INDEX POINTS INTO TABLE
-0388 7e           1054:         MOV     A,M      ; GET REGISTER POINTER FROM TABLE
-0389 32 fd 20     1055:         STA     RGPTR    ; SAVE REGISTER POINTER
-038c c3 29 03     1056:         JMP     RETT     ; RETURN TRUE
+0379 da 22 03     1049:         JC      RETF     ; NO - RETURN FALSE
+037c 4f           1050:         MOV     C,A      ; INDEX TO B & C
+037d 06 00        1051:         MVI     B,0      ;
+037f 21 d7 03     1052:         LXI     H,RGPTB  ; GET ADDRESS OF REGISTER POINTER TABLE
+0382 09           1053:         DAD     B        ; INDEX POINTS INTO TABLE
+0383 7e           1054:         MOV     A,M      ; GET REGISTER POINTER FROM TABLE
+0384 32 fd 20     1055:         STA     RGPTR    ; SAVE REGISTER POINTER
+0387 c3 25 03     1056:         JMP     RETT     ; RETURN TRUE
                   1057: ;
                   1058: ;
                   1059: ;
@@ -1069,14 +1069,14 @@ asm85 8085 Assembler v1.5 by nib
                   1067: ;              THE CURRENT ADDRESS.
                   1068: ;
                   1069: UPDAD:
-038f 2a f6 20     1070:         LHLD    CURAD    ; GET CURRENT ADDRESS
-0392 eb           1071:         XCHG             ; ARG - PUT CURRENT ADDRESS IN D & E
-0393 cd 9b 02     1072:         CALL    HXDSP    ; EXPAND CURRENT ADDRESS FOR DISPLAY
+038a 2a f6 20     1070:         LHLD    CURAD    ; GET CURRENT ADDRESS
+038d eb           1071:         XCHG             ; ARG - PUT CURRENT ADDRESS IN D & E
+038e cd 97 02     1072:         CALL    HXDSP    ; EXPAND CURRENT ADDRESS FOR DISPLAY
                   1073:                          ; ARG - ADDRESS OF EXPANDED ADDRESS IS IN H & L
-0396 af           1074:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
+0391 af           1074:         XRA     A        ; ARG - USE ADDRESS FIELD OF DISPLAY
                   1075:                          ; ARG - DOT FLAG IS IN B
-0397 cd e6 02     1076:         CALL    OUTPT    ; OUTPUT CURRENT ADDRESS TO ADDRESS FIELD
-039a c9           1077:         RET
+0392 cd e2 02     1076:         CALL    OUTPT    ; OUTPUT CURRENT ADDRESS TO ADDRESS FIELD
+0395 c9           1077:         RET
                   1078: ;
                   1079: ;
                   1080: ;
@@ -1090,14 +1090,14 @@ asm85 8085 Assembler v1.5 by nib
                   1088: ;              THE CURRENT DATA BYTE.
                   1089: ;
                   1090: UPDDT:
-039b 3a f8 20     1091:         LDA     CURDT    ; GET CURRENT DATA
-039e 57           1092:         MOV     D,A      ; ARG - PUT CURRENT DATA IN D
-039f cd 9b 02     1093:         CALL    HXDSP    ; EXPAND CURRENT DATA FOR DISPLAY
+0396 3a f8 20     1091:         LDA     CURDT    ; GET CURRENT DATA
+0399 57           1092:         MOV     D,A      ; ARG - PUT CURRENT DATA IN D
+039a cd 97 02     1093:         CALL    HXDSP    ; EXPAND CURRENT DATA FOR DISPLAY
                   1094:                          ; ARG - ADDRESS OF EXPANDED DATA IS IN H & L
-03a2 3e 01        1095:         MVI     A,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
+039d 3e 01        1095:         MVI     A,DTFLD  ; ARG - USE DATA FIELD OF DISPLAY
                   1096:                          ; ARG - DOT FLAG IS IN B
-03a4 cd e6 02     1097:         CALL    OUTPT    ; OUTPUT CURRENT DATA TO DATA FIELD
-03a7 c9           1098:         RET
+039f cd e2 02     1097:         CALL    OUTPT    ; OUTPUT CURRENT DATA TO DATA FIELD
+03a2 c9           1098:         RET
                   1099: ;
                   1100: ;
                   1101: ;
@@ -1108,10 +1108,10 @@ asm85 8085 Assembler v1.5 by nib
                   1106: ; COMMAND TABLE
                   1107: ; COMMAND CHARACTERS AS RECEIVED FROM KEYBOARD
                   1108: CMDTB:
-03a8 12           1109:         DB      12H      ; GO COMMAND
-03a9 13           1110:         DB      13H      ; SUBSTITUTE MEMORY COMMAND
-03aa 14           1111:         DB      14H      ; EXAMINE REGISTERS COMMAND
-03ab 15           1112:         DB      15H      ; SINGLE STEP COMMAND
+03a3 12           1109:         DB      12H      ; GO COMMAND
+03a4 13           1110:         DB      13H      ; SUBSTITUTE MEMORY COMMAND
+03a5 14           1111:         DB      14H      ; EXAMINE REGISTERS COMMAND
+03a6 15           1112:         DB      15H      ; SINGLE STEP COMMAND
 (0004)            1113: NUMC    EQU      $-CMDTB ; NUMBER OF COMMANDS
                   1114: ;
                   1115: ;
@@ -1119,10 +1119,10 @@ asm85 8085 Assembler v1.5 by nib
                   1117: ; COMMAND ROUTINE ADDRESS TABLE
                   1118: ; (MUST BE IN REVERSE ORDER OF COMMAND TABLE)
                   1119: CMDAD:
-03ac 2a 01        1120:         DW      SSTEP    ; ADDRESS OF SINGLE STEP ROUTINE
-03ae bf 00        1121:         DW      EXAM     ; ADDRESS OF EXAMINE REGISTERS ROUTINE
-03b0 ba 01        1122:         DW      SUBST    ; ADDRESS OF SUBSTITUTE MEMORY ROUTINE
-03b2 f8 00        1123:         DW      GOCMD    ; ADDRESS OF GO ROUTINE
+03a7 28 01        1120:         DW      SSTEP    ; ADDRESS OF SINGLE STEP ROUTINE
+03a9 bd 00        1121:         DW      EXAM     ; ADDRESS OF EXAMINE REGISTERS ROUTINE
+03ab b6 01        1122:         DW      SUBST    ; ADDRESS OF SUBSTITUTE MEMORY ROUTINE
+03ad f6 00        1123:         DW      GOCMD    ; ADDRESS OF GO ROUTINE
                   1124: ;
                   1125: ;
                   1126: ;
@@ -1133,65 +1133,65 @@ asm85 8085 Assembler v1.5 by nib
                   1131: ;
                   1132: ;
 (0000)            1133: ZERO    EQU      $-DSPTB
-03b4 f3           1134:         DB      0F3H     ; 0
-03b5 60           1135:         DB      60H      ; 1
-03b6 b5           1136:         DB      0B5H     ; 2
-03b7 f4           1137:         DB      0F4H     ; 3
-03b8 66           1138:         DB      66H      ; 4
+03af f3           1134:         DB      0F3H     ; 0
+03b0 60           1135:         DB      60H      ; 1
+03b1 b5           1136:         DB      0B5H     ; 2
+03b2 f4           1137:         DB      0F4H     ; 3
+03b3 66           1138:         DB      66H      ; 4
 (0005)            1139: FIVE    EQU      $-DSPTB
 (0005)            1140: LETRS   EQU      $-DSPTB
-03b9 d6           1141:         DB      0D6H     ; 5 AND S
-03ba d7           1142:         DB      0D7H     ; 6
-03bb 70           1143:         DB      70H      ; 7
+03b4 d6           1141:         DB      0D6H     ; 5 AND S
+03b5 d7           1142:         DB      0D7H     ; 6
+03b6 70           1143:         DB      70H      ; 7
 (0008)            1144: EIGHT   EQU      $-DSPTB
-03bc f7           1145:         DB      0F7H     ; 8
-03bd 76           1146:         DB      76H      ; 9
+03b7 f7           1145:         DB      0F7H     ; 8
+03b8 76           1146:         DB      76H      ; 9
 (000a)            1147: LETRA   EQU      $-DSPTB
-03be 77           1148:         DB      77H      ; A
+03b9 77           1148:         DB      77H      ; A
 (000b)            1149: LETRB   EQU      $-DSPTB
-03bf c7           1150:         DB      0C7H     ; B (LOWER CASE)
+03ba c7           1150:         DB      0C7H     ; B (LOWER CASE)
 (000c)            1151: LETRC   EQU      $-DSPTB
-03c0 93           1152:         DB      93H      ; C
+03bb 93           1152:         DB      93H      ; C
 (000d)            1153: LETRD   EQU      $-DSPTB
-03c1 e5           1154:         DB      0E5H     ; D (LOWER CASE)
+03bc e5           1154:         DB      0E5H     ; D (LOWER CASE)
 (000e)            1155: LETRE   EQU      $-DSPTB
-03c2 97           1156:         DB      97H      ; E
+03bd 97           1156:         DB      97H      ; E
 (000f)            1157: LETRF   EQU      $-DSPTB
-03c3 17           1158:         DB      17H      ; F
+03be 17           1158:         DB      17H      ; F
 (0010)            1159: LETRH   EQU      $-DSPTB
-03c4 67           1160:         DB      67H      ; H
+03bf 67           1160:         DB      67H      ; H
 (0011)            1161: LETRL   EQU      $-DSPTB
-03c5 83           1162:         DB      83H      ; L
+03c0 83           1162:         DB      83H      ; L
 (0012)            1163: LETRP   EQU      $-DSPTB
-03c6 37           1164:         DB      37H      ; P
+03c1 37           1164:         DB      37H      ; P
 (0013)            1165: LETRI   EQU      $-DSPTB
-03c7 60           1166:         DB      60H      ; I
+03c2 60           1166:         DB      60H      ; I
 (0014)            1167: LETRR   EQU      $-DSPTB
-03c8 05           1168:         DB      05H      ; R (LOWER CASE)
+03c3 05           1168:         DB      05H      ; R (LOWER CASE)
 (0015)            1169: BLANK   EQU      $-DSPTB
-03c9 00           1170:         DB      00H      ; BLANK
+03c4 00           1170:         DB      00H      ; BLANK
                   1171: ;
                   1172: ;
                   1173: ;
                   1174: ; MESSAGES FOR OUTPUT TO DISPLAY
                   1175: ;
-03ca 15 15 15 15  1176: BLNKS:  DB       BLANK,BLANK,BLANK,BLANK ; FOR ADDRESS OR DATA FIELD
+03c5 15 15 15 15  1176: BLNKS:  DB       BLANK,BLANK,BLANK,BLANK ; FOR ADDRESS OR DATA FIELD
                   1177: 
                   1178: 
                   1179: 
-03ce 15 0e 14 14  1180: ERMSG:  DB       BLANK,LETRE,LETRR,LETRR ; ERROR MESSAGE FOR ADDR. FIELD
+03c9 15 0e 14 14  1180: ERMSG:  DB       BLANK,LETRE,LETRR,LETRR ; ERROR MESSAGE FOR ADDR. FIELD
                   1181: 
                   1182: 
                   1183: 
-03d2 0e 15 15 15  1184: EXMSG:  DB       LETRE,BLANK,BLANK,BLANK ; EXECUTION MESSAGE
+03cd 0e 15 15 15  1184: EXMSG:  DB       LETRE,BLANK,BLANK,BLANK ; EXECUTION MESSAGE
                   1185: 
                   1186: 
                   1187:                                          ; /FOR ADDRESS FIELD
-03d6 15 15 08 00  1188: SGNAD:  DB       BLANK,BLANK,EIGHT,ZERO  ; SIGN ON MESSAGE (ADDR. FIELD)
+03d1 15 15 08 00  1188: SGNAD:  DB       BLANK,BLANK,EIGHT,ZERO  ; SIGN ON MESSAGE (ADDR. FIELD)
                   1189: 
                   1190: 
                   1191: 
-03da 08 05        1192: SGNDT:  DB       EIGHT,FIVE              ; SIGN ON MESSAGE (DATA FIELD)
+03d5 08 05        1192: SGNDT:  DB       EIGHT,FIVE              ; SIGN ON MESSAGE (DATA FIELD)
                   1193: ;
                   1194: ;
                   1195: ;
@@ -1204,73 +1204,73 @@ asm85 8085 Assembler v1.5 by nib
                   1202: ; NAME TABLE (NMTBL) AND REGISTER SAVE LOCATION
                   1203: ; TABLE (RGTBL)
                   1204: ;
-03dc 06           1205:         DB      6        ; INTERRUPT MASK
-03dd 09           1206:         DB      9        ; SPH
-03de 0a           1207:         DB      10       ; SPL
-03df 0b           1208:         DB      11       ; PCH
-03e0 0c           1209:         DB      12       ; PCL
-03e1 07           1210:         DB      7        ; H
-03e2 08           1211:         DB      8        ; L
-03e3 00           1212:         DB      0        ; A
-03e4 01           1213:         DB      1        ; B
-03e5 02           1214:         DB      2        ; C
-03e6 03           1215:         DB      3        ; D
-03e7 04           1216:         DB      4        ; E
-03e8 05           1217:         DB      5        ; FLAGS
+03d7 06           1205:         DB      6        ; INTERRUPT MASK
+03d8 09           1206:         DB      9        ; SPH
+03d9 0a           1207:         DB      10       ; SPL
+03da 0b           1208:         DB      11       ; PCH
+03db 0c           1209:         DB      12       ; PCL
+03dc 07           1210:         DB      7        ; H
+03dd 08           1211:         DB      8        ; L
+03de 00           1212:         DB      0        ; A
+03df 01           1213:         DB      1        ; B
+03e0 02           1214:         DB      2        ; C
+03e1 03           1215:         DB      3        ; D
+03e2 04           1216:         DB      4        ; E
+03e3 05           1217:         DB      5        ; FLAGS
                   1218: ;
                   1219: ;
                   1220: ;
                   1221: NMTBL:           ; REGISTER NAME TABLE
                   1222:                  ; NAMES OF REGISTERS IN DISPLAY FORMAT
-03e9 15 15 15 0a  1223:         DB      BLANK,BLANK,BLANK,LETRA ; A REGISTER
+03e4 15 15 15 0a  1223:         DB      BLANK,BLANK,BLANK,LETRA ; A REGISTER
                   1224: 
                   1225: 
                   1226: 
-03ed 15 15 15 0b  1227:         DB      BLANK,BLANK,BLANK,LETRB ; B REGISTER
+03e8 15 15 15 0b  1227:         DB      BLANK,BLANK,BLANK,LETRB ; B REGISTER
                   1228: 
                   1229: 
                   1230: 
-03f1 15 15 15 0c  1231:         DB      BLANK,BLANK,BLANK,LETRC ; C REGISTER
+03ec 15 15 15 0c  1231:         DB      BLANK,BLANK,BLANK,LETRC ; C REGISTER
                   1232: 
                   1233: 
                   1234: 
-03f5 15 15 15 0d  1235:         DB      BLANK,BLANK,BLANK,LETRD ; D REGISTER
+03f0 15 15 15 0d  1235:         DB      BLANK,BLANK,BLANK,LETRD ; D REGISTER
                   1236: 
                   1237: 
                   1238: 
-03f9 15 15 15 0e  1239:         DB      BLANK,BLANK,BLANK,LETRE ; E REGISTER
+03f4 15 15 15 0e  1239:         DB      BLANK,BLANK,BLANK,LETRE ; E REGISTER
                   1240: 
                   1241: 
                   1242: 
-03fd 15 15 15 0f  1243:         DB      BLANK,BLANK,BLANK,LETRF ; FLAGS
+03f8 15 15 15 0f  1243:         DB      BLANK,BLANK,BLANK,LETRF ; FLAGS
                   1244: 
                   1245: 
                   1246: 
-0401 15 15 15 13  1247:         DB      BLANK,BLANK,BLANK,LETRI ; INTERRUPT MASK
+03fc 15 15 15 13  1247:         DB      BLANK,BLANK,BLANK,LETRI ; INTERRUPT MASK
                   1248: 
                   1249: 
                   1250: 
-0405 15 15 15 10  1251:         DB      BLANK,BLANK,BLANK,LETRH ; H REGISTER
+0400 15 15 15 10  1251:         DB      BLANK,BLANK,BLANK,LETRH ; H REGISTER
                   1252: 
                   1253: 
                   1254: 
-0409 15 15 15 11  1255:         DB      BLANK,BLANK,BLANK,LETRL ; L REGISTER
+0404 15 15 15 11  1255:         DB      BLANK,BLANK,BLANK,LETRL ; L REGISTER
                   1256: 
                   1257: 
                   1258: 
-040d 15 05 12 10  1259:         DB      BLANK,LETRS,LETRP,LETRH ; STACK POINTER HIGH ORDER BYTE
+0408 15 05 12 10  1259:         DB      BLANK,LETRS,LETRP,LETRH ; STACK POINTER HIGH ORDER BYTE
                   1260: 
                   1261: 
                   1262: 
-0411 15 05 12 11  1263:         DB      BLANK,LETRS,LETRP,LETRL ; STACK POINTER LOW ORDER BYTE
+040c 15 05 12 11  1263:         DB      BLANK,LETRS,LETRP,LETRL ; STACK POINTER LOW ORDER BYTE
                   1264: 
                   1265: 
                   1266: 
-0415 15 12 0c 10  1267:         DB      BLANK,LETRP,LETRC,LETRH ; PROGRAM COUNTER HIGH BYTE
+0410 15 12 0c 10  1267:         DB      BLANK,LETRP,LETRC,LETRH ; PROGRAM COUNTER HIGH BYTE
                   1268: 
                   1269: 
                   1270: 
-0419 15 12 0c 11  1271:         DB      BLANK,LETRP,LETRC,LETRL ; PROGRAM COUNTER LOW BYTE
+0414 15 12 0c 11  1271:         DB      BLANK,LETRP,LETRC,LETRL ; PROGRAM COUNTER LOW BYTE
                   1272: 
                   1273: 
                   1274: ;
@@ -1281,19 +1281,19 @@ asm85 8085 Assembler v1.5 by nib
                   1279: ; THE REGISTERS ARE DISPLAYED BY THE EXAMINE COMMAND
                   1280: ;
                   1281: RGTBL:
-041d ee           1282:         DB      ASAV     & 0FFH ; A REGISTER
-041e ec           1283:         DB      BSAV     & 0FFH ; B REGISTER
-041f eb           1284:         DB      CSAV     & 0FFH ; C REGISTER
-0420 ea           1285:         DB      DSAV     & 0FFH ; D REGISTER
-0421 e9           1286:         DB      ESAV     & 0FFH ; E REGISTER
-0422 ed           1287:         DB      FSAV     & 0FFH ; FLAGS
-0423 f1           1288:         DB      ISAV     & 0FFH ; INTERRUPT MASK
-0424 f0           1289:         DB      HSAV     & 0FFH ; H REGISTER
-0425 ef           1290:         DB      LSAV     & 0FFH ; L REGISTER
-0426 f5           1291:         DB      SPHSV    & 0FFH ; STACK POINTER HIGH ORDER BYTE
-0427 f4           1292:         DB      SPLSV    & 0FFH ; STACK POINTER LOW ORDER BYTE
-0428 f3           1293:         DB      PCHSV    & 0FFH ; PROGRAM COUNTER HIGH ORDER BYTE
-0429 f2           1294:         DB      PCLSV    & 0FFH ; PROGRAM COUNTER LOW ORDER BYTE
+0418 ee           1282:         DB      ASAV     & 0FFH ; A REGISTER
+0419 ec           1283:         DB      BSAV     & 0FFH ; B REGISTER
+041a eb           1284:         DB      CSAV     & 0FFH ; C REGISTER
+041b ea           1285:         DB      DSAV     & 0FFH ; D REGISTER
+041c e9           1286:         DB      ESAV     & 0FFH ; E REGISTER
+041d ed           1287:         DB      FSAV     & 0FFH ; FLAGS
+041e f1           1288:         DB      ISAV     & 0FFH ; INTERRUPT MASK
+041f f0           1289:         DB      HSAV     & 0FFH ; H REGISTER
+0420 ef           1290:         DB      LSAV     & 0FFH ; L REGISTER
+0421 f5           1291:         DB      SPHSV    & 0FFH ; STACK POINTER HIGH ORDER BYTE
+0422 f4           1292:         DB      SPLSV    & 0FFH ; STACK POINTER LOW ORDER BYTE
+0423 f3           1293:         DB      PCHSV    & 0FFH ; PROGRAM COUNTER HIGH ORDER BYTE
+0424 f2           1294:         DB      PCLSV    & 0FFH ; PROGRAM COUNTER LOW ORDER BYTE
 (000d)            1295: NUMRG   EQU      $-RGTBL          ; NUMBER OF ENTRIES IN
                   1296:                                   ; /REGISTER SAVE LOCATION TABLE
                   1297: ;
@@ -1439,14 +1439,14 @@ asm85 8085 Assembler v1.5 by nib
                   1437: ;
                   1438: ;
                   1439: GO:
-042a 21 c0 07     1440:         LXI     H,SGNON  ; GET ADDRESS OF SIGNON MESSAGE
-042d 06 12        1441:         MVI     B,LSGNON ; COUNTER FOR CHARACTERS IN MESSAGE
+0425 21 bb 07     1440:         LXI     H,SGNON  ; GET ADDRESS OF SIGNON MESSAGE
+0428 06 12        1441:         MVI     B,LSGNON ; COUNTER FOR CHARACTERS IN MESSAGE
                   1442: MSGL:
-042f 4e           1443:         MOV     C,M      ; FETCH NEXT CHAR TO C REG
-0430 cd f6 05     1444:         CALL    CO       ; SEND IT TO THE CONSOLE
-0433 23           1445:         INX     H        ; POINT TO NEXT CHARACTER
-0434 05           1446:         DCR     B        ; DECREMENT BYTE COUNTER
-0435 c2 2f 04     1447:         JNZ     MSGL     ; RETURN FOR NEXT CHARACTER
+042a 4e           1443:         MOV     C,M      ; FETCH NEXT CHAR TO C REG
+042b cd f1 05     1444:         CALL    CO       ; SEND IT TO THE CONSOLE
+042e 23           1445:         INX     H        ; POINT TO NEXT CHARACTER
+042f 05           1446:         DCR     B        ; DECREMENT BYTE COUNTER
+0430 c2 2a 04     1447:         JNZ     MSGL     ; RETURN FOR NEXT CHARACTER
                   1448: ;
                   1449: ;
                   1450: ;
@@ -1472,34 +1472,34 @@ asm85 8085 Assembler v1.5 by nib
                   1470: ;              THE ERROR HANDLER.
                   1471: ;
                   1472: GETCM:
-0438 21 e9 20     1473:         LXI     H,MNSTK  ; ALWAYS WANT TO RESET STACK PTR TO MONITOR
-043b f9           1474:         SPHL             ; /STARTING VALUE SO ROUTINES NEEDN'T CLEAN UP
-043c 0e 2e        1475:         MVI     C,'.'    ; PROMPT CHARACTER TO C
-043e cd 2c 06     1476:         CALL    ECHO     ; SEND PROMPT CHARACTER TO USER TERMINAL
-0441 c3 44 04     1477:         JMP     GTC03    ; WANT TO LEAVE ROOM FOR RST BRANCH
+0433 21 e9 20     1473:         LXI     H,MNSTK  ; ALWAYS WANT TO RESET STACK PTR TO MONITOR
+0436 f9           1474:         SPHL             ; /STARTING VALUE SO ROUTINES NEEDN'T CLEAN UP
+0437 0e 2e        1475:         MVI     C,'.'    ; PROMPT CHARACTER TO C
+0439 cd 27 06     1476:         CALL    ECHO     ; SEND PROMPT CHARACTER TO USER TERMINAL
+043c c3 3f 04     1477:         JMP     GTC03    ; WANT TO LEAVE ROOM FOR RST BRANCH
                   1478: GTC03:
-0444 cd 53 06     1479:         CALL    GETCH    ; GET COMMAND CHARACTER TO A
-0447 cd 2c 06     1480:         CALL    ECHO     ; ECHO CHARACTER TO USER
-044a 79           1481:         MOV     A,C      ; PUT COMMAND CHARACTER INTO ACCUMULATOR
-044b 01 06 00     1482:         LXI     B,NCMDS  ; C CONTAINS LOOP AND INDEX COUNT
-044e 21 e0 07     1483:         LXI     H,CTAB   ; HL POINTS INTO COMMAND TABLE
+043f cd 4e 06     1479:         CALL    GETCH    ; GET COMMAND CHARACTER TO A
+0442 cd 27 06     1480:         CALL    ECHO     ; ECHO CHARACTER TO USER
+0445 79           1481:         MOV     A,C      ; PUT COMMAND CHARACTER INTO ACCUMULATOR
+0446 01 06 00     1482:         LXI     B,NCMDS  ; C CONTAINS LOOP AND INDEX COUNT
+0449 21 db 07     1483:         LXI     H,CTAB   ; HL POINTS INTO COMMAND TABLE
                   1484: GTC05:
-0451 be           1485:         CMP     M        ; COMPARE TABLE ENTRY AND CHARACTER
-0452 ca 5d 04     1486:         JZ      GTC10    ; BRANCH IF EQUAL - COMMAND RECOGNIZED
-0455 23           1487:         INX     H        ; ELSE, INCREMENT TABLE POINTER
-0456 0d           1488:         DCR     C        ; DECREMENT LOOP COUNT
-0457 c2 51 04     1489:         JNZ     GTC05    ; BRANCH IF NOT AT TABLE END
-045a c3 45 06     1490:         JMP     ERROR    ; ELSE, COMMAND CHARACTER IS ILLEGAL
+044c be           1485:         CMP     M        ; COMPARE TABLE ENTRY AND CHARACTER
+044d ca 58 04     1486:         JZ      GTC10    ; BRANCH IF EQUAL - COMMAND RECOGNIZED
+0450 23           1487:         INX     H        ; ELSE, INCREMENT TABLE POINTER
+0451 0d           1488:         DCR     C        ; DECREMENT LOOP COUNT
+0452 c2 4c 04     1489:         JNZ     GTC05    ; BRANCH IF NOT AT TABLE END
+0455 c3 40 06     1490:         JMP     ERROR    ; ELSE, COMMAND CHARACTER IS ILLEGAL
                   1491: GTC10:
-045d 21 d2 07     1492:         LXI     H,CADR   ; IF GOOD COMMAND, LOAD ADDRESS OF TABLE
+0458 21 cd 07     1492:         LXI     H,CADR   ; IF GOOD COMMAND, LOAD ADDRESS OF TABLE
                   1493:                          ; /OF COMMAND ROUTINE ADDRESSES
-0460 09           1494:         DAD     B        ; ADD WHAT IS LEFT OF LOOP COUNT
-0461 09           1495:         DAD     B        ; ADD AGAIN - EACH ENTRY IN CADR IS 2 BYTES LONG
-0462 7e           1496:         MOV     A,M      ; GET LSP OF ADDRESS OF TABLE ENTRY TO A
-0463 23           1497:         INX     H        ; POINT TO NEXT BYTE IN TABLE
-0464 66           1498:         MOV     H,M      ; GET MSP OF ADDRESS OF TABLE ENTRY TO H
-0465 6f           1499:         MOV     L,A      ; PUT LSP OF ADDRESS OF TABLE ENTRY INTO L
-0466 e9           1500:         PCHL             ; NEXT INSTRUCTION COMES FROM COMMAND ROUTINE
+045b 09           1494:         DAD     B        ; ADD WHAT IS LEFT OF LOOP COUNT
+045c 09           1495:         DAD     B        ; ADD AGAIN - EACH ENTRY IN CADR IS 2 BYTES LONG
+045d 7e           1496:         MOV     A,M      ; GET LSP OF ADDRESS OF TABLE ENTRY TO A
+045e 23           1497:         INX     H        ; POINT TO NEXT BYTE IN TABLE
+045f 66           1498:         MOV     H,M      ; GET MSP OF ADDRESS OF TABLE ENTRY TO H
+0460 6f           1499:         MOV     L,A      ; PUT LSP OF ADDRESS OF TABLE ENTRY INTO L
+0461 e9           1500:         PCHL             ; NEXT INSTRUCTION COMES FROM COMMAND ROUTINE
                   1501: ;
                   1502: ;
                   1503: ;
@@ -1519,33 +1519,33 @@ asm85 8085 Assembler v1.5 by nib
                   1517: ; DESCRIPTION: DCMD IMPLEMENTS THE DISPLAY MEMORY (D) COMMAND
                   1518: ;
                   1519: DCMD:
-0467 0e 02        1520:         MVI     C,2      ; GET 2 NUMBERS FROM INPUT STREAM
-0469 cd 8f 06     1521:         CALL    GETNM
-046c d1           1522:         POP     D        ; ENDING ADDRESS TO DE
-046d e1           1523:         POP     H        ; STARTING ADDRESS TO HL
+0462 0e 02        1520:         MVI     C,2      ; GET 2 NUMBERS FROM INPUT STREAM
+0464 cd 8a 06     1521:         CALL    GETNM
+0467 d1           1522:         POP     D        ; ENDING ADDRESS TO DE
+0468 e1           1523:         POP     H        ; STARTING ADDRESS TO HL
                   1524: DCM05:
-046e cd 1f 06     1525:         CALL    CROUT    ; ECHO CARRIAGE RETURN/LINE FEED
-0471 7c           1526:         MOV     A,H      ; DISPLAY ADDRESS OF FIRST LOCATION IN LINE
-0472 cd fb 06     1527:         CALL    NMOUT
-0475 7d           1528:         MOV     A,L      ; ADDRESS IS 2 BYTES LONG
-0476 cd fb 06     1529:         CALL    NMOUT
+0469 cd 1a 06     1525:         CALL    CROUT    ; ECHO CARRIAGE RETURN/LINE FEED
+046c 7c           1526:         MOV     A,H      ; DISPLAY ADDRESS OF FIRST LOCATION IN LINE
+046d cd f6 06     1527:         CALL    NMOUT
+0470 7d           1528:         MOV     A,L      ; ADDRESS IS 2 BYTES LONG
+0471 cd f6 06     1529:         CALL    NMOUT
                   1530: DCM10:
-0479 0e 20        1531:         MVI     C,' '
-047b cd 2c 06     1532:         CALL    ECHO     ; USE BLANK AS SEPARATOR
-047e 7e           1533:         MOV     A,M      ; GET CONTENTS OF NEXT MEMORY LOCATION
-047f cd fb 06     1534:         CALL    NMOUT    ; DISPLAY CONTENTS
-0482 cd d4 06     1535:         CALL    HILO     ; SEE IF ADDRESS OF DISPLAYED LOCATION IS
+0474 0e 20        1531:         MVI     C,' '
+0476 cd 27 06     1532:         CALL    ECHO     ; USE BLANK AS SEPARATOR
+0479 7e           1533:         MOV     A,M      ; GET CONTENTS OF NEXT MEMORY LOCATION
+047a cd f6 06     1534:         CALL    NMOUT    ; DISPLAY CONTENTS
+047d cd cf 06     1535:         CALL    HILO     ; SEE IF ADDRESS OF DISPLAYED LOCATION IS
                   1536:                          ; /GREATER THAN OR EQUAL TO ENDING ADDRESS
-0485 d2 8e 04     1537:         JNC     DCM15    ; IF NOT, MORE TO DISPLAY
-0488 cd 1f 06     1538:         CALL    CROUT    ; CARRIAGE RETURN/LINE FEED TO END LINE
-048b c3 38 04     1539:         JMP     GETCM    ; ALL DONE
+0480 d2 89 04     1537:         JNC     DCM15    ; IF NOT, MORE TO DISPLAY
+0483 cd 1a 06     1538:         CALL    CROUT    ; CARRIAGE RETURN/LINE FEED TO END LINE
+0486 c3 33 04     1539:         JMP     GETCM    ; ALL DONE
                   1540: DCM15:
-048e 23           1541:         INX     H        ; IF MORE TO GO, POINT TO NEXT LOC TO DISPLAY
-048f 7d           1542:         MOV     A,L      ; GET LOW ORDER BITS OF NEW ADDRESS
-0490 e6 0f        1543:         ANI     NEWLN    ; SEE IF LAST HEX DIGIT OF ADDRESS DENOTES
+0489 23           1541:         INX     H        ; IF MORE TO GO, POINT TO NEXT LOC TO DISPLAY
+048a 7d           1542:         MOV     A,L      ; GET LOW ORDER BITS OF NEW ADDRESS
+048b e6 0f        1543:         ANI     NEWLN    ; SEE IF LAST HEX DIGIT OF ADDRESS DENOTES
                   1544:                          ; /START OF NEW LINE
-0492 c2 79 04     1545:         JNZ     DCM10    ; NO - NOT AT END OF LINE
-0495 c3 6e 04     1546:         JMP     DCM05    ; YES - START NEW LINE WITH ADDRESS
+048d c2 74 04     1545:         JNZ     DCM10    ; NO - NOT AT END OF LINE
+0490 c3 69 04     1546:         JMP     DCM05    ; YES - START NEW LINE WITH ADDRESS
                   1547: ;
                   1548: ;
                   1549: ;
@@ -1559,22 +1559,22 @@ asm85 8085 Assembler v1.5 by nib
                   1557: ; DESCRIPTION: GCMD IMPLEMENTS THE BEGIN EXECUTION (G) COMMAND.
                   1558: ;
                   1559: GCMD:
-0498 cd 5a 06     1560:         CALL    GETHX    ; GET ADDRESS (IF PRESENT) FROM INPUT STREAM
-049b d2 ad 04     1561:         JNC     GCM05    ; BRANCH IF NO NUMBER PRESENT
-049e 7a           1562:         MOV     A,D      ; ELSE, GET TERMINATOR
-049f fe 0d        1563:         CPI     CR       ; SEE IF CARRIAGE RETURN
-04a1 c2 45 06     1564:         JNZ     ERROR    ; ERROR IF NOT PROPERLY TERMINATED
-04a4 21 f2 20     1565:         LXI     H,PSAV   ; WANT NUMBER TO REPLACE SAVE PGM COUNTER
-04a7 71           1566:         MOV     M,C
-04a8 23           1567:         INX     H
-04a9 70           1568:         MOV     M,B
-04aa c3 b3 04     1569:         JMP     GCM10
+0493 cd 55 06     1560:         CALL    GETHX    ; GET ADDRESS (IF PRESENT) FROM INPUT STREAM
+0496 d2 a8 04     1561:         JNC     GCM05    ; BRANCH IF NO NUMBER PRESENT
+0499 7a           1562:         MOV     A,D      ; ELSE, GET TERMINATOR
+049a fe 0d        1563:         CPI     CR       ; SEE IF CARRIAGE RETURN
+049c c2 40 06     1564:         JNZ     ERROR    ; ERROR IF NOT PROPERLY TERMINATED
+049f 21 f2 20     1565:         LXI     H,PSAV   ; WANT NUMBER TO REPLACE SAVE PGM COUNTER
+04a2 71           1566:         MOV     M,C
+04a3 23           1567:         INX     H
+04a4 70           1568:         MOV     M,B
+04a5 c3 ae 04     1569:         JMP     GCM10
                   1570: GCM05:
-04ad 7a           1571:         MOV     A,D      ; IF NO STARTING ADDRESS, MAKE SURE THAT
-04ae fe 0d        1572:         CPI     CR       ; /CARRIAGE RETURN TERMINATED COMMAND
-04b0 c2 45 06     1573:         JNZ     ERROR    ; ERROR IF NOT
+04a8 7a           1571:         MOV     A,D      ; IF NO STARTING ADDRESS, MAKE SURE THAT
+04a9 fe 0d        1572:         CPI     CR       ; /CARRIAGE RETURN TERMINATED COMMAND
+04ab c2 40 06     1573:         JNZ     ERROR    ; ERROR IF NOT
                   1574: GCM10:
-04b3 c3 4a 03     1575:         JMP     RSTOR    ; RESTORE REGISTERS AND BEGIN EXECUTION
+04ae c3 46 03     1575:         JMP     RSTOR    ; RESTORE REGISTERS AND BEGIN EXECUTION
                   1576:                          ; (RSTOR IS IN KEYBOARD MONITOR)
                   1577: ;
                   1578: ;
@@ -1589,40 +1589,40 @@ asm85 8085 Assembler v1.5 by nib
                   1587: ; DESCRIPTION: ICMD IMPLEMENTS THE INSERT CODE INTO MEMORY (I) COMMAND.
                   1588: ;
                   1589: ICMD:
-04b6 0e 01        1590:         MVI     C,1
-04b8 cd 8f 06     1591:         CALL    GETNM    ; GET SINGLE NUMBER FROM INPUT STREAM
-04bb 3e ff        1592:         MVI     A,UPPER
-04bd 32 fd 20     1593:         STA     TEMP     ; TEMP WILL HOLD THE UPPER/LOWER HALF BYTE FLAG
-04c0 d1           1594:         POP     D        ; ADDRESS OF START TO DE
+04b1 0e 01        1590:         MVI     C,1
+04b3 cd 8a 06     1591:         CALL    GETNM    ; GET SINGLE NUMBER FROM INPUT STREAM
+04b6 3e ff        1592:         MVI     A,UPPER
+04b8 32 fd 20     1593:         STA     TEMP     ; TEMP WILL HOLD THE UPPER/LOWER HALF BYTE FLAG
+04bb d1           1594:         POP     D        ; ADDRESS OF START TO DE
                   1595: ICM05:
-04c1 cd 53 06     1596:         CALL    GETCH    ; GET A CHARACTER FROM INPUT STREAM
-04c4 4f           1597:         MOV     C,A
-04c5 cd 2c 06     1598:         CALL    ECHO     ; ECHO IT
-04c8 79           1599:         MOV     A,C      ; PUT CHARACTER BACK INTO A
-04c9 fe 1b        1600:         CPI     TERM     ; SEE IF CHARACTER IS A TERMINATING CHARACTER
-04cb ca f7 04     1601:         JZ      ICM25    ; IF SO, ALL DONE ENTERING CHARACTERS
-04ce cd ad 07     1602:         CALL    VALDL    ; ELSE, SEE IF VALID DELIMITER
-04d1 da c1 04     1603:         JC      ICM05    ; IF SO SIMPLY IGNORE THIS CHARACTER
-04d4 cd 92 07     1604:         CALL    VALDG    ; ELSE, CHECK TO SEE IF VALID HEX DIGIT
-04d7 d2 f1 04     1605:         JNC     ICM20    ; IF NOT, BRANCH TO HANDLE ERROR CONDITION
-04da cd ed 05     1606:         CALL    CNVBN    ; CONVERT DIGIT TO BINARY
-04dd 4f           1607:         MOV     C,A      ; MOVE RESULT TO C
-04de cd 73 07     1608:         CALL    STHLF    ; STORE IN APPROPRIATE HALF WORD
-04e1 3a fd 20     1609:         LDA     TEMP     ; GET HALF BYTE FLAG
-04e4 b7           1610:         ORA     A        ; SET F/F'S
-04e5 c2 e9 04     1611:         JNZ     ICM10    ; BRANCH IF FLAG SET FOR UPPER
-04e8 13           1612:         INX     D        ; IF LOWER, INC ADDRESS OF BYTE TO STORE IN
+04bc cd 4e 06     1596:         CALL    GETCH    ; GET A CHARACTER FROM INPUT STREAM
+04bf 4f           1597:         MOV     C,A
+04c0 cd 27 06     1598:         CALL    ECHO     ; ECHO IT
+04c3 79           1599:         MOV     A,C      ; PUT CHARACTER BACK INTO A
+04c4 fe 1b        1600:         CPI     TERM     ; SEE IF CHARACTER IS A TERMINATING CHARACTER
+04c6 ca f2 04     1601:         JZ      ICM25    ; IF SO, ALL DONE ENTERING CHARACTERS
+04c9 cd a8 07     1602:         CALL    VALDL    ; ELSE, SEE IF VALID DELIMITER
+04cc da bc 04     1603:         JC      ICM05    ; IF SO SIMPLY IGNORE THIS CHARACTER
+04cf cd 8d 07     1604:         CALL    VALDG    ; ELSE, CHECK TO SEE IF VALID HEX DIGIT
+04d2 d2 ec 04     1605:         JNC     ICM20    ; IF NOT, BRANCH TO HANDLE ERROR CONDITION
+04d5 cd e8 05     1606:         CALL    CNVBN    ; CONVERT DIGIT TO BINARY
+04d8 4f           1607:         MOV     C,A      ; MOVE RESULT TO C
+04d9 cd 6e 07     1608:         CALL    STHLF    ; STORE IN APPROPRIATE HALF WORD
+04dc 3a fd 20     1609:         LDA     TEMP     ; GET HALF BYTE FLAG
+04df b7           1610:         ORA     A        ; SET F/F'S
+04e0 c2 e4 04     1611:         JNZ     ICM10    ; BRANCH IF FLAG SET FOR UPPER
+04e3 13           1612:         INX     D        ; IF LOWER, INC ADDRESS OF BYTE TO STORE IN
                   1613: ICM10:
-04e9 ee ff        1614:         XRI     INVRT    ; TOGGLE STATE OF FLAG
-04eb 32 fd 20     1615:         STA     TEMP     ; PUT NEW VALUE OF FLAG BACK
-04ee c3 c1 04     1616:         JMP     ICM05    ; PROCESS NEXT DIGIT
+04e4 ee ff        1614:         XRI     INVRT    ; TOGGLE STATE OF FLAG
+04e6 32 fd 20     1615:         STA     TEMP     ; PUT NEW VALUE OF FLAG BACK
+04e9 c3 bc 04     1616:         JMP     ICM05    ; PROCESS NEXT DIGIT
                   1617: ICM20:
-04f1 cd 68 07     1618:         CALL    STHF0    ; ILLEGAL CHARACTER
-04f4 c3 45 06     1619:         JMP     ERROR    ; MAKE SURE ENTIRE BYTE FILLED THEN ERROR
+04ec cd 63 07     1618:         CALL    STHF0    ; ILLEGAL CHARACTER
+04ef c3 40 06     1619:         JMP     ERROR    ; MAKE SURE ENTIRE BYTE FILLED THEN ERROR
                   1620: ICM25:
-04f7 cd 68 07     1621:         CALL    STHF0    ; HERE FOR ESCAPE CHARACTER - INPUT IS DONE
-04fa cd 1f 06     1622:         CALL    CROUT    ; ADD CARRIAGE RETURN
-04fd c3 38 04     1623:         JMP     GETCM
+04f2 cd 63 07     1621:         CALL    STHF0    ; HERE FOR ESCAPE CHARACTER - INPUT IS DONE
+04f5 cd 1a 06     1622:         CALL    CROUT    ; ADD CARRIAGE RETURN
+04f8 c3 33 04     1623:         JMP     GETCM
                   1624: ;
                   1625: ;
                   1626: ;
@@ -1636,28 +1636,28 @@ asm85 8085 Assembler v1.5 by nib
                   1634: ; DESCRIPTION: MCMD IMPLEMENTS THE MOVE DATA IN MEMORY (M) COMMAND.
                   1635: ;
                   1636: MCMD:
-0500 0e 03        1637:         MVI     C,3
-0502 cd 8f 06     1638:         CALL    GETNM    ; GET 3 NUMBERS FROM INPUT STREAM
-0505 c1           1639:         POP     B        ; DESTINATION ADDRESS TO BC
-0506 e1           1640:         POP     H        ; ENDING ADDRESS TO HL
-0507 d1           1641:         POP     D        ; STARTING ADDRESS TO DE
+04fb 0e 03        1637:         MVI     C,3
+04fd cd 8a 06     1638:         CALL    GETNM    ; GET 3 NUMBERS FROM INPUT STREAM
+0500 c1           1639:         POP     B        ; DESTINATION ADDRESS TO BC
+0501 e1           1640:         POP     H        ; ENDING ADDRESS TO HL
+0502 d1           1641:         POP     D        ; STARTING ADDRESS TO DE
                   1642: MCM05:
-0508 e5           1643:         PUSH    H        ; SAVE ENDING ADDRESS
-0509 62           1644:         MOV     H,D
-050a 6b           1645:         MOV     L,E      ; SOURCE ADDRESS TO HL
-050b 7e           1646:         MOV     A,M      ; GET SOURCE BYTE
-050c 60           1647:         MOV     H,B
-050d 69           1648:         MOV     L,C      ; DESTINATION ADDRESS TO HL
-050e 77           1649:         MOV     M,A      ; MOVE BYTE TO DESTINATION
-050f 03           1650:         INX     B        ; INCREMENT DESTINATION ADDRESS
-0510 78           1651:         MOV     A,B
-0511 b1           1652:         ORA     C        ; TEST FOR DESTINATION ADDRESS OVERFLOW
-0512 ca 38 04     1653:         JZ      GETCM    ; IF SO, CAN TERMINATE COMMAND
-0515 13           1654:         INX     D        ; INCREMENT SOURCE ADDRESS
-0516 e1           1655:         POP     H        ; ELSE, GET BACK ENDING ADDRESS
-0517 cd d4 06     1656:         CALL    HILO     ; SEE IF ENDING ADDR>=SOURCE ADDR
-051a d2 38 04     1657:         JNC     GETCM    ; IF NOT, COMMAND IS DONE
-051d c3 08 05     1658:         JMP     MCM05    ; MOVE ANOTHER BYTE
+0503 e5           1643:         PUSH    H        ; SAVE ENDING ADDRESS
+0504 62           1644:         MOV     H,D
+0505 6b           1645:         MOV     L,E      ; SOURCE ADDRESS TO HL
+0506 7e           1646:         MOV     A,M      ; GET SOURCE BYTE
+0507 60           1647:         MOV     H,B
+0508 69           1648:         MOV     L,C      ; DESTINATION ADDRESS TO HL
+0509 77           1649:         MOV     M,A      ; MOVE BYTE TO DESTINATION
+050a 03           1650:         INX     B        ; INCREMENT DESTINATION ADDRESS
+050b 78           1651:         MOV     A,B
+050c b1           1652:         ORA     C        ; TEST FOR DESTINATION ADDRESS OVERFLOW
+050d ca 33 04     1653:         JZ      GETCM    ; IF SO, CAN TERMINATE COMMAND
+0510 13           1654:         INX     D        ; INCREMENT SOURCE ADDRESS
+0511 e1           1655:         POP     H        ; ELSE, GET BACK ENDING ADDRESS
+0512 cd cf 06     1656:         CALL    HILO     ; SEE IF ENDING ADDR>=SOURCE ADDR
+0515 d2 33 04     1657:         JNC     GETCM    ; IF NOT, COMMAND IS DONE
+0518 c3 03 05     1658:         JMP     MCM05    ; MOVE ANOTHER BYTE
                   1659: ;
                   1660: ;
                   1661: ;
@@ -1671,26 +1671,26 @@ asm85 8085 Assembler v1.5 by nib
                   1669: ; DESCRIPTION: SCMD IMPLEMENTS THE SUBSTITUTE INTO MEMORY (S) COMMAND.
                   1670: ;
                   1671: SCMD:
-0520 cd 5a 06     1672:         CALL    GETHX    ; GET A NUMBER, IF PRESENT, FROM INPUT
-0523 c5           1673:         PUSH    B
-0524 e1           1674:         POP     H        ; GET NUMBER TO HL - DENOTES MEMORY LOCATION
+051b cd 55 06     1672:         CALL    GETHX    ; GET A NUMBER, IF PRESENT, FROM INPUT
+051e c5           1673:         PUSH    B
+051f e1           1674:         POP     H        ; GET NUMBER TO HL - DENOTES MEMORY LOCATION
                   1675: SCM05:
-0525 7a           1676:         MOV     A,D      ; GET TERMINATOR
-0526 fe 20        1677:         CPI     ' '      ; SEE IF SPACE
-0528 ca 30 05     1678:         JZ      SCM10    ; YES - CONTINUE PROCESSING
-052b fe 2c        1679:         CPI     ','      ; ELSE, SEE IF COMMA
-052d c2 38 04     1680:         JNZ     GETCM    ; NO - TERMINATE COMMAND
+0520 7a           1676:         MOV     A,D      ; GET TERMINATOR
+0521 fe 20        1677:         CPI     ' '      ; SEE IF SPACE
+0523 ca 2b 05     1678:         JZ      SCM10    ; YES - CONTINUE PROCESSING
+0526 fe 2c        1679:         CPI     ','      ; ELSE, SEE IF COMMA
+0528 c2 33 04     1680:         JNZ     GETCM    ; NO - TERMINATE COMMAND
                   1681: SCM10:
-0530 7e           1682:         MOV     A,M      ; GET CONTENTS OF SPECIFIED LOCATION TO A
-0531 cd fb 06     1683:         CALL    NMOUT    ; DISPLAY CONTENTS ON CONSOLE
-0534 0e 2d        1684:         MVI     C,'-'
-0536 cd 2c 06     1685:         CALL    ECHO     ; USE DASH FOR SEPARATOR
-0539 cd 5a 06     1686:         CALL    GETHX    ; GET NEW VALUE FOR MEMORY LOCATION, IF ANY
-053c d2 40 05     1687:         JNC     SCM15    ; IF NO VALUE PRESENT, BRANCH
-053f 71           1688:         MOV     M,C      ; ELSE, STORE LOWER 8 BITS OF NUMBER ENTERED
+052b 7e           1682:         MOV     A,M      ; GET CONTENTS OF SPECIFIED LOCATION TO A
+052c cd f6 06     1683:         CALL    NMOUT    ; DISPLAY CONTENTS ON CONSOLE
+052f 0e 2d        1684:         MVI     C,'-'
+0531 cd 27 06     1685:         CALL    ECHO     ; USE DASH FOR SEPARATOR
+0534 cd 55 06     1686:         CALL    GETHX    ; GET NEW VALUE FOR MEMORY LOCATION, IF ANY
+0537 d2 3b 05     1687:         JNC     SCM15    ; IF NO VALUE PRESENT, BRANCH
+053a 71           1688:         MOV     M,C      ; ELSE, STORE LOWER 8 BITS OF NUMBER ENTERED
                   1689: SCM15:
-0540 23           1690:         INX     H        ; INCREMENT ADDRESS OF MEMORY LOCATION TO VIEW
-0541 c3 25 05     1691:         JMP     SCM05
+053b 23           1690:         INX     H        ; INCREMENT ADDRESS OF MEMORY LOCATION TO VIEW
+053c c3 20 05     1691:         JMP     SCM05
                   1692: ;
                   1693: ;
                   1694: ;
@@ -1705,80 +1705,80 @@ asm85 8085 Assembler v1.5 by nib
                   1703: ;              COMMAND.
                   1704: ;
                   1705: XCMD:
-0544 cd 53 06     1706:         CALL    GETCH    ; GET REGISTER IDENTIFIER
-0547 4f           1707:         MOV     C,A
-0548 cd 2c 06     1708:         CALL    ECHO     ; ECHO IT
-054b 79           1709:         MOV     A,C
-054c fe 0d        1710:         CPI     CR
-054e c2 57 05     1711:         JNZ     XCM05    ; BRANCH IF NOT CARRIAGE RETURN
-0551 cd 1e 07     1712:         CALL    REGDS    ; ELSE, DISPLAY REGISTER CONTENTS
-0554 c3 38 04     1713:         JMP     GETCM    ; THEN TERMINATE COMMAND
+053f cd 4e 06     1706:         CALL    GETCH    ; GET REGISTER IDENTIFIER
+0542 4f           1707:         MOV     C,A
+0543 cd 27 06     1708:         CALL    ECHO     ; ECHO IT
+0546 79           1709:         MOV     A,C
+0547 fe 0d        1710:         CPI     CR
+0549 c2 52 05     1711:         JNZ     XCM05    ; BRANCH IF NOT CARRIAGE RETURN
+054c cd 19 07     1712:         CALL    REGDS    ; ELSE, DISPLAY REGISTER CONTENTS
+054f c3 33 04     1713:         JMP     GETCM    ; THEN TERMINATE COMMAND
                   1714: XCM05:
-0557 4f           1715:         MOV     C,A      ; GET REGISTER IDENTIFIER TO C
-0558 cd 4f 07     1716:         CALL    RGADR    ; CONVERT IDENTIFIER INTO RTAB TABLE ADDR
-055b c5           1717:         PUSH    B
-055c e1           1718:         POP     H        ; PUT POINTER TO REGISTER ENTRY INTO HL
-055d 0e 20        1719:         MVI     C,' '
-055f cd 2c 06     1720:         CALL    ECHO     ; ECHO SPACE TO USER
-0562 79           1721:         MOV     A,C
-0563 32 fd 20     1722:         STA     TEMP     ; PUT SPACE INTO TEMP AS DELIMITER
+0552 4f           1715:         MOV     C,A      ; GET REGISTER IDENTIFIER TO C
+0553 cd 4a 07     1716:         CALL    RGADR    ; CONVERT IDENTIFIER INTO RTAB TABLE ADDR
+0556 c5           1717:         PUSH    B
+0557 e1           1718:         POP     H        ; PUT POINTER TO REGISTER ENTRY INTO HL
+0558 0e 20        1719:         MVI     C,' '
+055a cd 27 06     1720:         CALL    ECHO     ; ECHO SPACE TO USER
+055d 79           1721:         MOV     A,C
+055e 32 fd 20     1722:         STA     TEMP     ; PUT SPACE INTO TEMP AS DELIMITER
                   1723: XCM10:
-0566 3a fd 20     1724:         LDA     TEMP     ; GET TERMINATOR
-0569 fe 20        1725:         CPI     ' '      ; SEE IF A BLANK
-056b ca 73 05     1726:         JZ      XCM15    ; YES - GO CHECK POINTER INTO TABLE
-056e fe 2c        1727:         CPI     ','      ; NO - SEE IF COMMA
-0570 c2 38 04     1728:         JNZ     GETCM    ; NO - MUST BE CARRIAGE RETURN TO END COMMAND
+0561 3a fd 20     1724:         LDA     TEMP     ; GET TERMINATOR
+0564 fe 20        1725:         CPI     ' '      ; SEE IF A BLANK
+0566 ca 6e 05     1726:         JZ      XCM15    ; YES - GO CHECK POINTER INTO TABLE
+0569 fe 2c        1727:         CPI     ','      ; NO - SEE IF COMMA
+056b c2 33 04     1728:         JNZ     GETCM    ; NO - MUST BE CARRIAGE RETURN TO END COMMAND
                   1729: XCM15:
-0573 7e           1730:         MOV     A,M
-0574 b7           1731:         ORA     A        ; SET F/F'S
-0575 c2 7e 05     1732:         JNZ     XCM18    ; BRANCH IF NOT AT END OF TABLE
-0578 cd 1f 06     1733:         CALL    CROUT    ; ELSE, OUTPUT CARRIAGE RETURN LINE FEED
-057b c3 38 04     1734:         JMP     GETCM    ; AND EXIT
+056e 7e           1730:         MOV     A,M
+056f b7           1731:         ORA     A        ; SET F/F'S
+0570 c2 79 05     1732:         JNZ     XCM18    ; BRANCH IF NOT AT END OF TABLE
+0573 cd 1a 06     1733:         CALL    CROUT    ; ELSE, OUTPUT CARRIAGE RETURN LINE FEED
+0576 c3 33 04     1734:         JMP     GETCM    ; AND EXIT
                   1735: XCM18:
-057e e5           1736:         PUSH    H        ; PUT POINTER ON STACK
-057f 5e           1737:         MOV     E,M
-0580 16 20        1738:         MVI     D,(RAMST & 0FF00H) / 256 ; ADDRESS OF SAVE LOCATION FROM TABLE
-0582 23           1739:         INX     H
-0583 46           1740:         MOV     B,M      ; FETCH LENGTH FLAG FROM TABLE
-0584 d5           1741:         PUSH    D        ; SAVE ADDRESS OF SAVE LOCATION
-0585 d5           1742:         PUSH    D
-0586 e1           1743:         POP     H        ; MOVE ADDRESS TO HL
-0587 c5           1744:         PUSH    B        ; SAVE LENGTH FLAG
-0588 7e           1745:         MOV     A,M      ; GET 8 BITS OF REGISTER FROM SAVE LOCATION
-0589 cd fb 06     1746:         CALL    NMOUT    ; DISPLAY IT
-058c f1           1747:         POP     PSW      ; GET BACK LENGTH FLAG
-058d f5           1748:         PUSH    PSW      ; SAVE IT AGAIN
-058e b7           1749:         ORA     A        ; SET F/F'S
-058f ca 97 05     1750:         JZ      XCM20    ; IF 8 BIT REGISTER, NOTHING MORE TO DISPLAY
-0592 2b           1751:         DCX     H        ; ELSE, FOR 16 BIT REGISTER, GET LOWER 8 BITS
-0593 7e           1752:         MOV     A,M
-0594 cd fb 06     1753:         CALL    NMOUT    ; DISPLAY THEM
+0579 e5           1736:         PUSH    H        ; PUT POINTER ON STACK
+057a 5e           1737:         MOV     E,M
+057b 16 20        1738:         MVI     D,(RAMST & 0FF00H) / 256 ; ADDRESS OF SAVE LOCATION FROM TABLE
+057d 23           1739:         INX     H
+057e 46           1740:         MOV     B,M      ; FETCH LENGTH FLAG FROM TABLE
+057f d5           1741:         PUSH    D        ; SAVE ADDRESS OF SAVE LOCATION
+0580 d5           1742:         PUSH    D
+0581 e1           1743:         POP     H        ; MOVE ADDRESS TO HL
+0582 c5           1744:         PUSH    B        ; SAVE LENGTH FLAG
+0583 7e           1745:         MOV     A,M      ; GET 8 BITS OF REGISTER FROM SAVE LOCATION
+0584 cd f6 06     1746:         CALL    NMOUT    ; DISPLAY IT
+0587 f1           1747:         POP     PSW      ; GET BACK LENGTH FLAG
+0588 f5           1748:         PUSH    PSW      ; SAVE IT AGAIN
+0589 b7           1749:         ORA     A        ; SET F/F'S
+058a ca 92 05     1750:         JZ      XCM20    ; IF 8 BIT REGISTER, NOTHING MORE TO DISPLAY
+058d 2b           1751:         DCX     H        ; ELSE, FOR 16 BIT REGISTER, GET LOWER 8 BITS
+058e 7e           1752:         MOV     A,M
+058f cd f6 06     1753:         CALL    NMOUT    ; DISPLAY THEM
                   1754: XCM20:
-0597 0e 2d        1755:         MVI     C,'-'
-0599 cd 2c 06     1756:         CALL    ECHO     ; USE DASH AS SEPARATOR
-059c cd 5a 06     1757:         CALL    GETHX    ; SEE IF THERE IS A VALUE TO PUT INTO REGISTER
-059f d2 b7 05     1758:         JNC     XCM30    ; NO - GO CHECK FOR NEXT REGISTER
-05a2 7a           1759:         MOV     A,D
-05a3 32 fd 20     1760:         STA     TEMP     ; ELSE, SAVE THE TERMINATOR FOR NOW
-05a6 f1           1761:         POP     PSW      ; GET BACK LENGTH FLAG
-05a7 e1           1762:         POP     H        ; PUT ADDRESS OF SAVE LOCATION INTO HL
-05a8 b7           1763:         ORA     A        ; SET F/F'S
-05a9 ca ae 05     1764:         JZ      XCM25    ; IF 8 BIT REGISTER, BRANCH
-05ac 70           1765:         MOV     M,B      ; SAVE UPPER 8 BITS
-05ad 2b           1766:         DCX     H        ; POINT TO SAVE LOCATION FOR LOWER 8 BITS
+0592 0e 2d        1755:         MVI     C,'-'
+0594 cd 27 06     1756:         CALL    ECHO     ; USE DASH AS SEPARATOR
+0597 cd 55 06     1757:         CALL    GETHX    ; SEE IF THERE IS A VALUE TO PUT INTO REGISTER
+059a d2 b2 05     1758:         JNC     XCM30    ; NO - GO CHECK FOR NEXT REGISTER
+059d 7a           1759:         MOV     A,D
+059e 32 fd 20     1760:         STA     TEMP     ; ELSE, SAVE THE TERMINATOR FOR NOW
+05a1 f1           1761:         POP     PSW      ; GET BACK LENGTH FLAG
+05a2 e1           1762:         POP     H        ; PUT ADDRESS OF SAVE LOCATION INTO HL
+05a3 b7           1763:         ORA     A        ; SET F/F'S
+05a4 ca a9 05     1764:         JZ      XCM25    ; IF 8 BIT REGISTER, BRANCH
+05a7 70           1765:         MOV     M,B      ; SAVE UPPER 8 BITS
+05a8 2b           1766:         DCX     H        ; POINT TO SAVE LOCATION FOR LOWER 8 BITS
                   1767: XCM25:
-05ae 71           1768:         MOV     M,C      ; STORE ALL OF 8 BIT OR LOWER 1/2 OF 16 BIT REG
+05a9 71           1768:         MOV     M,C      ; STORE ALL OF 8 BIT OR LOWER 1/2 OF 16 BIT REG
                   1769: XCM27:
-05af 11 03 00     1770:         LXI     D,RTABS  ; SIZE OF ENTRY IN RTAB TABLE
-05b2 e1           1771:         POP     H        ; POINTER INTO REGISTER TABLE RTAB
-05b3 19           1772:         DAD     D        ; ADD ENTRY SIZE TO POINTER
-05b4 c3 66 05     1773:         JMP     XCM10    ; DO NEXT REGISTER
+05aa 11 03 00     1770:         LXI     D,RTABS  ; SIZE OF ENTRY IN RTAB TABLE
+05ad e1           1771:         POP     H        ; POINTER INTO REGISTER TABLE RTAB
+05ae 19           1772:         DAD     D        ; ADD ENTRY SIZE TO POINTER
+05af c3 61 05     1773:         JMP     XCM10    ; DO NEXT REGISTER
                   1774: XCM30:
-05b7 7a           1775:         MOV     A,D      ; GET TERMINATOR
-05b8 32 fd 20     1776:         STA     TEMP     ; SAVE IN MEMORY
-05bb d1           1777:         POP     D        ; CLEAR STACK OF LENGTH FLAG AND ADDRESS
-05bc d1           1778:         POP     D        ; /OF SAVE LOCATION
-05bd c3 af 05     1779:         JMP     XCM27    ; GO INCREMENT REGISTER TABLE POINTER
+05b2 7a           1775:         MOV     A,D      ; GET TERMINATOR
+05b3 32 fd 20     1776:         STA     TEMP     ; SAVE IN MEMORY
+05b6 d1           1777:         POP     D        ; CLEAR STACK OF LENGTH FLAG AND ADDRESS
+05b7 d1           1778:         POP     D        ; /OF SAVE LOCATION
+05b8 c3 aa 05     1779:         JMP     XCM27    ; GO INCREMENT REGISTER TABLE POINTER
                   1780: ;
                   1781: ;
                   1782: ;
@@ -1801,33 +1801,33 @@ asm85 8085 Assembler v1.5 by nib
                   1799: ;              IS CALLED BY THE USER VIA A JUMP TABLE IN RAM.
                   1800: ;
                   1801: CI:
-05c0 f3           1802:         DI
-05c1 d5           1803:         PUSH    D        ; SAVE DE
+05bb f3           1802:         DI
+05bc d5           1803:         PUSH    D        ; SAVE DE
                   1804: CI05:
-05c2 db ff        1805:         IN      RIM      ; GET INPUT BIT (WAS RIM)
-05c4 17           1806:         RAL              ; INTO CARRY WITH IT
-05c5 da c2 05     1807:         JC      CI05     ; BRANCH IF NO START BIT
-05c8 11 46 02     1808:         LXI     D,WAIT   ; WAIT UNTIL MIDDLE OF BIT
-05cb cd 25 06     1809:         CALL    DELAY
-05ce c5           1810:         PUSH    B        ; SAVE BC
-05cf 01 08 00     1811:         LXI     B,8      ; B<--0, C<--# BITS TO RECEIVE
+05bd db ff        1805:         IN      RIM      ; GET INPUT BIT (WAS RIM)
+05bf 17           1806:         RAL              ; INTO CARRY WITH IT
+05c0 da bd 05     1807:         JC      CI05     ; BRANCH IF NO START BIT
+05c3 11 46 02     1808:         LXI     D,WAIT   ; WAIT UNTIL MIDDLE OF BIT
+05c6 cd 20 06     1809:         CALL    DELAY
+05c9 c5           1810:         PUSH    B        ; SAVE BC
+05ca 01 08 00     1811:         LXI     B,8      ; B<--0, C<--# BITS TO RECEIVE
                   1812: CI10:
-05d2 11 8c 04     1813:         LXI     D,IBTIM
-05d5 cd 25 06     1814:         CALL    DELAY    ; WAIT UNTIL MIDDLE OF NEXT BIT
-05d8 db ff        1815:         IN      RIM      ; GET THE BIT (WAS RIM)
-05da 17           1816:         RAL              ; INTO CARRY
-05db 78           1817:         MOV     A,B      ; GET PARTIAL RESULT
-05dc 1f           1818:         RAR              ; SHIFT IN NEXT DATA BIT
-05dd 47           1819:         MOV     B,A      ; REPLACE RESULT
-05de 0d           1820:         DCR     C        ; DEC COUNT OF BITS TO GO
-05df c2 d2 05     1821:         JNZ     CI10     ; BRANCH IF MORE LEFT
-05e2 11 8c 04     1822:         LXI     D,IBTIM  ; ELSE, WANT TO WAIT OUT STOP BIT
-05e5 cd 25 06     1823:         CALL    DELAY
-05e8 78           1824:         MOV     A,B      ; GET RESULT
-05e9 c1           1825:         POP     B
-05ea d1           1826:         POP     D        ; RESTORE SAVED REGISTERS
-05eb fb           1827:         EI
-05ec c9           1828:         RET              ; THAT'S IT
+05cd 11 8c 04     1813:         LXI     D,IBTIM
+05d0 cd 20 06     1814:         CALL    DELAY    ; WAIT UNTIL MIDDLE OF NEXT BIT
+05d3 db ff        1815:         IN      RIM      ; GET THE BIT (WAS RIM)
+05d5 17           1816:         RAL              ; INTO CARRY
+05d6 78           1817:         MOV     A,B      ; GET PARTIAL RESULT
+05d7 1f           1818:         RAR              ; SHIFT IN NEXT DATA BIT
+05d8 47           1819:         MOV     B,A      ; REPLACE RESULT
+05d9 0d           1820:         DCR     C        ; DEC COUNT OF BITS TO GO
+05da c2 cd 05     1821:         JNZ     CI10     ; BRANCH IF MORE LEFT
+05dd 11 8c 04     1822:         LXI     D,IBTIM  ; ELSE, WANT TO WAIT OUT STOP BIT
+05e0 cd 20 06     1823:         CALL    DELAY
+05e3 78           1824:         MOV     A,B      ; GET RESULT
+05e4 c1           1825:         POP     B
+05e5 d1           1826:         POP     D        ; RESTORE SAVED REGISTERS
+05e6 fb           1827:         EI
+05e7 c9           1828:         RET              ; THAT'S IT
                   1829: ;
                   1830: ;
                   1831: ;
@@ -1843,12 +1843,12 @@ asm85 8085 Assembler v1.5 by nib
                   1841: ;              DOES NOT CHECK THE VALIDITY OF ITS INPUT.
                   1842: ;
                   1843: CNVBN:
-05ed 79           1844:         MOV     A,C
-05ee d6 30        1845:         SUI     '0'      ; SUBTRACT CODE FOR '0' FROM ARGUMENT
-05f0 fe 0a        1846:         CPI     10       ; WANT TO TEST FOR RESULT OF 0 TO 9
-05f2 f8           1847:         RM               ; IF SO, THEN ALL DONE
-05f3 d6 07        1848:         SUI     7        ; ELSE, RESULT BETWEEN 17 AND 23 DECIMAL
-05f5 c9           1849:         RET              ; SO RETURN AFTER SUBTRACTING BIAS OF 7
+05e8 79           1844:         MOV     A,C
+05e9 d6 30        1845:         SUI     '0'      ; SUBTRACT CODE FOR '0' FROM ARGUMENT
+05eb fe 0a        1846:         CPI     10       ; WANT TO TEST FOR RESULT OF 0 TO 9
+05ed f8           1847:         RM               ; IF SO, THEN ALL DONE
+05ee d6 07        1848:         SUI     7        ; ELSE, RESULT BETWEEN 17 AND 23 DECIMAL
+05f0 c9           1849:         RET              ; SO RETURN AFTER SUBTRACTING BIAS OF 7
                   1850: ;
                   1851: ;
                   1852: ;
@@ -1862,31 +1862,31 @@ asm85 8085 Assembler v1.5 by nib
                   1860: ; DESCRIPTION: CO SENDS ITS INPUT ARGUMENT TO THE TTY.
                   1861: ;
                   1862: CO:
-05f6 f3           1863:         DI
-05f7 c5           1864:         PUSH    B        ; SAVE BC
-05f8 d5           1865:         PUSH    D        ; SAVE DE
-05f9 3e c0        1866:         MVI     A,STRT   ; START BIT MASK
-05fb 06 07        1867:         MVI     B,7      ; B WILL COUNT BITS TO SEND
+05f1 f3           1863:         DI
+05f2 c5           1864:         PUSH    B        ; SAVE BC
+05f3 d5           1865:         PUSH    D        ; SAVE DE
+05f4 3e c0        1866:         MVI     A,STRT   ; START BIT MASK
+05f6 06 07        1867:         MVI     B,7      ; B WILL COUNT BITS TO SEND
                   1868: CO05:
-05fd d3 ff        1869:         OUT     SIM      ; SEND A BIT
-05ff 11 8c 04     1870:         LXI     D,OBTIM  ; WAIT FOR TTY TO HANDLE IT
-0602 cd 25 06     1871:         CALL    DELAY
-0605 79           1872:         MOV     A,C      ; PICK UP BITS LEFT TO SEND
-0606 1f           1873:         RAR              ; LOW ORDER BIT TO CARRY
-0607 4f           1874:         MOV     C,A      ; PUT REST BACK
-0608 3e 80        1875:         MVI     A,SSTRT  ; SHIFTED ENABLE BIT
-060a 1f           1876:         RAR              ; SHIFT IN DATA BIT
-060b ee 80        1877:         XRI     80H      ; COMPLEMENT DATA BIT
-060d 05           1878:         DCR     B        ; DEC COUNT
-060e f2 fd 05     1879:         JP      CO05     ; SEND IF MORE BITS NEED TO BE SENT
-0611 3e 40        1880:         MVI     A,STOPB  ; ELSE, SEND STOP BITS
-0613 d3 ff        1881:         OUT     SIM      ; WAS SIM
-0615 11 30 12     1882:         LXI     D,TIM4   ; WAIT 4 BIT TIME (FAKE PARITY + 3 STOP BITS)
-0618 cd 25 06     1883:         CALL    DELAY
-061b d1           1884:         POP     D
-061c c1           1885:         POP     B        ; RESTORE SAVED REGISTERS
-061d fb           1886:         EI
-061e c9           1887:         RET              ; ALL DONE
+05f8 d3 ff        1869:         OUT     SIM      ; SEND A BIT
+05fa 11 8c 04     1870:         LXI     D,OBTIM  ; WAIT FOR TTY TO HANDLE IT
+05fd cd 20 06     1871:         CALL    DELAY
+0600 79           1872:         MOV     A,C      ; PICK UP BITS LEFT TO SEND
+0601 1f           1873:         RAR              ; LOW ORDER BIT TO CARRY
+0602 4f           1874:         MOV     C,A      ; PUT REST BACK
+0603 3e 80        1875:         MVI     A,SSTRT  ; SHIFTED ENABLE BIT
+0605 1f           1876:         RAR              ; SHIFT IN DATA BIT
+0606 ee 80        1877:         XRI     80H      ; COMPLEMENT DATA BIT
+0608 05           1878:         DCR     B        ; DEC COUNT
+0609 f2 f8 05     1879:         JP      CO05     ; SEND IF MORE BITS NEED TO BE SENT
+060c 3e 40        1880:         MVI     A,STOPB  ; ELSE, SEND STOP BITS
+060e d3 ff        1881:         OUT     SIM      ; WAS SIM
+0610 11 30 12     1882:         LXI     D,TIM4   ; WAIT 4 BIT TIME (FAKE PARITY + 3 STOP BITS)
+0613 cd 20 06     1883:         CALL    DELAY
+0616 d1           1884:         POP     D
+0617 c1           1885:         POP     B        ; RESTORE SAVED REGISTERS
+0618 fb           1886:         EI
+0619 c9           1887:         RET              ; ALL DONE
                   1888: ;
                   1889: ;
                   1890: ;
@@ -1901,9 +1901,9 @@ asm85 8085 Assembler v1.5 by nib
                   1899: ;              FEED) TO THE CONSOLE.
                   1900: ;
                   1901: CROUT:
-061f 0e 0d        1902:         MVI     C,CR
-0621 cd 2c 06     1903:         CALL    ECHO
-0624 c9           1904:         RET
+061a 0e 0d        1902:         MVI     C,CR
+061c cd 27 06     1903:         CALL    ECHO
+061f c9           1904:         RET
                   1905: ;
                   1906: ;
                   1907: ;
@@ -1918,11 +1918,11 @@ asm85 8085 Assembler v1.5 by nib
                   1916: ;              IS COUNTED DOWN TO 0.
                   1917: ;
                   1918: DELAY:
-0625 1b           1919:         DCX     D        ; DECREMENT INPUT ARGUMENT
-0626 7a           1920:         MOV     A,D
-0627 b3           1921:         ORA     E
-0628 c2 25 06     1922:         JNZ     DELAY    ; IF ARGUMENT NOT 0, KEEP GOING
-062b c9           1923:         RET
+0620 1b           1919:         DCX     D        ; DECREMENT INPUT ARGUMENT
+0621 7a           1920:         MOV     A,D
+0622 b3           1921:         ORA     E
+0623 c2 20 06     1922:         JNZ     DELAY    ; IF ARGUMENT NOT 0, KEEP GOING
+0626 c9           1923:         RET
                   1924: ;
                   1925: ;
                   1926: ;
@@ -1939,21 +1939,21 @@ asm85 8085 Assembler v1.5 by nib
                   1937: ;              RETURN LINE FEED, AND AN ESCAPE CHARACTER IS ECHOED AS $.
                   1938: ;
                   1939: ECHO:
-062c 41           1940:         MOV     B,C      ; SAVE ARGUMENT
-062d 3e 1b        1941:         MVI     A,ESC
-062f b8           1942:         CMP     B        ; SEE IF ECHOING AN ESCAPE CHARACTER
-0630 c2 35 06     1943:         JNZ     ECH05    ; NO - BRANCH
-0633 0e 24        1944:         MVI     C,'$'    ; YES - ECHO AS $
+0627 41           1940:         MOV     B,C      ; SAVE ARGUMENT
+0628 3e 1b        1941:         MVI     A,ESC
+062a b8           1942:         CMP     B        ; SEE IF ECHOING AN ESCAPE CHARACTER
+062b c2 30 06     1943:         JNZ     ECH05    ; NO - BRANCH
+062e 0e 24        1944:         MVI     C,'$'    ; YES - ECHO AS $
                   1945: ECH05:
-0635 cd f6 05     1946:         CALL    CO       ; DO OUTPUT THROUGH MONITOR
-0638 3e 0d        1947:         MVI     A,CR
-063a b8           1948:         CMP     B        ; SEE IF CHARACTER ECHOED WAS A CARRIAGE RETURN
-063b c2 43 06     1949:         JNZ     ECH10    ; NO - NO NEED TO TAKE SPECIAL ACTION
-063e 0e 0a        1950:         MVI     C,LF     ; YES - WANT TO ECHO LINE FEED, TOO
-0640 cd f6 05     1951:         CALL    CO
+0630 cd f1 05     1946:         CALL    CO       ; DO OUTPUT THROUGH MONITOR
+0633 3e 0d        1947:         MVI     A,CR
+0635 b8           1948:         CMP     B        ; SEE IF CHARACTER ECHOED WAS A CARRIAGE RETURN
+0636 c2 3e 06     1949:         JNZ     ECH10    ; NO - NO NEED TO TAKE SPECIAL ACTION
+0639 0e 0a        1950:         MVI     C,LF     ; YES - WANT TO ECHO LINE FEED, TOO
+063b cd f1 05     1951:         CALL    CO
                   1952: ECH10:
-0643 48           1953:         MOV     C,B      ; RESTORE ARGUMENT
-0644 c9           1954:         RET
+063e 48           1953:         MOV     C,B      ; RESTORE ARGUMENT
+063f c9           1954:         RET
                   1955: ;
                   1956: ;
                   1957: ;
@@ -1969,10 +1969,10 @@ asm85 8085 Assembler v1.5 by nib
                   1967: ;              AND THEN RETURNS CONTROL TO THE COMMAND RECOGNIZER.
                   1968: ;
                   1969: ERROR:
-0645 0e 2a        1970:         MVI     C,'*'
-0647 cd 2c 06     1971:         CALL    ECHO     ; SEND * TO CONSOLE
-064a cd 1f 06     1972:         CALL    CROUT    ; SKIP TO BEGINNING OF NEXT LINE
-064d c3 38 04     1973:         JMP     GETCM    ; TRY AGAIN FOR ANOTHER COMMAND
+0640 0e 2a        1970:         MVI     C,'*'
+0642 cd 27 06     1971:         CALL    ECHO     ; SEND * TO CONSOLE
+0645 cd 1a 06     1972:         CALL    CROUT    ; SKIP TO BEGINNING OF NEXT LINE
+0648 c3 33 04     1973:         JMP     GETCM    ; TRY AGAIN FOR ANOTHER COMMAND
                   1974: ;
                   1975: ;
                   1976: ;
@@ -1988,9 +1988,9 @@ asm85 8085 Assembler v1.5 by nib
                   1986: ;              CALLER OF THE ROUTINE INVOKING FRET.
                   1987: ;
                   1988: FRET:
-0650 37           1989:         STC              ; FIRST SET CARRY TRUE
-0651 3f           1990:         CMC              ; THEN COMPLEMENT IT TO MAKE IT FALSE
-0652 c9           1991:         RET              ; RETURN APPROPRIATELY
+064b 37           1989:         STC              ; FIRST SET CARRY TRUE
+064c 3f           1990:         CMC              ; THEN COMPLEMENT IT TO MAKE IT FALSE
+064d c9           1991:         RET              ; RETURN APPROPRIATELY
                   1992: ;
                   1993: ;
                   1994: ;
@@ -2005,10 +2005,10 @@ asm85 8085 Assembler v1.5 by nib
                   2003: ;              TO THE CALLING PROGRAM.
                   2004: ;
                   2005: GETCH:
-0653 cd c0 05     2006:         CALL    CI       ; GET CHARACTER FROM TERMINAL
-0656 e6 7f        2007:         ANI     PRTY0    ; TURN OFF PARITY BIT IN CASE SET BY CONSOLE
-0658 4f           2008:         MOV     C,A      ; PUT VALUE IN C REGISTER FOR RETURN
-0659 c9           2009:         RET
+064e cd bb 05     2006:         CALL    CI       ; GET CHARACTER FROM TERMINAL
+0651 e6 7f        2007:         ANI     PRTY0    ; TURN OFF PARITY BIT IN CASE SET BY CONSOLE
+0653 4f           2008:         MOV     C,A      ; PUT VALUE IN C REGISTER FOR RETURN
+0654 c9           2009:         RET
                   2010: ;
                   2011: ;
                   2012: ;
@@ -2036,36 +2036,36 @@ asm85 8085 Assembler v1.5 by nib
                   2034: ;              OF BC ARE UNDEFINED.
                   2035: ;
                   2036: GETHX:
-065a e5           2037:         PUSH    H        ; SAVE HL
-065b 21 00 00     2038:         LXI     H,0      ; INITIALIZE RESULT
-065e 1e 00        2039:         MVI     E,0      ; INITIALIZE DIGIT FLAG TO FALSE
+0655 e5           2037:         PUSH    H        ; SAVE HL
+0656 21 00 00     2038:         LXI     H,0      ; INITIALIZE RESULT
+0659 1e 00        2039:         MVI     E,0      ; INITIALIZE DIGIT FLAG TO FALSE
                   2040: GHX05:
-0660 cd 53 06     2041:         CALL    GETCH    ; GET A CHARACTER
-0663 4f           2042:         MOV     C,A
-0664 cd 2c 06     2043:         CALL    ECHO     ; ECHO THE CHARACTER
-0667 cd ad 07     2044:         CALL    VALDL    ; SEE IF DELIMITER
-066a d2 79 06     2045:         JNC     GHX10    ; NO - BRANCH
-066d 51           2046:         MOV     D,C      ; YES - ALL DONE, BUT WANT TO RETURN DELIMITER
-066e e5           2047:         PUSH    H
-066f c1           2048:         POP     B        ; MOVE RESULT TO BC
-0670 e1           2049:         POP     H        ; RESTORE HL
-0671 7b           2050:         MOV     A,E      ; GET FLAG
-0672 b7           2051:         ORA     A        ; SET F/F'S
-0673 c2 66 07     2052:         JNZ     SRET     ; IF FLAG NON-0, A NUMBER HAS BEEN FOUND
-0676 ca 50 06     2053:         JZ      FRET     ; ELSE, DELIMITER WAS FIRST CHARACTER
+065b cd 4e 06     2041:         CALL    GETCH    ; GET A CHARACTER
+065e 4f           2042:         MOV     C,A
+065f cd 27 06     2043:         CALL    ECHO     ; ECHO THE CHARACTER
+0662 cd a8 07     2044:         CALL    VALDL    ; SEE IF DELIMITER
+0665 d2 74 06     2045:         JNC     GHX10    ; NO - BRANCH
+0668 51           2046:         MOV     D,C      ; YES - ALL DONE, BUT WANT TO RETURN DELIMITER
+0669 e5           2047:         PUSH    H
+066a c1           2048:         POP     B        ; MOVE RESULT TO BC
+066b e1           2049:         POP     H        ; RESTORE HL
+066c 7b           2050:         MOV     A,E      ; GET FLAG
+066d b7           2051:         ORA     A        ; SET F/F'S
+066e c2 61 07     2052:         JNZ     SRET     ; IF FLAG NON-0, A NUMBER HAS BEEN FOUND
+0671 ca 4b 06     2053:         JZ      FRET     ; ELSE, DELIMITER WAS FIRST CHARACTER
                   2054: GHX10:
-0679 cd 92 07     2055:         CALL    VALDG    ; IF NOT DELIMITER, SEE IF DIGIT
-067c d2 45 06     2056:         JNC     ERROR    ; ERROR IF NOT A VALID DIGIT, EITHER
-067f cd ed 05     2057:         CALL    CNVBN    ; CONVERT DIGIT TO ITS BINARY VALUE
-0682 1e ff        2058:         MVI     E,0FFH   ; SET DIGIT FLAG NON-0
-0684 29           2059:         DAD     H        ; *2
-0685 29           2060:         DAD     H        ; *4
-0686 29           2061:         DAD     H        ; *8
-0687 29           2062:         DAD     H        ; *16
-0688 06 00        2063:         MVI     B,0      ; CLEAR UPPER 8 BITS OF BC PAIR
-068a 4f           2064:         MOV     C,A      ; BINARY VALUE OF CHARACTER INTO C
-068b 09           2065:         DAD     B        ; ADD THIS VALUE TO PARTIAL RESULT
-068c c3 60 06     2066:         JMP     GHX05    ; GET NEXT CHARACTER
+0674 cd 8d 07     2055:         CALL    VALDG    ; IF NOT DELIMITER, SEE IF DIGIT
+0677 d2 40 06     2056:         JNC     ERROR    ; ERROR IF NOT A VALID DIGIT, EITHER
+067a cd e8 05     2057:         CALL    CNVBN    ; CONVERT DIGIT TO ITS BINARY VALUE
+067d 1e ff        2058:         MVI     E,0FFH   ; SET DIGIT FLAG NON-0
+067f 29           2059:         DAD     H        ; *2
+0680 29           2060:         DAD     H        ; *4
+0681 29           2061:         DAD     H        ; *8
+0682 29           2062:         DAD     H        ; *16
+0683 06 00        2063:         MVI     B,0      ; CLEAR UPPER 8 BITS OF BC PAIR
+0685 4f           2064:         MOV     C,A      ; BINARY VALUE OF CHARACTER INTO C
+0686 09           2065:         DAD     B        ; ADD THIS VALUE TO PARTIAL RESULT
+0687 c3 5b 06     2066:         JMP     GHX05    ; GET NEXT CHARACTER
                   2067: ;
                   2068: ;
                   2069: ;
@@ -2087,53 +2087,53 @@ asm85 8085 Assembler v1.5 by nib
                   2085: ;              OR AN ERROR INDICATION WILL RESULT.
                   2086: ;
                   2087: GETNM:
-068f 2e 03        2088:         MVI     L,3      ; PUT MAXIMUM ARGUMENT COUNT INTO L
-0691 79           2089:         MOV     A,C      ; GET THE ACTUAL ARGUMENT COUNT
-0692 e6 03        2090:         ANI     3        ; FORCE TO MAXIMUM OF 3
-0694 c8           2091:         RZ               ; IF 0, DON'T BOTHER TO DO ANYTHIING
-0695 67           2092:         MOV     H,A      ; ELSE, PUT ACTUAL COUNT INTO H
+068a 2e 03        2088:         MVI     L,3      ; PUT MAXIMUM ARGUMENT COUNT INTO L
+068c 79           2089:         MOV     A,C      ; GET THE ACTUAL ARGUMENT COUNT
+068d e6 03        2090:         ANI     3        ; FORCE TO MAXIMUM OF 3
+068f c8           2091:         RZ               ; IF 0, DON'T BOTHER TO DO ANYTHIING
+0690 67           2092:         MOV     H,A      ; ELSE, PUT ACTUAL COUNT INTO H
                   2093: GNM05:
-0696 cd 5a 06     2094:         CALL    GETHX    ; GET A NUMBER FROM INPUT STREAM
-0699 d2 45 06     2095:         JNC     ERROR    ; ERROR IF NOT THERE - TOO FEW NUMBERS
-069c c5           2096:         PUSH    B        ; ELSE, SAVE NUMBER ON STACK
-069d 2d           2097:         DCR     L        ; DECREMENT MAXIMUM ARGUMENT COUNT
-069e 25           2098:         DCR     H        ; DECREMENT ACTUAL ARGUMENT COUNT
-069f ca ab 06     2099:         JZ      GNM10    ; BRANCH IF NO MORE NUMBERS WANTED
-06a2 7a           2100:         MOV     A,D      ; ELSE, GET NUMBER TERMINATOR TO A
-06a3 fe 0d        2101:         CPI     CR       ; SEE IF CARRIAGE RETURN
-06a5 ca 45 06     2102:         JZ      ERROR    ; ERROR IF SO - TOO FEW NUMBERS
-06a8 c3 96 06     2103:         JMP     GNM05    ; ELSE, PROCESS NEXT NUMBER
+0691 cd 55 06     2094:         CALL    GETHX    ; GET A NUMBER FROM INPUT STREAM
+0694 d2 40 06     2095:         JNC     ERROR    ; ERROR IF NOT THERE - TOO FEW NUMBERS
+0697 c5           2096:         PUSH    B        ; ELSE, SAVE NUMBER ON STACK
+0698 2d           2097:         DCR     L        ; DECREMENT MAXIMUM ARGUMENT COUNT
+0699 25           2098:         DCR     H        ; DECREMENT ACTUAL ARGUMENT COUNT
+069a ca a6 06     2099:         JZ      GNM10    ; BRANCH IF NO MORE NUMBERS WANTED
+069d 7a           2100:         MOV     A,D      ; ELSE, GET NUMBER TERMINATOR TO A
+069e fe 0d        2101:         CPI     CR       ; SEE IF CARRIAGE RETURN
+06a0 ca 40 06     2102:         JZ      ERROR    ; ERROR IF SO - TOO FEW NUMBERS
+06a3 c3 91 06     2103:         JMP     GNM05    ; ELSE, PROCESS NEXT NUMBER
                   2104: GNM10:
-06ab 7a           2105:         MOV     A,D      ; WHEN COUNT 0, CHECK LAST TERMINATOR
-06ac fe 0d        2106:         CPI     CR
-06ae c2 45 06     2107:         JNZ     ERROR    ; ERROR IF NOT CARRIAGE RETURN
-06b1 01 ff ff     2108:         LXI     B,0FFFFH ; HL GETS LARGEST NUMBER
-06b4 7d           2109:         MOV     A,L      ; GET WHAT'S LEFT OF MAXIMUM ARG COUNT
-06b5 b7           2110:         ORA     A        ; CHECK FOR 0
-06b6 ca be 06     2111:         JZ      GNM20    ; IF YES, 3 NUMBERS WERE INPUT
+06a6 7a           2105:         MOV     A,D      ; WHEN COUNT 0, CHECK LAST TERMINATOR
+06a7 fe 0d        2106:         CPI     CR
+06a9 c2 40 06     2107:         JNZ     ERROR    ; ERROR IF NOT CARRIAGE RETURN
+06ac 01 ff ff     2108:         LXI     B,0FFFFH ; HL GETS LARGEST NUMBER
+06af 7d           2109:         MOV     A,L      ; GET WHAT'S LEFT OF MAXIMUM ARG COUNT
+06b0 b7           2110:         ORA     A        ; CHECK FOR 0
+06b1 ca b9 06     2111:         JZ      GNM20    ; IF YES, 3 NUMBERS WERE INPUT
                   2112: GNM15:
-06b9 c5           2113:         PUSH    B        ; IF NOT, FILL REMAINING ARGUMENTS WITH 0FFFFH
-06ba 2d           2114:         DCR     L
-06bb c2 b9 06     2115:         JNZ     GNM15
+06b4 c5           2113:         PUSH    B        ; IF NOT, FILL REMAINING ARGUMENTS WITH 0FFFFH
+06b5 2d           2114:         DCR     L
+06b6 c2 b4 06     2115:         JNZ     GNM15
                   2116: GNM20:
-06be c1           2117:         POP     B        ; GET THE 3 ARGUMENTS OUT
-06bf d1           2118:         POP     D
-06c0 e1           2119:         POP     H
-06c1 cd d4 06     2120:         CALL    HILO     ; SEE IF FIRST >= SECOND
-06c4 d2 c9 06     2121:         JNC     GNM25    ; NO - BRANCH
-06c7 54           2122:         MOV     D,H
-06c8 5d           2123:         MOV     E,L      ; YES - MAKE SECOND EQUAL TO THE FIRST
+06b9 c1           2117:         POP     B        ; GET THE 3 ARGUMENTS OUT
+06ba d1           2118:         POP     D
+06bb e1           2119:         POP     H
+06bc cd cf 06     2120:         CALL    HILO     ; SEE IF FIRST >= SECOND
+06bf d2 c4 06     2121:         JNC     GNM25    ; NO - BRANCH
+06c2 54           2122:         MOV     D,H
+06c3 5d           2123:         MOV     E,L      ; YES - MAKE SECOND EQUAL TO THE FIRST
                   2124: GNM25:
-06c9 e3           2125:         XTHL             ; PUT FIRST ON STACK - GET RETURN ADDR
-06ca d5           2126:         PUSH    D        ; PUT SECOND ON STACK
-06cb c5           2127:         PUSH    B        ; PUT THIRD ON STACK
-06cc e5           2128:         PUSH    H        ; PUT RETURN ADDRESS ON STACK
+06c4 e3           2125:         XTHL             ; PUT FIRST ON STACK - GET RETURN ADDR
+06c5 d5           2126:         PUSH    D        ; PUT SECOND ON STACK
+06c6 c5           2127:         PUSH    B        ; PUT THIRD ON STACK
+06c7 e5           2128:         PUSH    H        ; PUT RETURN ADDRESS ON STACK
                   2129: GNM30:
-06cd 3d           2130:         DCR     A        ; DECREMENT RESIDUAL COUNT
-06ce f8           2131:         RM               ; IF NEGATIVE, PROPER RESULTS ON STACK
-06cf e1           2132:         POP     H        ; ELSE, GET RETURN ADDR
-06d0 e3           2133:         XTHL             ; REPLACE TOP RESULT WITH RETURN ADDR
-06d1 c3 cd 06     2134:         JMP     GNM30    ; TRY AGAIN
+06c8 3d           2130:         DCR     A        ; DECREMENT RESIDUAL COUNT
+06c9 f8           2131:         RM               ; IF NEGATIVE, PROPER RESULTS ON STACK
+06ca e1           2132:         POP     H        ; ELSE, GET RETURN ADDR
+06cb e3           2133:         XTHL             ; REPLACE TOP RESULT WITH RETURN ADDR
+06cc c3 c8 06     2134:         JMP     GNM30    ; TRY AGAIN
                   2135: ;
                   2136: ;
                   2137: ;
@@ -2151,38 +2151,38 @@ asm85 8085 Assembler v1.5 by nib
                   2149: ;              BIT IS SET ACCORDING TO THE RESULT OF THE COMPARISON.
                   2150: ;
                   2151: HILO:
-06d4 c5           2152:         PUSH    B        ; SAVE BC
-06d5 47           2153:         MOV     B,A      ; SAVE A IN B REGISTER
-06d6 e5           2154:         PUSH    H        ; SAVE HL PAIR
-06d7 7a           2155:         MOV     A,D      ; CHECK FOR DE = 0000H
-06d8 b3           2156:         ORA     E
-06d9 ca f5 06     2157:         JZ      HIL05    ; WE'RE AUTOMATICALLY DONE IF IT IS
-06dc 23           2158:         INX     H        ; INCREMENT HL BY 1
-06dd 7c           2159:         MOV     A,H      ; WANT TO TEST FOR 0 RESULT AFTER
-06de b5           2160:         ORA     L        ; /INCREMENTING
-06df ca f5 06     2161:         JZ      HIL05    ; IF SO, HL MUST HAVE CONTAINED OFFFFH
-06e2 e1           2162:         POP     H        ; IF NOT, RESTORE ORIGINAL HL
-06e3 d5           2163:         PUSH    D        ; SAVE DE
-06e4 3e ff        2164:         MVI     A,0FFH   ; WANT TO TAKE 2'S COMPLEMENT OF DE CONTENTS
-06e6 aa           2165:         XRA     D
-06e7 57           2166:         MOV     D,A
-06e8 3e ff        2167:         MVI     A,0FFH
-06ea ab           2168:         XRA     E
-06eb 5f           2169:         MOV     E,A
-06ec 13           2170:         INX     D        ; 2'S COMPLEMENT OF DE TO DE
-06ed 7d           2171:         MOV     A,L
-06ee 83           2172:         ADD     E        ; ADD HL AND DE
-06ef 7c           2173:         MOV     A,H
-06f0 8a           2174:         ADC     D        ; THIS OPERATION SETS CARRY PROPERLY
-06f1 d1           2175:         POP     D        ; RESTORE ORIGINAL DE CONTENTS
-06f2 78           2176:         MOV     A,B      ; RESTORE ORIGINAL CONTENTS OF A
-06f3 c1           2177:         POP     B        ; RESTORE ORIGINAL CONTENTS OF BC
-06f4 c9           2178:         RET              ; RETURN WITH CARRY SET AS REQUIRED
+06cf c5           2152:         PUSH    B        ; SAVE BC
+06d0 47           2153:         MOV     B,A      ; SAVE A IN B REGISTER
+06d1 e5           2154:         PUSH    H        ; SAVE HL PAIR
+06d2 7a           2155:         MOV     A,D      ; CHECK FOR DE = 0000H
+06d3 b3           2156:         ORA     E
+06d4 ca f0 06     2157:         JZ      HIL05    ; WE'RE AUTOMATICALLY DONE IF IT IS
+06d7 23           2158:         INX     H        ; INCREMENT HL BY 1
+06d8 7c           2159:         MOV     A,H      ; WANT TO TEST FOR 0 RESULT AFTER
+06d9 b5           2160:         ORA     L        ; /INCREMENTING
+06da ca f0 06     2161:         JZ      HIL05    ; IF SO, HL MUST HAVE CONTAINED OFFFFH
+06dd e1           2162:         POP     H        ; IF NOT, RESTORE ORIGINAL HL
+06de d5           2163:         PUSH    D        ; SAVE DE
+06df 3e ff        2164:         MVI     A,0FFH   ; WANT TO TAKE 2'S COMPLEMENT OF DE CONTENTS
+06e1 aa           2165:         XRA     D
+06e2 57           2166:         MOV     D,A
+06e3 3e ff        2167:         MVI     A,0FFH
+06e5 ab           2168:         XRA     E
+06e6 5f           2169:         MOV     E,A
+06e7 13           2170:         INX     D        ; 2'S COMPLEMENT OF DE TO DE
+06e8 7d           2171:         MOV     A,L
+06e9 83           2172:         ADD     E        ; ADD HL AND DE
+06ea 7c           2173:         MOV     A,H
+06eb 8a           2174:         ADC     D        ; THIS OPERATION SETS CARRY PROPERLY
+06ec d1           2175:         POP     D        ; RESTORE ORIGINAL DE CONTENTS
+06ed 78           2176:         MOV     A,B      ; RESTORE ORIGINAL CONTENTS OF A
+06ee c1           2177:         POP     B        ; RESTORE ORIGINAL CONTENTS OF BC
+06ef c9           2178:         RET              ; RETURN WITH CARRY SET AS REQUIRED
                   2179: HIL05:
-06f5 e1           2180:         POP     H        ; IF HL CONTAINS OFFFFH, THEN CARRY CAN
-06f6 78           2181:         MOV     A,B      ; /ONLY BE SET TO 1
-06f7 c1           2182:         POP     B        ; RESTORE ORIGINAL CONTENTS OF REGISTERS
-06f8 c3 66 07     2183:         JMP     SRET     ; SET CARRY AND RETURN
+06f0 e1           2180:         POP     H        ; IF HL CONTAINS OFFFFH, THEN CARRY CAN
+06f1 78           2181:         MOV     A,B      ; /ONLY BE SET TO 1
+06f2 c1           2182:         POP     B        ; RESTORE ORIGINAL CONTENTS OF REGISTERS
+06f3 c3 61 07     2183:         JMP     SRET     ; SET CARRY AND RETURN
                   2184: ;
                   2185: ;
                   2186: ;
@@ -2200,23 +2200,23 @@ asm85 8085 Assembler v1.5 by nib
                   2198: ;              POSITION OF THE CONSOLE.
                   2199: ;
                   2200: NMOUT:
-06fb e5           2201:         PUSH    H        ; SAVE HL - DESTROYED BY PRVAL
-06fc f5           2202:         PUSH    PSW      ; SAVE ARGUMENT
-06fd 0f           2203:         RRC
-06fe 0f           2204:         RRC
-06ff 0f           2205:         RRC
-0700 0f           2206:         RRC              ; GET UPPER 4 BITS TO LOW 4 BIT POSITIONS
-0701 e6 0f        2207:         ANI     HCHAR    ; MASK OUT UPPER 4 BITS - WANT 1 HEX CHAR
-0703 4f           2208:         MOV     C,A
-0704 cd 16 07     2209:         CALL    PRVAL    ; CONVERT LOWER 4 BITS TO ASCII
-0707 cd 2c 06     2210:         CALL    ECHO     ; SEND TO TERMINAL
-070a f1           2211:         POP     PSW      ; GET BACK ARGUMENT
-070b e6 0f        2212:         ANI     HCHAR    ; MASK OUT UPPER 4 BITS - WANT 1 HEX CHAR
-070d 4f           2213:         MOV     C,A
-070e cd 16 07     2214:         CALL    PRVAL
-0711 cd 2c 06     2215:         CALL    ECHO
-0714 e1           2216:         POP     H        ; RESTORE SAVED VALUE OF HL
-0715 c9           2217:         RET
+06f6 e5           2201:         PUSH    H        ; SAVE HL - DESTROYED BY PRVAL
+06f7 f5           2202:         PUSH    PSW      ; SAVE ARGUMENT
+06f8 0f           2203:         RRC
+06f9 0f           2204:         RRC
+06fa 0f           2205:         RRC
+06fb 0f           2206:         RRC              ; GET UPPER 4 BITS TO LOW 4 BIT POSITIONS
+06fc e6 0f        2207:         ANI     HCHAR    ; MASK OUT UPPER 4 BITS - WANT 1 HEX CHAR
+06fe 4f           2208:         MOV     C,A
+06ff cd 11 07     2209:         CALL    PRVAL    ; CONVERT LOWER 4 BITS TO ASCII
+0702 cd 27 06     2210:         CALL    ECHO     ; SEND TO TERMINAL
+0705 f1           2211:         POP     PSW      ; GET BACK ARGUMENT
+0706 e6 0f        2212:         ANI     HCHAR    ; MASK OUT UPPER 4 BITS - WANT 1 HEX CHAR
+0708 4f           2213:         MOV     C,A
+0709 cd 11 07     2214:         CALL    PRVAL
+070c cd 27 06     2215:         CALL    ECHO
+070f e1           2216:         POP     H        ; RESTORE SAVED VALUE OF HL
+0710 c9           2217:         RET
                   2218: ;
                   2219: ;
                   2220: ;
@@ -2232,11 +2232,11 @@ asm85 8085 Assembler v1.5 by nib
                   2230: ;              DOES NOT CHECK THE VALIDITY OF ITS INPUT ARGUMENT.
                   2231: ;
                   2232: PRVAL:
-0716 21 e6 07     2233:         LXI     H,DIGTB  ; ADDRESS OF TABLE
-0719 06 00        2234:         MVI     B,0      ; CLEAR HIGH ORDER BITS OF BC
-071b 09           2235:         DAD     B        ; ADD DIGIT VALUE TO HL ADDRESS
-071c 4e           2236:         MOV     C,M      ; FETCH CHARACTER FROM MEMORY
-071d c9           2237:         RET
+0711 21 e1 07     2233:         LXI     H,DIGTB  ; ADDRESS OF TABLE
+0714 06 00        2234:         MVI     B,0      ; CLEAR HIGH ORDER BITS OF BC
+0716 09           2235:         DAD     B        ; ADD DIGIT VALUE TO HL ADDRESS
+0717 4e           2236:         MOV     C,M      ; FETCH CHARACTER FROM MEMORY
+0718 c9           2237:         RET
                   2238: ;
                   2239: ;
                   2240: ;
@@ -2254,35 +2254,35 @@ asm85 8085 Assembler v1.5 by nib
                   2252: ;              AND LENGTH (8 OR 16 BITS)
                   2253: ;
                   2254: REGDS:
-071e 21 f6 07     2255:         LXI     H,RTAB   ; LOAD HL WITH ADDRESS OF START OF TABLE
+0719 21 f1 07     2255:         LXI     H,RTAB   ; LOAD HL WITH ADDRESS OF START OF TABLE
                   2256: REG05:
-0721 4e           2257:         MOV     C,M      ; GET PRINT SYMBOL OF REGISTER
-0722 79           2258:         MOV     A,C
-0723 b7           2259:         ORA     A        ; TEST FOR 0 - END OF TABLE
-0724 c2 2b 07     2260:         JNZ     REG10    ; IF NOT END, BRANCH
-0727 cd 1f 06     2261:         CALL    CROUT    ; ELSE, CARRIAGE RETURN/LINE FEED TO END
-072a c9           2262:         RET              ; /DISPLAY
+071c 4e           2257:         MOV     C,M      ; GET PRINT SYMBOL OF REGISTER
+071d 79           2258:         MOV     A,C
+071e b7           2259:         ORA     A        ; TEST FOR 0 - END OF TABLE
+071f c2 26 07     2260:         JNZ     REG10    ; IF NOT END, BRANCH
+0722 cd 1a 06     2261:         CALL    CROUT    ; ELSE, CARRIAGE RETURN/LINE FEED TO END
+0725 c9           2262:         RET              ; /DISPLAY
                   2263: REG10:
-072b cd 2c 06     2264:         CALL    ECHO     ; ECHO CHARACTER
-072e 0e 3d        2265:         MVI     C,'='
-0730 cd 2c 06     2266:         CALL    ECHO     ; OUTPUT EQUALS SIGN, I.E. A=
-0733 23           2267:         INX     H        ; POINT TO START OF SAVE LOCATION ADDRESS
-0734 5e           2268:         MOV     E,M      ; GET LSP OF SAVE LOCATION ADDRESS TO E
-0735 16 20        2269:         MVI     D,(RAMST & 0FF00H) / 256 ; PUT MSP OF SAVE LOC ADDRESS INTO D
-0737 23           2270:         INX     H        ; POINT TO LENGTH FLAG
-0738 1a           2271:         LDAX    D        ; GET CONTENTS OF SAVE ADDRESS
-0739 cd fb 06     2272:         CALL    NMOUT    ; DISPLAY ON CONSOLE
-073c 7e           2273:         MOV     A,M      ; GET LENGTH FLAG
-073d b7           2274:         ORA     A        ; SET SIGN F/F
-073e ca 46 07     2275:         JZ      REG15    ; IF 0, REGISTER IS 8 BITS
-0741 1b           2276:         DCX     D        ; ELSE, 16 BIT REGISTER SO MORE TO DISPLAY
-0742 1a           2277:         LDAX    D        ; GET LOWER 8 BITS
-0743 cd fb 06     2278:         CALL    NMOUT    ; DISPLAY THEM
+0726 cd 27 06     2264:         CALL    ECHO     ; ECHO CHARACTER
+0729 0e 3d        2265:         MVI     C,'='
+072b cd 27 06     2266:         CALL    ECHO     ; OUTPUT EQUALS SIGN, I.E. A=
+072e 23           2267:         INX     H        ; POINT TO START OF SAVE LOCATION ADDRESS
+072f 5e           2268:         MOV     E,M      ; GET LSP OF SAVE LOCATION ADDRESS TO E
+0730 16 20        2269:         MVI     D,(RAMST & 0FF00H) / 256 ; PUT MSP OF SAVE LOC ADDRESS INTO D
+0732 23           2270:         INX     H        ; POINT TO LENGTH FLAG
+0733 1a           2271:         LDAX    D        ; GET CONTENTS OF SAVE ADDRESS
+0734 cd f6 06     2272:         CALL    NMOUT    ; DISPLAY ON CONSOLE
+0737 7e           2273:         MOV     A,M      ; GET LENGTH FLAG
+0738 b7           2274:         ORA     A        ; SET SIGN F/F
+0739 ca 41 07     2275:         JZ      REG15    ; IF 0, REGISTER IS 8 BITS
+073c 1b           2276:         DCX     D        ; ELSE, 16 BIT REGISTER SO MORE TO DISPLAY
+073d 1a           2277:         LDAX    D        ; GET LOWER 8 BITS
+073e cd f6 06     2278:         CALL    NMOUT    ; DISPLAY THEM
                   2279: REG15:
-0746 0e 20        2280:         MVI     C,' '
-0748 cd 2c 06     2281:         CALL    ECHO
-074b 23           2282:         INX     H        ; POINT TO START OF NEXT TABLE ENTRY
-074c c3 21 07     2283:         JMP     REG05    ; DO NEXT REGISTER
+0741 0e 20        2280:         MVI     C,' '
+0743 cd 27 06     2281:         CALL    ECHO
+0746 23           2282:         INX     H        ; POINT TO START OF NEXT TABLE ENTRY
+0747 c3 1c 07     2283:         JMP     REG05    ; DO NEXT REGISTER
                   2284: ;
                   2285: ;
                   2286: ;
@@ -2303,21 +2303,21 @@ asm85 8085 Assembler v1.5 by nib
                   2301: ;              PASSED TO THE ERROR ROUTINE.
                   2302: ;
                   2303: RGADR:
-074f 21 f6 07     2304:         LXI     H,RTAB   ; HL GETS ADDRESS OF TABLE START
-0752 11 03 00     2305:         LXI     D,RTABS  ; DE GET SIZE OF A TABLE ENTRY
+074a 21 f1 07     2304:         LXI     H,RTAB   ; HL GETS ADDRESS OF TABLE START
+074d 11 03 00     2305:         LXI     D,RTABS  ; DE GET SIZE OF A TABLE ENTRY
                   2306: RGA05:
-0755 7e           2307:         MOV     A,M      ; GET REGISTER IDENTIFIER
-0756 b7           2308:         ORA     A        ; CHECK FOR TABLE END (IDENTIFIER IS 0)
-0757 ca 45 06     2309:         JZ      ERROR    ; IF AT END OF TABLE, ARGUMENT IS ILLEGAL
-075a b9           2310:         CMP     C        ; ELSE, COMPARE TABLE ENTRY AND ARGUMENT
-075b ca 62 07     2311:         JZ      RGA10    ; IF EQUAL, WE'VE FOUND WHAT WE'RE LOOKING FOR
-075e 19           2312:         DAD     D        ; ELSE, INCREMENT TABLE POINTER TO NEXT ENTRY
-075f c3 55 07     2313:         JMP     RGA05    ; TRY AGAIN
+0750 7e           2307:         MOV     A,M      ; GET REGISTER IDENTIFIER
+0751 b7           2308:         ORA     A        ; CHECK FOR TABLE END (IDENTIFIER IS 0)
+0752 ca 40 06     2309:         JZ      ERROR    ; IF AT END OF TABLE, ARGUMENT IS ILLEGAL
+0755 b9           2310:         CMP     C        ; ELSE, COMPARE TABLE ENTRY AND ARGUMENT
+0756 ca 5d 07     2311:         JZ      RGA10    ; IF EQUAL, WE'VE FOUND WHAT WE'RE LOOKING FOR
+0759 19           2312:         DAD     D        ; ELSE, INCREMENT TABLE POINTER TO NEXT ENTRY
+075a c3 50 07     2313:         JMP     RGA05    ; TRY AGAIN
                   2314: RGA10:
-0762 23           2315:         INX     H        ; IF A MATCH, INCREMENT TABLE POINTER TO
-0763 44           2316:         MOV     B,H      ; /SAVE LOCATION ADDRESS
-0764 4d           2317:         MOV     C,L      ; RETURN THIS VALUE
-0765 c9           2318:         RET
+075d 23           2315:         INX     H        ; IF A MATCH, INCREMENT TABLE POINTER TO
+075e 44           2316:         MOV     B,H      ; /SAVE LOCATION ADDRESS
+075f 4d           2317:         MOV     C,L      ; RETURN THIS VALUE
+0760 c9           2318:         RET
                   2319: ;
                   2320: ;
                   2321: ;
@@ -2333,8 +2333,8 @@ asm85 8085 Assembler v1.5 by nib
                   2331: ;              CALLER OF THE ROUTINE INVOKING SRET.
                   2332: ;
                   2333: SRET:
-0766 37           2334:         STC              ; SET CARRY TRUE
-0767 c9           2335:         RET              ; RETURN APPROPRIATELY
+0761 37           2334:         STC              ; SET CARRY TRUE
+0762 c9           2335:         RET              ; RETURN APPROPRIATELY
                   2336: ;
                   2337: ;
                   2338: ;
@@ -2351,12 +2351,12 @@ asm85 8085 Assembler v1.5 by nib
                   2349: ;              OTHERWISE, THE ROUTINE TAKES NO ACTION.
                   2350: ;
                   2351: STHF0:
-0768 3a fd 20     2352:         LDA     TEMP     ; GET HALF BYTE FLAG
-076b b7           2353:         ORA     A        ; SET F/F'S
-076c c0           2354:         RNZ              ; IF SET TO OPPER, DON'T DO ANYTHING
-076d 0e 00        2355:         MVI     C,0      ; ELSE, WANT TO STORE THE VALUE 0
-076f cd 73 07     2356:         CALL    STHLF    ; DO IT
-0772 c9           2357:         RET
+0763 3a fd 20     2352:         LDA     TEMP     ; GET HALF BYTE FLAG
+0766 b7           2353:         ORA     A        ; SET F/F'S
+0767 c0           2354:         RNZ              ; IF SET TO OPPER, DON'T DO ANYTHING
+0768 0e 00        2355:         MVI     C,0      ; ELSE, WANT TO STORE THE VALUE 0
+076a cd 6e 07     2356:         CALL    STHLF    ; DO IT
+076d c9           2357:         RET
                   2358: ;
                   2359: ;
                   2360: ;
@@ -2376,31 +2376,31 @@ asm85 8085 Assembler v1.5 by nib
                   2374: ;              (NOMINALLY BY ICMD)
                   2375: ;
                   2376: STHLF:
-0773 d5           2377:         PUSH    D
-0774 e1           2378:         POP     H        ; MOVE ADDRESS OF BYTE INTO HL
-0775 79           2379:         MOV     A,C      ; GET VALUE
-0776 e6 0f        2380:         ANI     0FH      ; FORCE TO 4 BIT LENGTH
-0778 4f           2381:         MOV     C,A      ; PUT VALUE BACK
-0779 3a fd 20     2382:         LDA     TEMP     ; GET HALF BYTE FLAG
-077c b7           2383:         ORA     A        ; CHECK FOR LOWER HALF
-077d c2 86 07     2384:         JNZ     STH05    ; BRANCH IF NOT
-0780 7e           2385:         MOV     A,M      ; ELSE, GET BYTE
-0781 e6 f0        2386:         ANI     0F0H     ; CLEAR LOWER 4 BITS
-0783 b1           2387:         ORA     C        ; OR IN VALUE
-0784 77           2388:         MOV     M,A      ; PUT BYTE BACK
-0785 c9           2389:         RET
+076e d5           2377:         PUSH    D
+076f e1           2378:         POP     H        ; MOVE ADDRESS OF BYTE INTO HL
+0770 79           2379:         MOV     A,C      ; GET VALUE
+0771 e6 0f        2380:         ANI     0FH      ; FORCE TO 4 BIT LENGTH
+0773 4f           2381:         MOV     C,A      ; PUT VALUE BACK
+0774 3a fd 20     2382:         LDA     TEMP     ; GET HALF BYTE FLAG
+0777 b7           2383:         ORA     A        ; CHECK FOR LOWER HALF
+0778 c2 81 07     2384:         JNZ     STH05    ; BRANCH IF NOT
+077b 7e           2385:         MOV     A,M      ; ELSE, GET BYTE
+077c e6 f0        2386:         ANI     0F0H     ; CLEAR LOWER 4 BITS
+077e b1           2387:         ORA     C        ; OR IN VALUE
+077f 77           2388:         MOV     M,A      ; PUT BYTE BACK
+0780 c9           2389:         RET
                   2390: STH05:
-0786 7e           2391:         MOV     A,M      ; IF UPPER HALF, GET BYTE
-0787 e6 0f        2392:         ANI     0FH      ; CLEAR UPPER 4 BITS
-0789 47           2393:         MOV     B,A      ; SAVE BYTE IN B
-078a 79           2394:         MOV     A,C      ; GET VALUE
-078b 0f           2395:         RRC
-078c 0f           2396:         RRC
-078d 0f           2397:         RRC
-078e 0f           2398:         RRC              ; ALIGN TO UPPER 4 BITS
-078f b0           2399:         ORA     B        ; OR IN ORIGINAL LOWER 4 BITS
-0790 77           2400:         MOV     M,A      ; PUT NEW CONFIGURATION BACK
-0791 c9           2401:         RET
+0781 7e           2391:         MOV     A,M      ; IF UPPER HALF, GET BYTE
+0782 e6 0f        2392:         ANI     0FH      ; CLEAR UPPER 4 BITS
+0784 47           2393:         MOV     B,A      ; SAVE BYTE IN B
+0785 79           2394:         MOV     A,C      ; GET VALUE
+0786 0f           2395:         RRC
+0787 0f           2396:         RRC
+0788 0f           2397:         RRC
+0789 0f           2398:         RRC              ; ALIGN TO UPPER 4 BITS
+078a b0           2399:         ORA     B        ; OR IN ORIGINAL LOWER 4 BITS
+078b 77           2400:         MOV     M,A      ; PUT NEW CONFIGURATION BACK
+078c c9           2401:         RET
                   2402: ;
                   2403: ;
                   2404: ;
@@ -2417,17 +2417,17 @@ asm85 8085 Assembler v1.5 by nib
                   2415: ;              (0-9,A-F), AND FAILURE OTHERWISE.
                   2416: ;
                   2417: VALDG:
-0792 79           2418:         MOV     A,C
-0793 fe 30        2419:         CPI     '0'      ; TEST CHARACTER AGAINST '0'
-0795 fa 50 06     2420:         JM      FRET     ; IF ASCII CODE LESS, CANNOT BE VALID DIGIT
-0798 fe 39        2421:         CPI     '9'      ; ELSE, SEE IF IN RANGE
-079a fa 66 07     2422:         JM      SRET     ; CODE BETWEEN '0' AND '9'
-079d ca 66 07     2423:         JZ      SRET     ; CODE EQUAL '9'
-07a0 fe 41        2424:         CPI     'A'      ; NOT A DIGIT - TRY FOR A LETTER
-07a2 fa 50 06     2425:         JM      FRET     ; NO - CODE BETWEEN '9' AND 'A'
-07a5 fe 47        2426:         CPI     'G'
-07a7 f2 50 06     2427:         JP      FRET     ; NO - CODE GREATER THAN 'F'
-07aa c3 66 07     2428:         JMP     SRET     ; OKAY - CODE IS 'A' TO 'F', INCLUSIVE
+078d 79           2418:         MOV     A,C
+078e fe 30        2419:         CPI     '0'      ; TEST CHARACTER AGAINST '0'
+0790 fa 4b 06     2420:         JM      FRET     ; IF ASCII CODE LESS, CANNOT BE VALID DIGIT
+0793 fe 39        2421:         CPI     '9'      ; ELSE, SEE IF IN RANGE
+0795 fa 61 07     2422:         JM      SRET     ; CODE BETWEEN '0' AND '9'
+0798 ca 61 07     2423:         JZ      SRET     ; CODE EQUAL '9'
+079b fe 41        2424:         CPI     'A'      ; NOT A DIGIT - TRY FOR A LETTER
+079d fa 4b 06     2425:         JM      FRET     ; NO - CODE BETWEEN '9' AND 'A'
+07a0 fe 47        2426:         CPI     'G'
+07a2 f2 4b 06     2427:         JP      FRET     ; NO - CODE GREATER THAN 'F'
+07a5 c3 61 07     2428:         JMP     SRET     ; OKAY - CODE IS 'A' TO 'F', INCLUSIVE
                   2429: ;
                   2430: ;
                   2431: ;
@@ -2444,14 +2444,14 @@ asm85 8085 Assembler v1.5 by nib
                   2442: ;              FAILURE OTHERWISE.
                   2443: ;
                   2444: VALDL:
-07ad 79           2445:         MOV     A,C
-07ae fe 2c        2446:         CPI     ','      ; CHECK FOR COMMA
-07b0 ca 66 07     2447:         JZ      SRET
-07b3 fe 0d        2448:         CPI     CR       ; CHECK FOR CARRIAGE RETURN
-07b5 ca 66 07     2449:         JZ      SRET
-07b8 fe 20        2450:         CPI     ' '      ; CHECK FOR SPACE
-07ba ca 66 07     2451:         JZ      SRET
-07bd c3 50 06     2452:         JMP     FRET     ; ERROR IF NONE OF THE ABOVE
+07a8 79           2445:         MOV     A,C
+07a9 fe 2c        2446:         CPI     ','      ; CHECK FOR COMMA
+07ab ca 61 07     2447:         JZ      SRET
+07ae fe 0d        2448:         CPI     CR       ; CHECK FOR CARRIAGE RETURN
+07b0 ca 61 07     2449:         JZ      SRET
+07b3 fe 20        2450:         CPI     ' '      ; CHECK FOR SPACE
+07b5 ca 61 07     2451:         JZ      SRET
+07b8 c3 4b 06     2452:         JMP     FRET     ; ERROR IF NONE OF THE ABOVE
                   2453: ;
                   2454: ;
                   2455: ;
@@ -2464,7 +2464,7 @@ asm85 8085 Assembler v1.5 by nib
                   2462: ;
                   2463: ;
                   2464: SGNON:           ; SIGNON MESSAGE
-07c0 0d 0a 53 44  2465:         DB      CR,LF,'SDK-85 VER 2.1',CR,LF
+07bb 0d 0a 53 44  2465:         DB      CR,LF,'SDK-85 VER 2.1',CR,LF
      4b 2d 38 35
      20 56 45 52
      20 32 2e 31
@@ -2479,86 +2479,86 @@ asm85 8085 Assembler v1.5 by nib
 (0012)            2473: LSGNON  EQU      $-SGNON ; LENGTH OF SIGNON MESSAGE
                   2474: ;
                   2475: CADR:            ; TABLE OF ADDRESSES OF COMMAND ROUTINES
-07d2 00 00        2476:         DW      0        ; DUMMY
-07d4 44 05        2477:         DW      XCMD
-07d6 20 05        2478:         DW      SCMD
-07d8 00 05        2479:         DW      MCMD
-07da b6 04        2480:         DW      ICMD
-07dc 98 04        2481:         DW      GCMD
-07de 67 04        2482:         DW      DCMD
+07cd 00 00        2476:         DW      0        ; DUMMY
+07cf 3f 05        2477:         DW      XCMD
+07d1 1b 05        2478:         DW      SCMD
+07d3 fb 04        2479:         DW      MCMD
+07d5 b1 04        2480:         DW      ICMD
+07d7 93 04        2481:         DW      GCMD
+07d9 62 04        2482:         DW      DCMD
                   2483: ;
                   2484: CTAB:            ; TABLE OF VALID COMMAND CHARACTERS
-07e0 44           2485:         DB      'D'
-07e1 47           2486:         DB      'G'
-07e2 49           2487:         DB      'I'
-07e3 4d           2488:         DB      'M'
-07e4 53           2489:         DB      'S'
-07e5 58           2490:         DB      'X'
+07db 44           2485:         DB      'D'
+07dc 47           2486:         DB      'G'
+07dd 49           2487:         DB      'I'
+07de 4d           2488:         DB      'M'
+07df 53           2489:         DB      'S'
+07e0 58           2490:         DB      'X'
 (0006)            2491: NCMDS   EQU      $-CTAB ; NUMBER OF VALID COMMANDS
                   2492: ;
                   2493: DIGTB:           ; TABLE OF PRINT VALUES OF HEX DIGITS
-07e6 30           2494:         DB      '0'
-07e7 31           2495:         DB      '1'
-07e8 32           2496:         DB      '2'
-07e9 33           2497:         DB      '3'
-07ea 34           2498:         DB      '4'
-07eb 35           2499:         DB      '5'
-07ec 36           2500:         DB      '6'
-07ed 37           2501:         DB      '7'
-07ee 38           2502:         DB      '8'
-07ef 39           2503:         DB      '9'
-07f0 41           2504:         DB      'A'
-07f1 42           2505:         DB      'B'
-07f2 43           2506:         DB      'C'
-07f3 44           2507:         DB      'D'
-07f4 45           2508:         DB      'E'
-07f5 46           2509:         DB      'F'
+07e1 30           2494:         DB      '0'
+07e2 31           2495:         DB      '1'
+07e3 32           2496:         DB      '2'
+07e4 33           2497:         DB      '3'
+07e5 34           2498:         DB      '4'
+07e6 35           2499:         DB      '5'
+07e7 36           2500:         DB      '6'
+07e8 37           2501:         DB      '7'
+07e9 38           2502:         DB      '8'
+07ea 39           2503:         DB      '9'
+07eb 41           2504:         DB      'A'
+07ec 42           2505:         DB      'B'
+07ed 43           2506:         DB      'C'
+07ee 44           2507:         DB      'D'
+07ef 45           2508:         DB      'E'
+07f0 46           2509:         DB      'F'
                   2510: ;
                   2511: RTAB:            ; TABLE OF REGISTER INFORMATION
-07f6 41           2512:         DB      'A'               ; REGISTER IDENTIFIER
-07f7 ee           2513:         DB      ASAV     & 0FFH ; ADDRESS OF REGISTER SAVE LOCATION
-07f8 00           2514:         DB      0                 ; LENGTH FLAG - 0=8 BITS, 1=16 BITS
+07f1 41           2512:         DB      'A'               ; REGISTER IDENTIFIER
+07f2 ee           2513:         DB      ASAV     & 0FFH ; ADDRESS OF REGISTER SAVE LOCATION
+07f3 00           2514:         DB      0                 ; LENGTH FLAG - 0=8 BITS, 1=16 BITS
 (0003)            2515: RTABS   EQU      $-RTAB           ; SIZE OF AN ENTRY IN THIS TABLE
-07f9 42           2516:         DB      'B'
-07fa ec           2517:         DB      BSAV     & 0FFH
-07fb 00           2518:         DB      0
-07fc 43           2519:         DB      'C'
-07fd eb           2520:         DB      CSAV     & 0FFH
-07fe 00           2521:         DB      0
-07ff 44           2522:         DB      'D'
-0800 ea           2523:         DB      DSAV     & 0FFH
-0801 00           2524:         DB      0
-0802 45           2525:         DB      'E'
-0803 e9           2526:         DB      ESAV     & 0FFH
-0804 00           2527:         DB      0
-0805 46           2528:         DB      'F'
-0806 ed           2529:         DB      FSAV     & 0FFH
-0807 00           2530:         DB      0
-0808 49           2531:         DB      'I'
-0809 f1           2532:         DB      ISAV     & 0FFH
-080a 00           2533:         DB      0
-080b 48           2534:         DB      'H'
-080c f0           2535:         DB      HSAV     & 0FFH
-080d 00           2536:         DB      0
-080e 4c           2537:         DB      'L'
-080f ef           2538:         DB      LSAV     & 0FFH
-0810 00           2539:         DB      0
-0811 4d           2540:         DB      'M'
-0812 f0           2541:         DB      HSAV     & 0FFH
-0813 01           2542:         DB      1
-0814 53           2543:         DB      'S'
-0815 f5           2544:         DB      SSAV+1   & 0FFH
-0816 01           2545:         DB      1
-0817 50           2546:         DB      'P'
-0818 f3           2547:         DB      PSAV+1   & 0FFH
-0819 01           2548:         DB      1
-081a 00           2549:         DB      0        ; END OF TABLE MARKERS
-081b 00           2550:         DB      0
+07f4 42           2516:         DB      'B'
+07f5 ec           2517:         DB      BSAV     & 0FFH
+07f6 00           2518:         DB      0
+07f7 43           2519:         DB      'C'
+07f8 eb           2520:         DB      CSAV     & 0FFH
+07f9 00           2521:         DB      0
+07fa 44           2522:         DB      'D'
+07fb ea           2523:         DB      DSAV     & 0FFH
+07fc 00           2524:         DB      0
+07fd 45           2525:         DB      'E'
+07fe e9           2526:         DB      ESAV     & 0FFH
+07ff 00           2527:         DB      0
+0800 46           2528:         DB      'F'
+0801 ed           2529:         DB      FSAV     & 0FFH
+0802 00           2530:         DB      0
+0803 49           2531:         DB      'I'
+0804 f1           2532:         DB      ISAV     & 0FFH
+0805 00           2533:         DB      0
+0806 48           2534:         DB      'H'
+0807 f0           2535:         DB      HSAV     & 0FFH
+0808 00           2536:         DB      0
+0809 4c           2537:         DB      'L'
+080a ef           2538:         DB      LSAV     & 0FFH
+080b 00           2539:         DB      0
+080c 4d           2540:         DB      'M'
+080d f0           2541:         DB      HSAV     & 0FFH
+080e 01           2542:         DB      1
+080f 53           2543:         DB      'S'
+0810 f5           2544:         DB      SSAV+1   & 0FFH
+0811 01           2545:         DB      1
+0812 50           2546:         DB      'P'
+0813 f3           2547:         DB      PSAV+1   & 0FFH
+0814 01           2548:         DB      1
+0815 00           2549:         DB      0        ; END OF TABLE MARKERS
+0816 00           2550:         DB      0
                   2551: ;
 (08fa)            2552:         ORG     BRTAB    ; BRANCH TABLE FOR USER ACCESSIBLE ROUTINES
                   2553: ;
-08fa c3 f6 05     2554:         JMP     CO       ; TTY CONSOLE OUTPUT
-08fd c3 c0 05     2555:         JMP     CI       ; TTY CONSOLE INPUT
+08fa c3 f1 05     2554:         JMP     CO       ; TTY CONSOLE OUTPUT
+08fd c3 bb 05     2555:         JMP     CI       ; TTY CONSOLE INPUT
                   2556: ;
                   2557: ;
                   2558: ;
@@ -2667,59 +2667,59 @@ USRBR           : 20c2 (8386)
 TIMER           : 00d4 (212)
 CLDBK           : 0008 (8)
 RES10           : 0069 (105)
-CMMND           : 0093 (147)
-CMD10           : 00a8 (168)
-CMD15           : 00b4 (180)
-EXAM            : 00bf (191)
-EXM05           : 00ca (202)
-EXM10           : 00e5 (229)
-GOCMD           : 00f8 (248)
-G10             : 0119 (281)
-SSTEP           : 012a (298)
-STP20           : 0153 (339)
-STP21           : 0168 (360)
-STP22           : 016f (367)
-STP23           : 0172 (370)
-STP25           : 0184 (388)
-SUBST           : 01ba (442)
-SUB05           : 01cb (459)
-SUB10           : 01f3 (499)
-SUB15           : 01fe (510)
-CLEAR           : 0206 (518)
-CLDIS           : 0218 (536)
-CLDST           : 0220 (544)
-DISPC           : 022f (559)
-ERR             : 0244 (580)
-GTHEX           : 025a (602)
-GTH05           : 0261 (609)
-GTH10           : 0278 (632)
-GTH20           : 0284 (644)
-GTH25           : 0296 (662)
-HXDSP           : 029b (667)
-ININT           : 02bd (701)
-INSDG           : 02ce (718)
-NXTRG           : 02d7 (727)
-OUTPT           : 02e6 (742)
-OUT05           : 02f1 (753)
-OUT10           : 02f5 (757)
-OUT15           : 02f8 (760)
-OUT20           : 030b (779)
-RDKBD           : 0316 (790)
-RDK10           : 0322 (802)
-RETF            : 0326 (806)
-RETT            : 0329 (809)
-RGLOC           : 032b (811)
-RGNAM           : 0338 (824)
-RSTOR           : 034a (842)
-RSR05           : 035d (861)
-RSR10           : 0361 (865)
-SETRG           : 0374 (884)
-UPDAD           : 038f (911)
-UPDDT           : 039b (923)
-CMDTB           : 03a8 (936)
+CMMND           : 0091 (145)
+CMD10           : 00a6 (166)
+CMD15           : 00b2 (178)
+EXAM            : 00bd (189)
+EXM05           : 00c8 (200)
+EXM10           : 00e3 (227)
+GOCMD           : 00f6 (246)
+G10             : 0117 (279)
+SSTEP           : 0128 (296)
+STP20           : 0151 (337)
+STP21           : 0166 (358)
+STP22           : 016d (365)
+STP23           : 0170 (368)
+STP25           : 0182 (386)
+SUBST           : 01b6 (438)
+SUB05           : 01c7 (455)
+SUB10           : 01ef (495)
+SUB15           : 01fa (506)
+CLEAR           : 0202 (514)
+CLDIS           : 0214 (532)
+CLDST           : 021c (540)
+DISPC           : 022b (555)
+ERR             : 0240 (576)
+GTHEX           : 0256 (598)
+GTH05           : 025d (605)
+GTH10           : 0274 (628)
+GTH20           : 0280 (640)
+GTH25           : 0292 (658)
+HXDSP           : 0297 (663)
+ININT           : 02b9 (697)
+INSDG           : 02ca (714)
+NXTRG           : 02d3 (723)
+OUTPT           : 02e2 (738)
+OUT05           : 02ed (749)
+OUT10           : 02f1 (753)
+OUT15           : 02f4 (756)
+OUT20           : 0307 (775)
+RDKBD           : 0312 (786)
+RDK10           : 031e (798)
+RETF            : 0322 (802)
+RETT            : 0325 (805)
+RGLOC           : 0327 (807)
+RGNAM           : 0334 (820)
+RSTOR           : 0346 (838)
+RSR05           : 0358 (856)
+RSR10           : 035c (860)
+SETRG           : 036f (879)
+UPDAD           : 038a (906)
+UPDDT           : 0396 (918)
+CMDTB           : 03a3 (931)
 NUMC            : 0004 (4)
-CMDAD           : 03ac (940)
-DSPTB           : 03b4 (948)
+CMDAD           : 03a7 (935)
+DSPTB           : 03af (943)
 ZERO            : 0000 (0)
 FIVE            : 0005 (5)
 LETRS           : 0005 (5)
@@ -2736,14 +2736,14 @@ LETRP           : 0012 (18)
 LETRI           : 0013 (19)
 LETRR           : 0014 (20)
 BLANK           : 0015 (21)
-BLNKS           : 03ca (970)
-ERMSG           : 03ce (974)
-EXMSG           : 03d2 (978)
-SGNAD           : 03d6 (982)
-SGNDT           : 03da (986)
-RGPTB           : 03dc (988)
-NMTBL           : 03e9 (1001)
-RGTBL           : 041d (1053)
+BLNKS           : 03c5 (965)
+ERMSG           : 03c9 (969)
+EXMSG           : 03cd (973)
+SGNAD           : 03d1 (977)
+SGNDT           : 03d5 (981)
+RGPTB           : 03d7 (983)
+NMTBL           : 03e4 (996)
+RGTBL           : 0418 (1048)
 NUMRG           : 000d (13)
 BRCHR           : 001b (27)
 BRTAB           : 08fa (2298)
@@ -2764,87 +2764,87 @@ IBTIM           : 048c (1164)
 OBTIM           : 048c (1164)
 TIM4            : 1230 (4656)
 WAIT            : 0246 (582)
-GO              : 042a (1066)
-MSGL            : 042f (1071)
-GETCM           : 0438 (1080)
-GTC03           : 0444 (1092)
-GTC05           : 0451 (1105)
-GTC10           : 045d (1117)
-DCMD            : 0467 (1127)
-DCM05           : 046e (1134)
-DCM10           : 0479 (1145)
-DCM15           : 048e (1166)
-GCMD            : 0498 (1176)
-GCM05           : 04ad (1197)
-GCM10           : 04b3 (1203)
-ICMD            : 04b6 (1206)
-ICM05           : 04c1 (1217)
-ICM10           : 04e9 (1257)
-ICM20           : 04f1 (1265)
-ICM25           : 04f7 (1271)
-MCMD            : 0500 (1280)
-MCM05           : 0508 (1288)
-SCMD            : 0520 (1312)
-SCM05           : 0525 (1317)
-SCM10           : 0530 (1328)
-SCM15           : 0540 (1344)
-XCMD            : 0544 (1348)
-XCM05           : 0557 (1367)
-XCM10           : 0566 (1382)
-XCM15           : 0573 (1395)
-XCM18           : 057e (1406)
-XCM20           : 0597 (1431)
-XCM25           : 05ae (1454)
-XCM27           : 05af (1455)
-XCM30           : 05b7 (1463)
-CI              : 05c0 (1472)
-CI05            : 05c2 (1474)
-CI10            : 05d2 (1490)
-CNVBN           : 05ed (1517)
-CO              : 05f6 (1526)
-CO05            : 05fd (1533)
-CROUT           : 061f (1567)
-DELAY           : 0625 (1573)
-ECHO            : 062c (1580)
-ECH05           : 0635 (1589)
-ECH10           : 0643 (1603)
-ERROR           : 0645 (1605)
-FRET            : 0650 (1616)
-GETCH           : 0653 (1619)
-GETHX           : 065a (1626)
-GHX05           : 0660 (1632)
-GHX10           : 0679 (1657)
-GETNM           : 068f (1679)
-GNM05           : 0696 (1686)
-GNM10           : 06ab (1707)
-GNM15           : 06b9 (1721)
-GNM20           : 06be (1726)
-GNM25           : 06c9 (1737)
-GNM30           : 06cd (1741)
-HILO            : 06d4 (1748)
-HIL05           : 06f5 (1781)
-NMOUT           : 06fb (1787)
-PRVAL           : 0716 (1814)
-REGDS           : 071e (1822)
-REG05           : 0721 (1825)
-REG10           : 072b (1835)
-REG15           : 0746 (1862)
-RGADR           : 074f (1871)
-RGA05           : 0755 (1877)
-RGA10           : 0762 (1890)
-SRET            : 0766 (1894)
-STHF0           : 0768 (1896)
-STHLF           : 0773 (1907)
-STH05           : 0786 (1926)
-VALDG           : 0792 (1938)
-VALDL           : 07ad (1965)
-SGNON           : 07c0 (1984)
+GO              : 0425 (1061)
+MSGL            : 042a (1066)
+GETCM           : 0433 (1075)
+GTC03           : 043f (1087)
+GTC05           : 044c (1100)
+GTC10           : 0458 (1112)
+DCMD            : 0462 (1122)
+DCM05           : 0469 (1129)
+DCM10           : 0474 (1140)
+DCM15           : 0489 (1161)
+GCMD            : 0493 (1171)
+GCM05           : 04a8 (1192)
+GCM10           : 04ae (1198)
+ICMD            : 04b1 (1201)
+ICM05           : 04bc (1212)
+ICM10           : 04e4 (1252)
+ICM20           : 04ec (1260)
+ICM25           : 04f2 (1266)
+MCMD            : 04fb (1275)
+MCM05           : 0503 (1283)
+SCMD            : 051b (1307)
+SCM05           : 0520 (1312)
+SCM10           : 052b (1323)
+SCM15           : 053b (1339)
+XCMD            : 053f (1343)
+XCM05           : 0552 (1362)
+XCM10           : 0561 (1377)
+XCM15           : 056e (1390)
+XCM18           : 0579 (1401)
+XCM20           : 0592 (1426)
+XCM25           : 05a9 (1449)
+XCM27           : 05aa (1450)
+XCM30           : 05b2 (1458)
+CI              : 05bb (1467)
+CI05            : 05bd (1469)
+CI10            : 05cd (1485)
+CNVBN           : 05e8 (1512)
+CO              : 05f1 (1521)
+CO05            : 05f8 (1528)
+CROUT           : 061a (1562)
+DELAY           : 0620 (1568)
+ECHO            : 0627 (1575)
+ECH05           : 0630 (1584)
+ECH10           : 063e (1598)
+ERROR           : 0640 (1600)
+FRET            : 064b (1611)
+GETCH           : 064e (1614)
+GETHX           : 0655 (1621)
+GHX05           : 065b (1627)
+GHX10           : 0674 (1652)
+GETNM           : 068a (1674)
+GNM05           : 0691 (1681)
+GNM10           : 06a6 (1702)
+GNM15           : 06b4 (1716)
+GNM20           : 06b9 (1721)
+GNM25           : 06c4 (1732)
+GNM30           : 06c8 (1736)
+HILO            : 06cf (1743)
+HIL05           : 06f0 (1776)
+NMOUT           : 06f6 (1782)
+PRVAL           : 0711 (1809)
+REGDS           : 0719 (1817)
+REG05           : 071c (1820)
+REG10           : 0726 (1830)
+REG15           : 0741 (1857)
+RGADR           : 074a (1866)
+RGA05           : 0750 (1872)
+RGA10           : 075d (1885)
+SRET            : 0761 (1889)
+STHF0           : 0763 (1891)
+STHLF           : 076e (1902)
+STH05           : 0781 (1921)
+VALDG           : 078d (1933)
+VALDL           : 07a8 (1960)
+SGNON           : 07bb (1979)
 LSGNON          : 0012 (18)
-CADR            : 07d2 (2002)
-CTAB            : 07e0 (2016)
+CADR            : 07cd (1997)
+CTAB            : 07db (2011)
 NCMDS           : 0006 (6)
-DIGTB           : 07e6 (2022)
-RTAB            : 07f6 (2038)
+DIGTB           : 07e1 (2017)
+RTAB            : 07f1 (2033)
 RTABS           : 0003 (3)
 RSET5           : 20c2 (8386)
 RSET6           : 20c5 (8389)
@@ -2875,4 +2875,4 @@ IBUFF           : 20fe (8446)
 USCSR           : 20ff (8447)
 
 
-Total memory is 2071 bytes
+Total memory is 2066 bytes
