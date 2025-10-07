@@ -10,7 +10,6 @@ DerivedData/
 
 /*.bin
 /*.hex
-/*.lst
 Package.resolved
 .stdwin
 
