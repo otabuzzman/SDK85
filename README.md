@@ -1,6 +1,8 @@
 # SDK85
 
-A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: the `RIM` and `SIM` instructions of the 8085 were replaced by `IN 0xFF` and `OUT 0xFF`. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT, RST 6.5 is not supported.
+A kind of replica of the [Intel SDK-85](https://en.wikipedia.org/wiki/Intel_System_Development_Kit#SDK-85) for iPadOS. The app uses an Z80 emulator instead of 8085, so the original ROM required changes: the `RIM` and `SIM` instructions of the 8085 were replaced by `IN 0xFF` and `OUT 0xFF`. 8085’s interrupts TRAP (4.5), RST 5.5 and RST 7.5 are handled by Z80’s NMI and INT. There is no support for RST 6.5. The changes increased the monitor size by a few bytes to just over the original 2 kB, which is not a problem because the monitor in the SDK85 is not a fixed-size ROM and the kit's memory layout offers enough space for a larger monitor.
+
+**Note:** The call addresses of the monitor routines have changed due to modifications to the original monitor (e.g., replacing RIM/SIM with IN/OUT 0xFF). The program examples on page 6-4 ff. of the printed manual use these routines and must be adapted accordingly. The values can be found in the file [sdk86.lst](sdk86.lst).
 
 The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.hansotten.nl/uploads/sdk85/9800451B.pdf)). A transcript of the relevant pages (67 - 93) had been done with [AWS Textract](https://aws.amazon.com/textract/), followed by numerous AWK scripts, and eventually manually edited. Though the assembler is happy, overseen errors might still hide in the code.
 
@@ -67,7 +69,7 @@ Apps used on Winos or Linos
   |    |    |    |    |
   |:---|:---|:---|:---|
   |1) Upload app in SP4. Wait for email confirmation (<5 minutes)|2) Select app in Connect|3) Click _Build Activity_ in _TestFlight_ section|4) Select latest build|
-  |![](img/sp4-upload-app.PNG)|![](img/connect-select-app.PNG)|![](img/connect-select-testflight.PNG)|![](img/.PNG)|
+  |![](img/sp4-upload-app.PNG)|![](img/connect-select-app.PNG)|![](img/connect-select-testflight.PNG)|![](img/connect-select-build.PNG)|
   |5) Set _Export Compliance Information_ (1)|6) Set _Export Compliance Information_ (2)|7) Save _Export Compliance Information_. Wait for email confirmation (<5 minutes)|8) Install app in TestFlight|
   |![](img/connect-set-1.PNG)|![](img/connect-set-2.PNG)|![](img/connect-save.PNG)|![](img/testflight-install.PNG)|
  
@@ -76,19 +78,23 @@ Apps used on Winos or Linos
 ### Which file for what
 |File|Comment|
 |:---|:------|
-|Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual.|
 |SDK85.LST|Monitor transcription (ISIS-II 8080/8085 MACRO ASSEMBLER).|
 |SDK85.SRC|Monitor assembler source (ISIS-II 8080/8085 MACRO ASSEMBLER) generated from SDK85.LST.|
 |sdk85-0000.bin|Monitor ROM image made with 8085 assembler (asm85).|
-|Resources/sdk85-pcb.jpg|Photo of SDK-85 printed circuit board.|
+|SDK85-UM-9800451A-1977.pdf|SDK-85 User's Manual, issue from '77.|
+|SDK85-UM-9800451B-1980.pdf|SDK-85 User's Manual, issue from '80.|
+|Intel/SDK85.pdf|Pages with monitor listing taken from SDK-85 User's Manual.|
 |sdk85-keyprease.mp3|Original SDK-85 key press/ release sounds.|
 |sdk85-keypress.mp3|Original SDK-85 key press sound.|
 |sdk85-keyrelease.mp3|Original SDK-85 key release sound.|
-|sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
+|vt100-keyprease-alpha.mp3|Original ([YT](https://www.youtube.com/watch?v=QW_uu-B1kbg)) VT100 alpha key press/ release sound.|
+|vt100-keyprease-enter.mp3|Original VT100 enter key press/ release sound.|
+|vt100-keyprease-space.mp3|Original VT100 space key press/ release sound.|
+|vt100-keypress-shift.mp3|Original VT100 shift key press sound.|
 |FontInfo.plist|Additional property file for custom fonts.|
 |Glass_TTY_VT220.ttf|Glass TTY VT220 font file.|
 |DECTerminalModerm.ttf|DEC Terminal Modern font file.
-|Sources/SDK85|Swift sources folder.|
+|Resources/sdk85-pcb.jpg|Photo of SDK-85 printed circuit board.|
 |Sdk85.swift|The main program.|
 |IntIO.swift|Interrupts and I/O ports abstraction for Z80 emulator. Glue code between Z80 emulator and SwiftUI.|
 |I8279.swift|8279 keyboard/ display interface abstraction. Glue code between Z80 emulator and SwiftUI.|
@@ -106,6 +112,8 @@ Apps used on Winos or Linos
 |Queue.swift|A queue (FIFO) implementation.|
 |BatterySaver.swift|An overlay view to resume execution.|
 |UserDefaults.swift|Settings and app-wide default values.|
+|sdk85.asm|Monitor assembler source (asm85) hand-crafted from SDK85.SRC.|
+|sdk85.lst|Monitor assembler (asm85) listing.|
 
 ### License
 Copyright (c) 2022 Jürgen Schuck
