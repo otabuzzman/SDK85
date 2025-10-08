@@ -32,12 +32,14 @@ struct Hexboard: View {
                                 Task {
                                     await i8155.data(0xFF)
                                     await i8155.INT(true) // RST 7
+                                    if await i8085.halted { circuitIO.resume() }
                                 }
                             default:
                                 Task {
                                     await i8279.RL07.enqueue(keyConfiguration.code)
                                     await i8155.data(0xEF)
                                     await i8155.INT(true) // RST 5
+                                    if await i8085.halted { circuitIO.resume() }
                                 }
                             }
                             if keyClick { Sound.play(soundfile: "sdk85-keyprease.mp3") }

@@ -125,11 +125,41 @@ class Watchdog: ObservableObject {
     }
 }
 
+actor Mutex<T> {
+    private var _value: T
+    
+    init(_ value: T) {
+        _value = value
+    }
+    
+    var value: T {
+        get { _value }
+        set(value) { _value = value }
+    }
+    func value(_ value: T) {
+        _value = value
+    }
+}
+
 // must live outside CircuitIO
 var i8155: IntIO!
 var i8279: I8279!
 
-typealias I8085 = Z80
+class I8085: Z80 {
+    var _halted = Mutex<Bool>(false)
+
+    var halted: Bool {
+        get async { await _halted.value }
+    }
+    func halted(_ value: Bool) {
+        Task { await _halted.value(value) }
+    }
+    
+    override func reset() {
+        super.reset()
+        halted(false)
+    }
+}
 
 var mem: Memory!
 var i8085: I8085!
@@ -158,7 +188,6 @@ class CircuitIO: ObservableObject {
         await cancel()
         
         i8085.reset()
-        i8085.Halt = false
         await i8155.reset()
         await i8279.reset()
         
@@ -178,7 +207,8 @@ class CircuitIO: ObservableObject {
     }
     
     func resume() {
-        runner = Task { await AppModule.resume(self) }
+        i8085.halted(false)
+        runner = Task { await _resume(self) }
     }
 
     // I8085
@@ -199,11 +229,11 @@ class CircuitIO: ObservableObject {
 }
 
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
-func resume(_ circuit: CircuitIO) async {
+func _resume(_ circuit: CircuitIO) async {
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
     
-    while (!i8085.Halt) {
+    while await !i8085.halted {
         // let t1 = Date.timeIntervalSinceReferenceDate
         
         let tStates = i8085.parse()
@@ -212,7 +242,7 @@ func resume(_ circuit: CircuitIO) async {
         if await i8155.TIMER_IN(pulses: UShort(tStates)) {
             await i8155.NMI(true)
             if _isDebugAssertConfiguration() { print(i8085.dumpStateCompact()) }
-        }
+        } else { i8085.halted(i8085.Halt) }
         
         /*
          with clock adjustment, the cpu is faster in debug than in release configuration: the reason for this is that no adjustment is required in debug configuration because the CPU is already too slow, but at least it runs at about 1.4 MHz. in release configuration, the adaptation is active, but the sleep nanosecond lasts up to 500ms, at least about 50ms, even if only say 300ms is requested, which causes the CPU to effectively run much slower than requested, also as in the debug configuration.

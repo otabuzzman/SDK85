@@ -19,8 +19,8 @@ let package = Package(
             targets: ["AppModule"],
             bundleIdentifier: "com.otabuzzman.sdk85.ios",
             teamIdentifier: "28FV44657B",
-            displayVersion: "1.6.10",
-            bundleVersion: "64",
+            displayVersion: "1.7.0",
+            bundleVersion: "65",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.teal),
             supportedDeviceFamilies: [
@@ -38,7 +38,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/otabuzzman/z80.git", "0.1.13"..<"1.0.0")
+        .package(url: "https://github.com/otabuzzman/z80", "0.1.16"..<"1.0.0")
     ],
     targets: [
         .executableTarget(
