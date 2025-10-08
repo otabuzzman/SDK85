@@ -141,7 +141,7 @@ asm85 8085 Assembler v1.5 by nib
 (20c2)             139: USRBR   EQU      RAMST + 256 - (RMUSE + SKLN + UBRLN) ; START OF USER
                    140:                          ; /BRANCH LOCATIONS
                    141: ;         IF       1-WAITS ; TIMER VALUE FOR SINGLE STEP IF NO WAIT STATE
-(00d4)             142: TIMER   EQU      211 + 1 ; NUMBER OF INSTRUCTIONS MEASSURED IN T-STATES TO SKIP
+(00c6)             142: TIMER   EQU      197 + 1 ; NUMBER OF INSTRUCTIONS MEASSURED IN T-STATES TO SKIP
                    143:                          ; /PLUS ONE SO THAT THE INTERRUPT DOES NOT OCCUR UNTIL
                    144:                          ; /THE FOLLOWING INSTRUCTION
                    145: ;         ENDIF
@@ -428,7 +428,7 @@ asm85 8085 Assembler v1.5 by nib
 0170 3e 40         426:         MVI     A,((TIMER & 0FF00H) / 256) | TMODE ; HIGH ORDER BITS OF TIMER VALUE
                    427:                          ; /OR'ED WITH TIMER MODE
 0172 d3 25         428:         OUT     TIMHI
-0174 3e d4         429:         MVI     A,TIMER & 0FFH ; LOW ORDER BITS OF TIMER VALUE
+0174 3e c6         429:         MVI     A,TIMER & 0FFH ; LOW ORDER BITS OF TIMER VALUE
 0176 d3 24         430:         OUT     TIMLO
 0178 3a ff 20      431:         LDA     USCSR    ; GET USER IMAGE OF WHAT'S IN CSR
 017b f6 c0         432:         ORI     TSTRT    ; SET TIMER COMMAND BITS TO START TIMER
@@ -2664,7 +2664,7 @@ TMODE           : 0040 (64)
 TSTRT           : 00c0 (192)
 UNMSK           : 000e (14)
 USRBR           : 20c2 (8386)
-TIMER           : 00d4 (212)
+TIMER           : 00c6 (198)
 CLDBK           : 0008 (8)
 RES10           : 0069 (105)
 CMMND           : 0091 (145)
