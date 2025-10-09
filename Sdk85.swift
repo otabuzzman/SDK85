@@ -208,7 +208,7 @@ class CircuitIO: ObservableObject {
     
     func resume() {
         i8085.halted(false)
-        runner = Task { await _resume(self) }
+        runner = Task { await fetchExecuteCycle(self) }
     }
 
     // I8085
@@ -229,7 +229,7 @@ class CircuitIO: ObservableObject {
 }
 
 // https://developer.apple.com/documentation/xcode/improving-app-responsiveness
-func _resume(_ circuit: CircuitIO) async {
+func fetchExecuteCycle(_ circuit: CircuitIO) async {
     var tStatesSum: UInt = 0
     let t0 = Date.timeIntervalSinceReferenceDate
     
