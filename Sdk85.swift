@@ -104,6 +104,7 @@ struct Circuit: View {
             watchdog.alarm = false
             watchdog.restart(interval)
         }
+        .ignoresSafeArea(.all)
         .environmentObject(watchdog)
         .environmentObject(circuitIO)
     }
