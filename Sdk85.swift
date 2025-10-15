@@ -198,7 +198,7 @@ class CircuitIO: ObservableObject {
     }
     
     func load(bytes: Data, atMemoryAddress addr: UShort = 0) {
-        mem.replaceSubrange(Int(addr)..<bytes.count, with: bytes)
+        mem.replaceSubrange(Int(addr)..<(Int(addr) + bytes.count), with: bytes)
     }
     
     func cancel() async {
