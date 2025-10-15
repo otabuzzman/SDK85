@@ -1,0 +1,186 @@
+asm85 8085 Assembler v1.5 by nib
+
+(2000)               1:         ORG 2000H
+                     2: 
+(1900)               3: CTRL    EQU 1900H       ; Control register
+(1800)               4: DATAREG EQU 1800H       ; Data register
+(0620)               5: DELAY   EQU 0620H       ; Delay subroutine (DE = time, FFFF = 1s)
+                     6: 
+                     7: ; ------------------------------------------------------------
+                     8: ; Segment bit layout: d e f g p a b c  (bit7..0)
+                     9: ; Active-low (0 = segment ON) → we CMA before writing
+                    10: ; ------------------------------------------------------------
+                    11: 
+                    12: ; ---------- segment patterns (active-low) ---------- 
+                    13: 
+                    14: ;               d
+                    15: ;           dcbapgfe
+(000c)              16: ZERO    EQU 00001100B
+(009f)              17: ONE     EQU 10011111B
+(004a)              18: TWO     EQU 01001010B
+(000b)              19: THREE   EQU 00001011B
+(0099)              20: FOUR    EQU 10011001B
+(0029)              21: FIVE    EQU 00101001B
+(0028)              22: SIX     EQU 00101000B
+(008f)              23: SEVEN   EQU 10001111B
+(0008)              24: EIGHT   EQU 00001000B
+(0009)              25: NINE    EQU 00001001B
+(0088)              26: AHEX    EQU 10001000B
+(0038)              27: BHEX    EQU 00111000B
+(006c)              28: CHEX    EQU 01101100B
+(001a)              29: DHEX    EQU 00011010B
+(0068)              30: EHEX    EQU 01101000B
+(00e8)              31: FHEX    EQU 11101000B
+(00ff)              32: BLANK   EQU 11111111B
+                    33: 
+                    34: ; ------------------------------------------------------------
+                    35: ; Output 4 address digits (HL → 4 bytes)
+                    36: ; ------------------------------------------------------------
+                    37: OUTADDR:
+2000 3e 90          38:         MVI  A,090H
+2002 32 00 19       39:         STA  CTRL
+2005 06 04          40:         MVI  B,4
+2007 7e             41: OA1:    MOV  A,M
+2008 32 00 18       42:         STA  DATAREG
+200b 23             43:         INX  H
+200c 05             44:         DCR  B
+200d c2 07 20       45:         JNZ  OA1
+2010 c9             46:         RET
+                    47: 
+                    48: ; ------------------------------------------------------------
+                    49: ; Output 2 data digits (HL → 2 bytes)
+                    50: ; ------------------------------------------------------------
+                    51: OUTDATA:
+2011 3e 94          52:         MVI  A,094H
+2013 32 00 19       53:         STA  CTRL
+2016 06 02          54:         MVI  B,2
+2018 7e             55: OD1:    MOV  A,M
+2019 32 00 18       56:         STA  DATAREG
+201c 23             57:         INX  H
+201d 05             58:         DCR  B
+201e c2 18 20       59:         JNZ  OD1
+2021 c9             60:         RET
+                    61: 
+                    62: ; ------------------------------------------------------------
+                    63: ; Short delay (~0.3 s)
+                    64: ; ------------------------------------------------------------
+                    65: DELAY300:
+2022 11 00 4c       66:         LXI  D,04C00H
+2025 cd 20 06       67:         CALL DELAY
+2028 c9             68:         RET
+                    69: 
+                    70: ; ------------------------------------------------------------
+                    71: ; Self-test: all segments ON for ~0.5 s
+                    72: ; ------------------------------------------------------------
+                    73: SELFTEST:
+2029 21 7e 20       74:         LXI  H,TESTA
+202c cd 00 20       75:         CALL OUTADDR
+202f 21 82 20       76:         LXI  H,TESTD
+2032 cd 11 20       77:         CALL OUTDATA
+2035 11 ff 7f       78:         LXI  D,07FFFH       ; ≈0.5 s
+2038 cd 20 06       79:         CALL DELAY
+203b c9             80:         RET
+                    81: 
+                    82: ; ------------------------------------------------------------
+                    83: ; Main loop
+                    84: ; ------------------------------------------------------------
+                    85: MAIN:
+203c cd 29 20       86:         CALL SELFTEST
+                    87: 
+                    88: LOOP:
+                    89:         ; ---- blank ----
+203f 21 84 20       90:         LXI  H,FRAME0A
+2042 cd 00 20       91:         CALL OUTADDR
+2045 21 88 20       92:         LXI  H,FRAME0D
+2048 cd 11 20       93:         CALL OUTDATA
+204b cd 22 20       94:         CALL DELAY300
+                    95: 
+                    96:         ; ---- C0FF  EE ----
+204e 21 8a 20       97:         LXI  H,FRAME1A
+2051 cd 00 20       98:         CALL OUTADDR
+2054 21 8e 20       99:         LXI  H,FRAME1D
+2057 cd 11 20      100:         CALL OUTDATA
+205a cd 22 20      101:         CALL DELAY300
+                   102: 
+                   103:         ; ---- DEAD  00 ----
+205d 21 90 20      104:         LXI  H,FRAME2A
+2060 cd 00 20      105:         CALL OUTADDR
+2063 21 94 20      106:         LXI  H,FRAME2D
+2066 cd 11 20      107:         CALL OUTDATA
+2069 cd 22 20      108:         CALL DELAY300
+                   109: 
+                   110:         ; ---- C0DE  F0 ----
+206c 21 96 20      111:         LXI  H,FRAME3A
+206f cd 00 20      112:         CALL OUTADDR
+2072 21 9a 20      113:         LXI  H,FRAME3D
+2075 cd 11 20      114:         CALL OUTDATA
+2078 cd 22 20      115:         CALL DELAY300
+                   116: 
+207b c3 3f 20      117:         JMP  LOOP
+                   118: 
+                   119: ; ------------------------------------------------------------
+                   120: ; Frame data (4 + 2 bytes each)
+                   121: ; ------------------------------------------------------------
+207e 00 00 00 00   122: TESTA:   DB 00000000B,00000000B,00000000B,00000000B   ; all ON (active-low)
+2082 00 00         123: TESTD:   DB 00000000B,00000000B
+                   124: 
+2084 ff ff ff ff   125: FRAME0A: DB BLANK,BLANK,BLANK,BLANK
+2088 ff ff         126: FRAME0D: DB BLANK,BLANK
+                   127: 
+208a 6c 0c e8 e8   128: FRAME1A: DB CHEX,ZERO,FHEX,FHEX         ; "C0FF"
+208e 68 68         129: FRAME1D: DB EHEX,EHEX                   ; "EE"
+                   130: 
+2090 1a 68 88 1a   131: FRAME2A: DB DHEX,EHEX,AHEX,DHEX         ; "DEAD"
+2094 ff ff         132: FRAME2D: DB BLANK,BLANK
+                   133: 
+2096 6c 0c 1a 68   134: FRAME3A: DB CHEX,ZERO,DHEX,EHEX         ; "C0DE"
+209a 99 4a         135: FRAME3D: DB FOUR,TWO                    ; "42"
+                   136: 
+                   137:         END
+
+137 lines, 0 errors, 0 warnings
+
+
+SYMBOL TABLE:
+
+CTRL            : 1900 (6400)
+DATAREG         : 1800 (6144)
+DELAY           : 0620 (1568)
+ZERO            : 000c (12)
+ONE             : 009f (159)
+TWO             : 004a (74)
+THREE           : 000b (11)
+FOUR            : 0099 (153)
+FIVE            : 0029 (41)
+SIX             : 0028 (40)
+SEVEN           : 008f (143)
+EIGHT           : 0008 (8)
+NINE            : 0009 (9)
+AHEX            : 0088 (136)
+BHEX            : 0038 (56)
+CHEX            : 006c (108)
+DHEX            : 001a (26)
+EHEX            : 0068 (104)
+FHEX            : 00e8 (232)
+BLANK           : 00ff (255)
+OUTADDR         : 2000 (8192)
+OA1             : 2007 (8199)
+OUTDATA         : 2011 (8209)
+OD1             : 2018 (8216)
+DELAY300        : 2022 (8226)
+SELFTEST        : 2029 (8233)
+MAIN            : 203c (8252)
+LOOP            : 203f (8255)
+TESTA           : 207e (8318)
+TESTD           : 2082 (8322)
+FRAME0A         : 2084 (8324)
+FRAME0D         : 2088 (8328)
+FRAME1A         : 208a (8330)
+FRAME1D         : 208e (8334)
+FRAME2A         : 2090 (8336)
+FRAME2D         : 2094 (8340)
+FRAME3A         : 2096 (8342)
+FRAME3D         : 209a (8346)
+
+
+Total memory is 156 bytes
