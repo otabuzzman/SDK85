@@ -14,95 +14,149 @@ struct Circuit: View {
     
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     @State private var loadUserProgram = false
+
+    @State private var isLoadingMonitor = false
+    @State private var isLoadingProgram = false
     
     @State private var thisControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
+
+    private var isLoading: Bool { isLoadingMonitor || isLoadingProgram }
     
     var body: some View {
-        // https://habr.com/en/post/476494/
-        ScrollView(.horizontal, showsIndicators: false) {
-            ZStack {
-                HStack(spacing: 0) {
-                    Pcb(isPortrait: isPortrait)
-                        .frame(width: UIScreen.main.bounds.width)
-                    Tty(isPortrait: isPortrait)
-                        .frame(width: UIScreen.main.bounds.width)
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            
+            // https://habr.com/en/post/476494/
+            ZStack { // wrap content to allow overlaying a spinner
+                ScrollView(.horizontal, showsIndicators: false) {
+                    ZStack {
+                        HStack(spacing: 0) {
+                            Pcb(isPortrait: isPortrait)
+                                .frame(width: width, height: height)
+                            Tty(isPortrait: isPortrait)
+                                .frame(width: width, height: height)
+                        }
+                        .frame(width: width * 2, height: height, alignment: .leading)
+                    }
+                    .frame(width: width, height: height, alignment: .leading)
                 }
-            }
-        }
-        .content.offset(x: controlOffset)
-        .frame(width: UIScreen.main.bounds.width, alignment: .leading)
-        .gesture(DragGesture()
-            .onChanged() { value in
-                controlOffset = value.translation.width - UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
-            }
-            .onEnded() { value in
-                if
-                    -value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
-                     let nextControl = Control(rawValue: thisControl.rawValue + 1)
-                {
-                    thisControl = nextControl
+                .content.offset(x: controlOffset)
+                .frame(width: width, height: height, alignment: .leading)
+                .gesture(DragGesture()
+                    .onChanged { value in
+                        controlOffset = value.translation.width - width * CGFloat(thisControl.rawValue)
+                    }
+                    .onEnded { value in
+                        if -value.predictedEndTranslation.width > width / 2,
+                           let nextControl = Control(rawValue: thisControl.rawValue + 1) {
+                            thisControl = nextControl
+                        }
+                        if value.predictedEndTranslation.width > width / 2,
+                           let nextControl = Control(rawValue: thisControl.rawValue - 1) {
+                            thisControl = nextControl
+                        }
+                        withAnimation {
+                            controlOffset = -width * CGFloat(thisControl.rawValue)
+                        }
+                    }
+                )
+                .gesture(LongPressGesture()
+                    .onEnded { _ in
+                        loadUserProgram = true
+                    }
+                )
+                .onRotate(isPortrait: $isPortrait) { _ in
+                    withAnimation {
+                        controlOffset = -width * CGFloat(thisControl.rawValue)
+                    }
                 }
-                if
-                    value.predictedEndTranslation.width > UIScreen.main.bounds.width / 2,
-                    let nextControl = Control(rawValue: thisControl.rawValue - 1)
-                {
-                    thisControl = nextControl
+                .sheet(isPresented: $loadCustomMonitor) {
+                    BinFileLoader() { result in
+                        switch result {
+                        case .success(let monitor):
+                            isLoadingMonitor = true
+                            Task {
+                                circuitIO.load(bytes: monitor)
+                                await circuitIO.reset()
+                                watchdog.alarm = false
+                                watchdog.restart(interval)
+                                try? await Task.sleep(nanoseconds: 750_000_000)
+                                await MainActor.run {
+                                    withAnimation(.easeOut(duration: 0.25)) {
+                                        isLoadingMonitor = false
+                                    }
+                                }
+                            }
+                        case .failure:
+                            Task { @MainActor in
+                                withAnimation(.easeOut(duration: 0.25)) {
+                                    isLoadingMonitor = false
+                                }
+                            }
+                        }
+                    }
                 }
-                withAnimation {
-                    controlOffset = -UIScreen.main.bounds.width * CGFloat(thisControl.rawValue)
+                .sheet(isPresented: $loadUserProgram) {
+                    BinFileLoader() { result in
+                        switch result {
+                        case .success(let program):
+                            isLoadingProgram = true
+                            Task {
+                                circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
+                                await circuitIO.reset()
+                                watchdog.alarm = false
+                                watchdog.restart(interval)
+                                try? await Task.sleep(nanoseconds: 750_000_000)
+                                await MainActor.run {
+                                    withAnimation(.easeOut(duration: 0.25)) {
+                                        isLoadingProgram = false
+                                    }
+                                }
+                            }
+                        case .failure:
+                            Task { @MainActor in
+                                withAnimation(.easeOut(duration: 0.25)) {
+                                    isLoadingProgram = false
+                                }
+                            }
+                        }
+                        // Close the sheet; no need to animate this flag
+                        loadUserProgram = false
+                    }
                 }
-            })
-        .gesture(LongPressGesture()
-            .onEnded { _ in 
-                loadUserProgram = true
-            })
-        .onRotate(isPortrait: $isPortrait) { _ in
-            withAnimation {
-                controlOffset = -UIScreen.main.bounds.height * CGFloat(thisControl.rawValue)
-            }
-        }
-        .sheet(isPresented: $loadCustomMonitor) {
-            BinFileLoader() { result in
-                switch result {
-                case .success(let monitor):
+                .onChange(of: thisControl, initial: true) {
                     Task {
-                        circuitIO.load(bytes: monitor)
+                        circuitIO.control = thisControl
                         await circuitIO.reset()
                     }
                     watchdog.alarm = false
                     watchdog.restart(interval)
-                default:
-                    break
                 }
-            }
-        }
-        .sheet(isPresented: $loadUserProgram) {
-            BinFileLoader() { result in
-                switch result {
-                case .success(let program):
-                    Task {
-                        circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
-                        await circuitIO.reset()
+                
+                // always-present overlay, opacity-animated
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .blur(radius: 10)
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .scaleEffect(sizeClass == .compact ? 1.2 : 2.4)
+                            .tint(Color.white.opacity(0.82))
                     }
-                    watchdog.alarm = false
-                    watchdog.restart(interval)
-                default:
-                    break
+                    .padding(sizeClass == .compact ? 32 : 64)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
                 }
-                loadUserProgram = false
+                .opacity(isLoading ? 1 : 0)
+                .allowsHitTesting(isLoading)
+                .animation(.easeInOut(duration: 0.25), value: isLoading)
             }
-        }
-        .onChange(of: thisControl, initial: true) {
-            Task {
-                circuitIO.control = thisControl
-                await circuitIO.reset()
-            }
-            watchdog.alarm = false
-            watchdog.restart(interval)
         }
         .ignoresSafeArea(.all)
         .environmentObject(watchdog)
