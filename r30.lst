@@ -1,0 +1,319 @@
+asm85 8085 Assembler v1.5 by nib
+
+(4000)               1:         ORG 4000H
+                     2: 
+                     3: ;------------------------------------------------------------
+                     4: ; CONSTANTS
+                     5: ;------------------------------------------------------------
+(1900)               6: CTRL    EQU 1900H
+(1800)               7: DATA    EQU 1800H
+(0620)               8: DELAY   EQU 0620H
+                     9: 
+(0029)              10: S_PAT   EQU 029H
+(009f)              11: I_PAT   EQU 09FH
+(006c)              12: C_PAT   EQU 06CH
+(000c)              13: O_PAT   EQU 00CH
+(00ae)              14: M_PAT   EQU 0AEH
+(00c8)              15: P_PAT   EQU 0C8H
+(00fa)              16: r_PAT   EQU 0FAH ; 'r'
+(000b)              17: THREE   EQU 00BH
+(000c)              18: ZERO    EQU 00CH
+                    19: 
+                    20: ;------------------------------------------------------------
+                    21: ; MAIN PROGRAM
+                    22: ;------------------------------------------------------------
+                    23: START:
+                    24: ;        LXI  H,SICOMP    ; display "SICOMP"
+                    25: ;        CALL DFRAME
+                    26: ;
+                    27: ;        LXI  D,07FFFH    ; wait ~1 second
+                    28: ;        CALL DELAY
+                    29: ;
+                    30: ;        LXI  H,SICOMP    ; rotate backward -> "ICOMPS"
+                    31: ;        MVI  C,5         ; number of bytes - 1
+                    32: ;        CALL ROTMB
+                    33: ;
+                    34: ;        LXI  H,SICOMP
+                    35: ;        CALL DFRAME
+                    36: ;
+                    37: ;        LXI  D,07FFFH
+                    38: ;        CALL DELAY
+                    39: ;
+                    40: ;        LXI  H,SICOMP    ; rotate forward -> "SICOMP"
+                    41: ;        MVI  C,5
+                    42: ;        CALL ROTMF
+                    43: ;
+                    44: ;        LXI  H,SICOMP
+                    45: ;        CALL DFRAME
+                    46: ;
+                    47: ;        LXI  D,07FFFH
+                    48: ;        CALL DELAY
+                    49: PROLOG:
+4000 cd 8e 40       50:         CALL PNON5F     ; play nonsense
+                    51: 
+4003 21 0f 41       52:         LXI  H,NONSNS+1 ; let 'I' appear
+4006 06 9f          53:         MVI  B,I_PAT
+4008 cd 83 40       54:         CALL REP5FP
+400b 21 13 41       55:         LXI  H,NONSNS+5 ; let 'P' appear
+400e 06 c8          56:         MVI  B,P_PAT
+4010 cd 83 40       57:         CALL REP5FP
+4013 21 12 41       58:         LXI  H,NONSNS+4 ; let 'M' appear
+4016 06 ae          59:         MVI  B,M_PAT
+4018 cd 83 40       60:         CALL REP5FP
+401b 21 10 41       61:         LXI  H,NONSNS+2 ; let 'C' appear
+401e 06 6c          62:         MVI  B,C_PAT
+4020 cd 83 40       63:         CALL REP5FP
+4023 21 0e 41       64:         LXI  H,NONSNS+0 ; let 'S' appear
+4026 06 29          65:         MVI  B,S_PAT
+4028 cd 83 40       66:         CALL REP5FP
+402b 21 11 41       67:         LXI  H,NONSNS+3 ; let 'O' appear
+402e 06 0c          68:         MVI  B,O_PAT
+4030 cd 83 40       69:         CALL REP5FP
+                    70: LOOP:
+4033 0e 03          71:         MVI  C,3
+                    72: BLINK:
+4035 21 08 41       73:         LXI  H,EMPTYF ; clear display
+4038 cd dd 40       74:         CALL DFRAME
+403b 11 00 18       75:         LXI  D,01800H ; wait
+403e cd 20 06       76:         CALL DELAY
+                    77: 
+4041 21 26 41       78:         LXI  H,NONSNS+24 ; now "SICOMP"
+4044 cd dd 40       79:         CALL DFRAME
+4047 11 00 18       80:         LXI  D,01800H ; wait
+404a cd 20 06       81:         CALL DELAY
+                    82: 
+404d 0d             83:         DCR  C
+404e c2 35 40       84:         JNZ  BLINK
+                    85: 
+4051 0e 06          86:         MVI  C,6
+                    87: SHFTL:
+4053 23             88:         INX  H
+4054 cd dd 40       89:         CALL DFRAME
+4057 11 00 10       90:         LXI  D,01000H
+405a cd 20 06       91:         CALL DELAY
+405d 0d             92:         DCR  C
+405e c2 53 40       93:         JNZ  SHFTL
+                    94: 
+4061 21 38 41       95:         LXI  H,R30+6
+4064 0e 06          96:         MVI  C,6
+                    97: SHFTR:
+4066 2b             98:         DCX  H
+4067 cd dd 40       99:         CALL DFRAME
+406a 11 00 10      100:         LXI  D,01000H
+406d cd 20 06      101:         CALL DELAY
+4070 0d            102:         DCR  C
+4071 c2 66 40      103:         JNZ  SHFTR
+                   104: 
+4074 0e 02         105:         MVI  C,2
+                   106: WAIT:
+4076 11 ff ff      107:         LXI  D,0FFFFH
+4079 cd 20 06      108:         CALL DELAY
+407c 0d            109:         DCR  C
+407d c2 76 40      110:         JNZ  WAIT
+                   111: 
+4080 c3 33 40      112:         JMP  LOOP
+                   113: 
+                   114: ; REP5FP - replace byte in 5 frames at M
+                   115: ;
+                   116: REP5FP:
+4083 11 06 00      117:         LXI  D,6
+4086 0e 05         118:         MVI  C,5
+4088 cd 9a 40      119:         CALL REPINT
+408b cd 8e 40      120:         CALL PNON5F
+                   121: 
+                   122: ; PNON5F - play 5 frames of nonsense
+                   123: ;
+                   124: PNON5F:
+408e 21 0e 41      125:         LXI  H,NONSNS
+4091 11 00 18      126:         LXI  D,01800H
+4094 0e 05         127:         MVI  C,5
+4096 cd a1 40      128:         CALL PFRAMD
+                   129: 
+4099 c9            130:         RET
+                   131: 
+                   132: ; REPINT - replace N bytes in M with interval size I.
+                   133: ;          byte in B, N in C, I in DE
+                   134: ;
+                   135: REPINT:
+409a 70            136:         MOV  M,B
+409b 19            137:         DAD  D
+409c 0d            138:         DCR  C
+409d c2 9a 40      139:         JNZ  REPINT
+                   140: 
+40a0 c9            141:         RET
+                   142: 
+                   143: ; PFRAMD - play N frames at M with delay.
+                   144: ;          N in C, delay in DE
+                   145: ;
+                   146: PFRAMD:
+40a1 cd dd 40      147:         CALL DFRAME
+40a4 d5            148:         PUSH D      ; save delay
+40a5 cd 20 06      149:         CALL DELAY
+40a8 c5            150:         PUSH B      ; save N on stack
+40a9 01 06 00      151:         LXI  B,6    ; 6 bytes per frame
+40ac 09            152:         DAD  B      ; advance M to next frame
+40ad c1            153:         POP  B      ; restore N
+40ae d1            154:         POP  D      ; restore delay
+40af 0d            155:         DCR  C
+40b0 c2 a1 40      156:         JNZ  PFRAMD
+                   157: 
+40b3 c9            158:         RET
+                   159: 
+                   160: ;------------------------------------------------------------
+                   161: ; ROTMF – rotate N bytes in memory at M forward. N-1 in C
+                   162: ;------------------------------------------------------------
+                   163: 
+                   164: ROTMF:
+40b4 06 00         165:         MVI  B,0  ; prepare BC for DAD
+40b6 09            166:         DAD  B
+40b7 e5            167:         PUSH H    ; HL -> last
+40b8 d1            168:         POP  D    ; DE = HL
+40b9 1b            169:         DCX  D    ; DE -> last-1
+40ba 46            170:         MOV  B,M
+40bb c5            171:         PUSH B    ; save last byte on stack
+                   172: ROTMF2:
+40bc eb            173:         XCHG
+40bd 46            174:         MOV  B,M  ; previous byte in B...
+40be eb            175:         XCHG
+40bf 70            176:         MOV  M,B  ; ...moved one forward
+40c0 1b            177:         DCX  D
+40c1 2b            178:         DCX  H
+40c2 0d            179:         DCR  C
+40c3 f2 bc 40      180:         JP   ROTMF2
+                   181: 
+40c6 23            182:         INX  H    ; adjust
+40c7 c1            183:         POP  B    ; retrieve last
+40c8 70            184:         MOV  M,B  ; store as first
+                   185: 
+40c9 c9            186:         RET
+                   187: 
+                   188: ;------------------------------------------------------------
+                   189: ; ROTMB – rotate N bytes at M backward. N-1 in C
+                   190: ;------------------------------------------------------------
+                   191: 
+                   192: ROTMB:
+40ca e5            193:         PUSH H    ; HL -> first
+40cb d1            194:         POP  D    ; DE = HL
+40cc 13            195:         INX  D    ; DE -> first+1
+40cd 46            196:         MOV  B,M
+40ce c5            197:         PUSH B    ; save first byte on stack
+                   198: ROTMB2:
+40cf eb            199:         XCHG
+40d0 46            200:         MOV  B,M  ; next byte in B...
+40d1 eb            201:         XCHG
+40d2 70            202:         MOV  M,B  ; ...moved one backward
+40d3 13            203:         INX  D
+40d4 23            204:         INX  H
+40d5 0d            205:         DCR  C
+40d6 f2 cf 40      206:         JP   ROTMB2
+                   207: 
+40d9 2b            208:         DCX  H    ; adjust
+40da c1            209:         POP  B    ; retrieve first
+40db 70            210:         MOV  M,B  ; store as last
+                   211: 
+40dc c9            212:         RET
+                   213: 
+                   214: ;------------------------------------------------------------
+                   215: ; DFRAME – display 6-byte frame (dcbapgfe) at M left to right
+                   216: ;------------------------------------------------------------
+                   217: 
+                   218: DFRAME:
+40dd c5            219:         PUSH B
+40de e5            220:         PUSH H
+                   221: 
+40df 3e 90         222:         MVI  A,090H    ; address digits
+40e1 32 00 19      223:         STA  CTRL
+40e4 0e 04         224:         MVI  C,4
+                   225: DFRAM2:
+40e6 7e            226:         MOV  A,M
+40e7 32 00 18      227:         STA  DATA
+40ea 23            228:         INX  H
+40eb 0d            229:         DCR  C
+40ec c2 e6 40      230:         JNZ  DFRAM2
+                   231: 
+40ef 3e 94         232:         MVI  A,094H    ; data digits
+40f1 32 00 19      233:         STA  CTRL
+40f4 0e 02         234:         MVI  C,2
+                   235: DFRAM3:
+40f6 7e            236:         MOV  A,M
+40f7 32 00 18      237:         STA  DATA
+40fa 23            238:         INX  H
+40fb 0d            239:         DCR  C
+40fc c2 f6 40      240:         JNZ  DFRAM3
+                   241: 
+40ff e1            242:         POP  H
+4100 c1            243:         POP  B
+4101 c9            244:         RET
+                   245: 
+                   246: ;------------------------------------------------------------
+                   247: ; DATA TABLES
+                   248: ;------------------------------------------------------------
+                   249: 
+4102 29 9f 6c 0c   250: SICOMP: DB S_PAT,I_PAT,C_PAT,O_PAT,M_PAT,P_PAT ; "SICOMP"
+     ae c8 
+                   251: 
+4108 ff ff ff ff   252: EMPTYF: DB 0FFH, 0FFH, 0FFH, 0FFH, 0FFH, 0FFH  ; "      "
+     ff ff 
+                   253: 
+410e b6 2f dd 0d   254: NONSNS: DB 0B6H, 02FH, 0DDH, 00DH, 038H, 081H ; 5 random frames
+     38 81 
+4114 c8 11 5e 4d   255:         DB 0C8H, 011H, 05EH, 04DH, 0F3H, 042H ; 6 bytes each
+     f3 42 
+411a 26 76 05 97   256:         DB 026H, 076H, 005H, 097H, 059H, 0E8H
+     59 e8 
+4120 c1 0c 6c 02   257:         DB 0C1H, 00CH, 06CH, 002H, 0FFH, 0AEH
+     ff ae 
+4126 3d 8b 28 d4   258:         DB 03DH, 08BH, 028H, 0D4H, 046H, 065H
+     46 65 
+412c 9f fb fb fb   259:         DB 09FH, 0FBH, 0FBH, 0FBH, 0FBH, 0FBH ; broom
+     fb fb 
+                   260: 
+4132 ff ff ff fa   261: R30:    DB 0FFH, 0FFH, 0FFH, r_PAT,THREE,ZERO ; "   r30"
+     0b 0c 
+4138 9f fb fb fb   262:         DB 09FH, 0FBH, 0FBH, 0FBH, 0FBH, 0FBH ; broom
+     fb fb 
+                   263: 
+                   264:         END
+
+264 lines, 0 errors, 0 warnings
+
+
+SYMBOL TABLE:
+
+CTRL            : 1900 (6400)
+DATA            : 1800 (6144)
+DELAY           : 0620 (1568)
+S_PAT           : 0029 (41)
+I_PAT           : 009f (159)
+C_PAT           : 006c (108)
+O_PAT           : 000c (12)
+M_PAT           : 00ae (174)
+P_PAT           : 00c8 (200)
+r_PAT           : 00fa (250)
+THREE           : 000b (11)
+ZERO            : 000c (12)
+START           : 4000 (16384)
+PROLOG          : 4000 (16384)
+LOOP            : 4033 (16435)
+BLINK           : 4035 (16437)
+SHFTL           : 4053 (16467)
+SHFTR           : 4066 (16486)
+WAIT            : 4076 (16502)
+REP5FP          : 4083 (16515)
+PNON5F          : 408e (16526)
+REPINT          : 409a (16538)
+PFRAMD          : 40a1 (16545)
+ROTMF           : 40b4 (16564)
+ROTMF2          : 40bc (16572)
+ROTMB           : 40ca (16586)
+ROTMB2          : 40cf (16591)
+DFRAME          : 40dd (16605)
+DFRAM2          : 40e6 (16614)
+DFRAM3          : 40f6 (16630)
+SICOMP          : 4102 (16642)
+EMPTYF          : 4108 (16648)
+NONSNS          : 410e (16654)
+R30             : 4132 (16690)
+
+
+Total memory is 318 bytes
