@@ -107,7 +107,7 @@ struct Circuit: View {
                         case .success(let program):
                             isLoadingProgram = true
                             Task {
-                                circuitIO.load(bytes: program, atMemoryAddress: 0x2000)
+                                circuitIO.load(bytes: program, atMemoryAddress: 0x4000)
                                 await circuitIO.reset()
                                 watchdog.alarm = false
                                 watchdog.restart(interval)
