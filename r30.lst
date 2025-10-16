@@ -74,12 +74,12 @@ asm85 8085 Assembler v1.5 by nib
                     72: BLINK:
 4035 21 08 41       73:         LXI  H,EMPTYF ; clear display
 4038 cd dd 40       74:         CALL DFRAME
-403b 11 00 18       75:         LXI  D,01800H ; wait
+403b 11 00 60       75:         LXI  D,06000H ; wait
 403e cd 20 06       76:         CALL DELAY
                     77: 
 4041 21 26 41       78:         LXI  H,NONSNS+24 ; now "SICOMP"
 4044 cd dd 40       79:         CALL DFRAME
-4047 11 00 18       80:         LXI  D,01800H ; wait
+4047 11 00 60       80:         LXI  D,06000H ; wait
 404a cd 20 06       81:         CALL DELAY
                     82: 
 404d 0d             83:         DCR  C
@@ -89,7 +89,7 @@ asm85 8085 Assembler v1.5 by nib
                     87: SHFTL:
 4053 23             88:         INX  H
 4054 cd dd 40       89:         CALL DFRAME
-4057 11 00 10       90:         LXI  D,01000H
+4057 11 00 30       90:         LXI  D,03000H
 405a cd 20 06       91:         CALL DELAY
 405d 0d             92:         DCR  C
 405e c2 53 40       93:         JNZ  SHFTL
@@ -99,7 +99,7 @@ asm85 8085 Assembler v1.5 by nib
                     97: SHFTR:
 4066 2b             98:         DCX  H
 4067 cd dd 40       99:         CALL DFRAME
-406a 11 00 10      100:         LXI  D,01000H
+406a 11 00 30      100:         LXI  D,03000H
 406d cd 20 06      101:         CALL DELAY
 4070 0d            102:         DCR  C
 4071 c2 66 40      103:         JNZ  SHFTR

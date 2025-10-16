@@ -72,12 +72,12 @@ LOOP:
 BLINK:
         LXI  H,EMPTYF ; clear display
         CALL DFRAME
-        LXI  D,01800H ; wait
+        LXI  D,06000H ; wait
         CALL DELAY
 
         LXI  H,NONSNS+24 ; now "SICOMP"
         CALL DFRAME
-        LXI  D,01800H ; wait
+        LXI  D,06000H ; wait
         CALL DELAY
 
         DCR  C
@@ -87,7 +87,7 @@ BLINK:
 SHFTL:
         INX  H
         CALL DFRAME
-        LXI  D,01000H
+        LXI  D,03000H
         CALL DELAY
         DCR  C
         JNZ  SHFTL
@@ -97,7 +97,7 @@ SHFTL:
 SHFTR:
         DCX  H
         CALL DFRAME
-        LXI  D,01000H
+        LXI  D,03000H
         CALL DELAY
         DCR  C
         JNZ  SHFTR
