@@ -76,7 +76,12 @@ struct Circuit: View {
                     loadBinFile()
                 }
                 .sheet(isPresented: $loadUserProgram) {
-                    loadBinFile(atMemoryAddress: 0x4000)
+                    let a1 = (SevenSegmentDisplay.pgfedcbaHex10Map[circuitIO.AF1] ?? 0) * 4096
+                    let a2 = (SevenSegmentDisplay.pgfedcbaHex10Map[circuitIO.AF2] ?? 0) * 256
+                    let a3 = (SevenSegmentDisplay.pgfedcbaHex10Map[circuitIO.AF3] ?? 0) * 16
+                    // mask decimal point in rightmost digit
+                    let a4 = (SevenSegmentDisplay.pgfedcbaHex10Map[circuitIO.AF4 & 0x7F] ?? 0)
+                    return loadBinFile(atMemoryAddress: a1 + a2 + a3 + a4)
                 }
                 .onChange(of: thisControl, initial: true) {
                     Task {
@@ -405,7 +410,7 @@ extension Memory {
 }
 
 extension SevenSegmentDisplay {
-    private static let ASCIIpgfedcbaMap: [Byte] = [
+    static let ASCIIpgfedcbaMap: [Byte] = [
         //         0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
         /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         /* 1 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -415,6 +420,11 @@ extension SevenSegmentDisplay {
         /* 5 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x3e, 0x3e, 0x00, 0x76, 0x6e, 0x5b, 0x39, 0x64, 0x0f, 0x23, 0x08,
         /* 6 */ 0x02, 0x5f, 0x7c, 0x58, 0x5e, 0x7b, 0x71, 0x6f, 0x74, 0x04, 0x0e, 0x00, 0x30, 0x00, 0x54, 0x5c,
         /* 7 */ 0x73, 0x67, 0x50, 0x6d, 0x78, 0x1c, 0x1c, 0x00, 0x76, 0x6e, 0x5b, 0x46, 0x06, 0x70, 0x01, 0x00
+    ]
+    
+    static let pgfedcbaHex10Map: [Byte: UShort] = [
+        0x3f: 0, 0x06: 1, 0x5b: 2, 0x4f: 3, 0x66: 4, 0x6d: 5, 0x7d: 6, 0x07: 7,
+        0x7f: 8, 0x6f: 9, 0x77: 10, 0x7c: 11, 0x39: 12, 0x5e: 13, 0x79: 14, 0x71: 15
     ]
     
     static func pgfedcba(for c: Character) -> Byte {

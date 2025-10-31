@@ -6,7 +6,7 @@ The original ROM was taken from the *SDK-85 User's Manual* ([PDF](http://retro.h
 
 ### Usage
 
-Swipe the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See user manual for the usage of either. Switching between monitors yields CPU restart without preserving RAM. Long-tap PCB to load a user program file with 8085 machine code at 0x4000.
+Swipe the main view left to enter the TTY monitor, and right to return to the keyboard monitor. See user manual for the usage of either. Switching between monitors yields CPU restart without preserving RAM. Long-tap PCB to load a user program file with 8085 machine code at address currently displayed by four leftmost digits in hex display.
 
 **Note:** Always set SP with EXAM REG (e.g. 0x20C2) before using the GO and SINGLE STEP commands. See user manual, p. 4-6.
 
