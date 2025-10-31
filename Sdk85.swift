@@ -15,16 +15,13 @@ struct Circuit: View {
     @State private var loadCustomMonitor = UserDefaults.standard.bool(forKey: "loadCustomMonitor")
     @State private var loadUserProgram = false
 
-    @State private var isLoadingMonitor = false
-    @State private var isLoadingProgram = false
+    @State private var isLoading = false
     
     @State private var thisControl: Control = .pcb
     @State private var controlOffset: CGFloat = 0
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var isPortrait = UIScreen.main.bounds.isPortrait
-
-    private var isLoading: Bool { isLoadingMonitor || isLoadingProgram }
     
     var body: some View {
         GeometryReader { geometry in
@@ -76,58 +73,10 @@ struct Circuit: View {
                     }
                 }
                 .sheet(isPresented: $loadCustomMonitor) {
-                    BinFileLoader() { result in
-                        switch result {
-                        case .success(let monitor):
-                            isLoadingMonitor = true
-                            Task {
-                                circuitIO.load(bytes: monitor)
-                                await circuitIO.reset()
-                                watchdog.alarm = false
-                                watchdog.restart(interval)
-                                try? await Task.sleep(nanoseconds: 750_000_000)
-                                await MainActor.run {
-                                    withAnimation(.easeOut(duration: 0.25)) {
-                                        isLoadingMonitor = false
-                                    }
-                                }
-                            }
-                        case .failure:
-                            Task { @MainActor in
-                                withAnimation(.easeOut(duration: 0.25)) {
-                                    isLoadingMonitor = false
-                                }
-                            }
-                        }
-                    }
+                    loadBinFile()
                 }
                 .sheet(isPresented: $loadUserProgram) {
-                    BinFileLoader() { result in
-                        switch result {
-                        case .success(let program):
-                            isLoadingProgram = true
-                            Task {
-                                circuitIO.load(bytes: program, atMemoryAddress: 0x4000)
-                                await circuitIO.reset()
-                                watchdog.alarm = false
-                                watchdog.restart(interval)
-                                try? await Task.sleep(nanoseconds: 750_000_000)
-                                await MainActor.run {
-                                    withAnimation(.easeOut(duration: 0.25)) {
-                                        isLoadingProgram = false
-                                    }
-                                }
-                            }
-                        case .failure:
-                            Task { @MainActor in
-                                withAnimation(.easeOut(duration: 0.25)) {
-                                    isLoadingProgram = false
-                                }
-                            }
-                        }
-                        // Close the sheet; no need to animate this flag
-                        loadUserProgram = false
-                    }
+                    loadBinFile(atMemoryAddress: 0x4000)
                 }
                 .onChange(of: thisControl, initial: true) {
                     Task {
@@ -162,6 +111,33 @@ struct Circuit: View {
         .environmentObject(watchdog)
         .environmentObject(circuitIO)
     }
+    
+    private func loadBinFile(atMemoryAddress address: UShort = 0) -> some View {
+        BinFileLoader() { result in
+            switch result {
+            case .success(let program):
+                isLoading = true
+                Task {
+                    circuitIO.load(bytes: program, atMemoryAddress: address)
+                    await circuitIO.reset()
+                    watchdog.alarm = false
+                    watchdog.restart(interval)
+                    try? await Task.sleep(nanoseconds: 750_000_000)
+                    await MainActor.run {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            isLoading = false
+                        }
+                    }
+                }
+            case .failure:
+                Task { @MainActor in
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        isLoading = false
+                    }
+                }
+            }
+        }
+    }
 }
 
 class Watchdog: ObservableObject {
@@ -173,10 +149,10 @@ class Watchdog: ObservableObject {
         
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
-                withAnimation {
-                    self.alarm = true
-                }
+            withAnimation {
+                self.alarm = true
             }
+        }
     }
 }
 

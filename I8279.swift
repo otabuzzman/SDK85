@@ -54,7 +54,7 @@ actor I8279: @preconcurrency MPorts {
                 case 3:
                     Task { @MainActor in await circuitIO.AF3 = ~data.swapHalfBytes() }
                 case 4:
-                    Task { @MainActor in await  circuitIO.AF4 = ~data.swapHalfBytes() }
+                    Task { @MainActor in await circuitIO.AF4 = ~data.swapHalfBytes() }
                 default:
                     break
                 }
